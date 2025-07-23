@@ -10,7 +10,10 @@
 		SELECT * FROM devices ORDER BY device_id DESC
 	</select>
 
-
+	<insert id="goRegister" parameterType="kr.cloud.web.entity.users">
+		INSERT INTO BOARD(user_id, password, name, department, email, phone)
+		VALUES(#{user_id} ,#{password} ,#{name}, #{department}, #{email}, #{phone});
+	</insert>
 
 
 </mapper>
