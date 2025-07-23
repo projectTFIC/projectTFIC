@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.cloud.web.mapper.BoardMapper">
+
+	<!--  
+	[ 1. 전체 게시글을 조회하기 ]
+	id 는 실행하고 싶은 Mapper.java 의 메서드 이름과 동일하게 작성
+	-->
+	<select id = "selectDevicesAll" resultType = "kr.cloud.web.entity.Devices">
+		SELECT * FROM devices ORDER BY device_id DESC
+	</select>
+
+
+
+
+</mapper>
