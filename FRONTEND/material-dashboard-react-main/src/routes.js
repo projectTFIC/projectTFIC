@@ -47,7 +47,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Notifications",
+    name: "알림",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
@@ -55,7 +55,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Profile",
+    name: "프로필",
     key: "profile",
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",
@@ -63,7 +63,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Sign In",
+    name: "로그인",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
     route: "/authentication/sign-in",
@@ -71,7 +71,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Sign Up",
+    name: "회원가입",
     key: "sign-up",
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/sign-up",
