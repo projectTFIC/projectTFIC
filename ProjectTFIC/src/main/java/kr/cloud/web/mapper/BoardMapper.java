@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 import kr.cloud.web.entity.Devices;
+import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 
 
@@ -22,5 +23,6 @@ public interface BoardMapper {
 	
 	public int goRegister(Users register);
 
+	public List<TypeInfo> selectAll();
 	
 }

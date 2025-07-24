@@ -9,12 +9,15 @@
 	
 	
 	<!-- [ 회원가입 정보 저장하기 ] -->
-	<insert id="goRegister" parameterType="kr.cloud.web.entity.users">
+	<insert id="goRegister" parameterType="kr.cloud.web.entity.Users">
 		INSERT INTO BOARD(user_id, password, name, department, email, phone)
 		VALUES(#{user_id} ,#{password} ,#{name}, #{department}, #{email}, #{phone});
 	</insert>
-
-
+	
+	<!-- 알림 리스트 조회하기 -->
+	<select id="selectAll" resultType="kr.cloud.web.entity.TypeInfo">
+		SELECT * FROM type_info ORDER BY type_id DESC;
+	</select>
 
 
 </mapper>

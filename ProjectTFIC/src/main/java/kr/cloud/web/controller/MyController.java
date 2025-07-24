@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import jakarta.servlet.http.HttpSession;
 import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
+import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
 
@@ -88,6 +89,24 @@ public class MyController {
 		}
 		
 	}
+	
+	// [알람 페이지 - 전체 알람 조회 기능]
+	// 전체 알람에 관한 리스트를 최신순 기준으로 받아음
+	@GetMapping("/Golist")
+	public String home(Model model, HttpSession session) {
+		// 로그인 정보가 있는지 확인하는 과정
+	    Users loginUser = (Users) session.getAttribute("loginUser");
+	    if (loginUser == null) {
+	        // 로그인 정보가 없으면 로그인 페이지로 리다이렉트
+	        return "redirect:/GoLogin"; // 로그인 화면의 엔드포인트를 실제 경로에 맞게 수정
+	    }
+	    // List 값으로 type_info 테이블에 있는 값 전부 가지고 오기
+	    List<TypeInfo> TypeInfoList = mapper.selectAll();
+	    model.addAttribute("TypeInfoList", TypeInfoList);
+
+	    return "list";
+	}
+	
 	
 
 }
