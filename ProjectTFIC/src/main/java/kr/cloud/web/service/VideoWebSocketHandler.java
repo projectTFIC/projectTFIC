@@ -1,4 +1,4 @@
-package kr.cloud.web.controller;
+package kr.cloud.web.service;
 
 import com.github.sarxos.webcam.Webcam;
 import kr.cloud.web.entity.Devices; 

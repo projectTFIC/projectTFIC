@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
 import kr.cloud.web.mapper.BoardMapper;
+import kr.cloud.web.service.ReportApiService;
 
 
 @Controller
@@ -41,7 +42,12 @@ public class MyController {
 		return "Monitoring";
 		
 			
-	}
-	
+	}   
+	// gpt 연동 테스트 
+	   @GetMapping("/report/test")
+	    public String testReport() {
+	        ReportApiService service = new ReportApiService();
+	        return service.generateReport();
+	    }
 
 }
