@@ -2,13 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.cloud.web.mapper.BoardMapper">
 
-	<!--  
-	[ 1. 전체 게시글을 조회하기 ]
-	id 는 실행하고 싶은 Mapper.java 의 메서드 이름과 동일하게 작성
-	-->
+	<!-- [ 전체 게시글을 조회하기 ] -->
 	<select id = "selectDevicesAll" resultType = "kr.cloud.web.entity.Devices">
 		SELECT * FROM devices ORDER BY device_id DESC
 	</select>
+	
+	
+	<!-- [ 회원가입 정보 저장하기 ] -->
+	<insert id="goRegister" parameterType="kr.cloud.web.entity.users">
+		INSERT INTO BOARD(user_id, password, name, department, email, phone)
+		VALUES(#{user_id} ,#{password} ,#{name}, #{department}, #{email}, #{phone});
+	</insert>
 
 
 
