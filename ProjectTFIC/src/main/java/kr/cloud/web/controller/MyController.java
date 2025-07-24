@@ -1,16 +1,23 @@
 package kr.cloud.web.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
+import kr.cloud.web.entity.Report;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
@@ -46,16 +53,35 @@ public class MyController {
 		return "Monitoring";
 		
 			
-<<<<<<< HEAD
+ 
 	}   
-	// gpt 연동 테스트 
-	   @GetMapping("/report/test")
-	    public String testReport() {
-	        ReportApiService service = new ReportApiService();
-	        return service.generateReport();
+	@RestController
+	@RequestMapping("/api/report")
+	public class ReportController {
+	    @Autowired
+	    private ReportApiService reportService;
+
+	    // 기간별 조회 (ex: /api/report/period?start=2024-01-01&end=2024-07-24)
+	    @GetMapping("/period")
+	    public List<Report> getReportsByPeriod(
+	            @RequestParam("start") @DateTimeFormat(pattern="yyyy-MM-dd") Date start,
+	            @RequestParam("end") @DateTimeFormat(pattern="yyyy-MM-dd") Date end) {
+	        return reportService.getReportsByPeriod(start, end);
 	    }
-=======
+
+	    // 단건조회 (ex: /api/report/123)
+	    @GetMapping("/{reportId}")
+	    public Report getReportById(@PathVariable int reportId) {
+	        return reportService.getReportById(reportId);
+	    }
+
+	    // 전체 조회
+	    @GetMapping("/all")
+	    public List<Report> getAllReports() {
+	        return reportService.getAllReports();
+	    }
 	}
+	
 	
 	
 	// [유저 페이지 - 로그인]
@@ -118,6 +144,6 @@ public class MyController {
 	}
 	
 	
->>>>>>> dca6ff16d16bf2779d434461f7f68435f446abf5
+
 
 }
