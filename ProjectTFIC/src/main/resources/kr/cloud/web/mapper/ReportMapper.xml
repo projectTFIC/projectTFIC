@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.cloud.web.mapper.ReportMapper">
     <!-- 기간별 보고서 조회 -->
-    <select id="selectReportsByPeriod" resultType="your.package.Report">
+    <select id="selectReportsByPeriod" resultType="kr.cloud.web.entity.Report">
         SELECT
             report_id AS reportId,
             report_title AS reportTitle,
@@ -16,7 +16,7 @@
     </select>
 
     <!-- reportId로 단건 조회 -->
-    <select id="selectReportById" resultType="your.package.Report">
+    <select id="selectReportById" resultType="kr.cloud.web.entity.Report">
         SELECT
             report_id AS reportId,
             report_title AS reportTitle,
@@ -30,7 +30,7 @@
     </select>
 
     <!-- 전체 리스트 조회 -->
-    <select id="selectAllReports" resultType="your.package.Report">
+    <select id="selectAllReports" resultType="kr.cloud.web.entity.Report">
         SELECT
             report_id AS reportId,
             report_title AS reportTitle,
