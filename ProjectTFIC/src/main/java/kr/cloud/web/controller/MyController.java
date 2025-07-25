@@ -1,27 +1,31 @@
 package kr.cloud.web.controller;
 
-import java.util.Date;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
-import kr.cloud.web.entity.Report;
+import kr.cloud.web.entity.ImageUploadRequest;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
-import kr.cloud.web.service.ReportApiService;
 
 
 @Controller
@@ -56,29 +60,44 @@ public class MyController {
  
 	}   
 	@RestController
-	@RequestMapping("/api/report")
-	public class ReportController {
-	    @Autowired
-	    private ReportApiService reportService;
+	@RequestMapping("/api")
+	// React 앱(localhost:3000)에서의 요청을 허용하기 위한 CORS 설정
+	@CrossOrigin(origins = "http://localhost:3000")
+	public class FileUploadController {
 
-	    // 기간별 조회 (ex: /api/report/period?start=2024-01-01&end=2024-07-24)
-	    @GetMapping("/period")
-	    public List<Report> getReportsByPeriod(
-	            @RequestParam("start") @DateTimeFormat(pattern="yyyy-MM-dd") Date start,
-	            @RequestParam("end") @DateTimeFormat(pattern="yyyy-MM-dd") Date end) {
-	        return reportService.getReportsByPeriod(start, end);
-	    }
+	    @PostMapping("/upload")
+	    public ResponseEntity<String> uploadImage(@RequestBody ImageUploadRequest request) {
+	        // imageData는 "data:image/png;base64,iVBORw0go..." 형식이므로, 실제 데이터 부분만 분리합니다.
+	        String[] parts = request.getImageData().split(",");
+	        if (parts.length != 2) {
+	            return ResponseEntity.badRequest().body("잘못된 이미지 데이터 형식입니다.");
+	        }
+	        
+	        String imageString = parts[1];
+	        byte[] imageBytes = Base64.getDecoder().decode(imageString);
 
-	    // 단건조회 (ex: /api/report/123)
-	    @GetMapping("/{reportId}")
-	    public Report getReportById(@PathVariable int reportId) {
-	        return reportService.getReportById(reportId);
-	    }
+	        try {
+	            // "uploads" 폴더 아래에 label 이름으로 된 하위 폴더를 생성합니다.
+	            Path uploadPath = Paths.get("uploads", request.getLabel());
+	            if (!Files.exists(uploadPath)) {
+	                Files.createDirectories(uploadPath);
+	            }
 
-	    // 전체 조회
-	    @GetMapping("/all")
-	    public List<Report> getAllReports() {
-	        return reportService.getAllReports();
+	            // 파일 이름은 현재 시간(timestamp)을 사용하여 고유하게 만듭니다.
+	            String fileName = System.currentTimeMillis() + ".png";
+	            Path filePath = uploadPath.resolve(fileName);
+
+	            // 파일을 저장합니다.
+	            try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+	                fos.write(imageBytes);
+	            }
+
+	            return ResponseEntity.ok("업로드 성공: " + filePath.toString());
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            return ResponseEntity.internalServerError().body("업로드 실패: " + e.getMessage());
+	        }
 	    }
 	}
 	
