@@ -20,6 +20,10 @@
     "@mui/material": "5.12.3",
     "chart.js": "4.3.0",
     "chroma-js": "2.4.2",
+<<<<<<< HEAD
+=======
+    "lucide-react": "^0.527.0",
+>>>>>>> ff20b47 (프론트 작업 추가)
     "prop-types": "15.8.1",
     "react": "18.2.0",
     "react-chartjs-2": "5.2.0",
@@ -28,6 +32,10 @@
     "react-router-dom": "6.11.0",
     "react-scripts": "^5.0.1",
     "react-table": "7.8.0",
+<<<<<<< HEAD
+=======
+    "socket.io-client": "^4.8.1",
+>>>>>>> ff20b47 (프론트 작업 추가)
     "stylis": "4.1.4",
     "stylis-plugin-rtl": "2.1.1",
     "yup": "1.1.1"
