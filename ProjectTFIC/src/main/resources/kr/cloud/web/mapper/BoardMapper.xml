@@ -19,6 +19,12 @@
 		SELECT * FROM type_info ORDER BY type_id DESC;
 	</select>
 
+	<!-- 로그인 중복 아이디 확인 -->
+	<select id="checkUserIdExists" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) 
+        FROM users 
+        WHERE user_id = #{user_id}
+    </select>
 
 
 </mapper>

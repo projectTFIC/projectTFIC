@@ -2,8 +2,10 @@ package kr.cloud.web.mapper;
 
 import java.util.List;
 
+import org.apache.catalina.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import kr.cloud.web.entity.Devices;
 import kr.cloud.web.entity.TypeInfo;
@@ -25,4 +27,10 @@ public interface BoardMapper {
 
 	public List<TypeInfo> selectAll();
 	
+	public int checkUserIdExists(String user_id);
+
 }
+	
+
+
+

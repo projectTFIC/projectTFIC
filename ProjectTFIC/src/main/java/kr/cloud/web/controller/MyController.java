@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +26,11 @@ import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
 import kr.cloud.web.entity.ImageUploadRequest;
 import kr.cloud.web.entity.TypeInfo;
+import kr.cloud.web.entity.UsernameCheckRequestDto;
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
+import kr.cloud.web.service.UserService;
+import lombok.RequiredArgsConstructor;
 
 
 @Controller
@@ -144,6 +149,31 @@ public class MyController {
 		}
 		
 	}
+	
+	// [회원가입 - 중복 아이디 확인]
+	// 중복 아이디 확인 
+	@RestController
+	@RequestMapping("/api/v1/users")
+	@RequiredArgsConstructor // final 필드에 대한 생성자 주입
+	public class UserController {
+
+	    private final UserService userService;
+
+	    // 아이디 중복 확인 요청을 처리하는 핸들러
+	    @PostMapping("/check-username")
+	    public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestBody UsernameCheckRequestDto requestDto) {
+	        // 서비스 레이어를 호출하여 아이디 중복 여부 확인
+	        boolean isAvailable = !userService.isUsernameDuplicated(requestDto.getUsername());
+
+	        // 결과를 Map 객체에 담아 JSON으로 반환
+	        Map<String, Boolean> response = new HashMap<>();
+	        response.put("isAvailable", isAvailable);
+
+	        return ResponseEntity.ok(response);
+	    }
+	}
+	
+	
 	
 	// [알람 페이지 - 전체 알람 조회 기능]
 	// 전체 알람에 관한 리스트를 최신순 기준으로 받아음
