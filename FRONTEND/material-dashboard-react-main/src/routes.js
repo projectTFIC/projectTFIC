@@ -31,7 +31,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "보고서 생성",
+    name: "보고서 게시판",
     key: "billing",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/billing",
@@ -47,7 +47,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "알림",
+    name: "통계",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
