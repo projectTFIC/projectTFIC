@@ -1,95 +1,32 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, and_
-from sqlalchemy.orm import sessionmaker, declarative_base
-from datetime import datetime
 import openai
 from dotenv import load_dotenv
-
 
 # 1. 환경설정
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-print("API KEY:", os.getenv("OPENAI_API_KEY"))
 
-# 2. DB 세팅
-DB_URL = os.getenv("DB_URL", "sqlite:///test.db")   # 예시: sqlite, 실제는 MySQL 등
-engine = create_engine(DB_URL, echo=False)
-Session = sessionmaker(bind=engine)
-Base = declarative_base()
+# 2. Flask 설정
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# 3. 테이블 정의
-class HeRecord(Base):   # 입출입
-    __tablename__ = 'he_record'
-    record_id = Column(Integer, primary_key=True)
-    record_title = Column(String(100))
-    type_id = Column(Integer)
-    original_img = Column(String(1000))
-    detect_img = Column(String(1000))
-    he_type = Column(Integer)
-    he_number = Column(String(100))
-    access = Column(String(100))
-
-class AccRecord(Base):  # 사고
-    __tablename__ = 'acc_record'
-    record_id = Column(Integer, primary_key=True)
-    record_title = Column(String(100))
-    type_id = Column(Integer)
-    original_img = Column(String(1000))
-    detect_img = Column(String(1000))
-
-class PpeRecord(Base):   # 미착용 
-    __tablename__ = 'ppe_record'
-    record_id = Column(Integer, primary_key=True)
-    record_title = Column(String(100))
-    type_id = Column(Integer)
-    original_img = Column(String(1000))
-    detect_img = Column(String(1000))
-
-
-
-
-# 5. GPT 호출
+# 3. GPT 호출 함수
 def call_gpt_report(prompt):
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "너는 건설현장 보고서 자동작성 AI 비서야."},
+            {"role": "system", "content": "너는 건설현장 보고서를 자동으로 작성하는 AI 비서야. "
+                    "보고서는 형식에 맞게 간결하고 명확하게 작성해야 하며, "
+                    "불필요한 반복이나 모호한 말, 과장된 표현은 절대 사용하지 마. "
+                    "사실 기반으로만 서술하고, 각 항목은 핵심만 요약해서 5줄 이내로 작성하도록 해."},
             {"role": "user", "content": prompt}
         ]
     )
     return response.choices[0].message.content
 
-# 6. 요약 생성 함수
-def fetch_acc_summary(session):
-    records = session.query(AccRecord).all()
-    if not records:
-        return "- 사고 없음"
-    return (
-        f"- 감지: {len(records)}건\n" +
-        "\n".join([f" · {r.record_id} {r.record_title or ''}" for r in records])
-    )
-
-def fetch_he_summary(session):
-    records = session.query(HeRecord).all()
-    if not records:
-        return "- 입출입 없음"
-    return (
-        f"- 입출입 기록: {len(records)}건\n" +
-        "\n".join([f" · {r.record_id} {r.access or ''}" for r in records])
-    )
-
-def fetch_ppe_summary(session):
-    records = session.query(PpeRecord).all()
-    if not records:
-        return "- 미착용 없음"
-    return (
-        f"- 미착용 감지: {len(records)}건\n" +
-        "\n".join([f" · {r.record_id} {r.record_title or ''}" for r in records])
-    )
-
-# 7. 프롬프트 템플릿
+# 4. 프롬프트 템플릿 함수
 def make_accident_prompt(acc_summary, period_start, period_end, user_id, extra_note=""):
     return f"""[안전 사고 상세 보고서]
 - 보고서 작성자: {user_id}
@@ -153,16 +90,11 @@ def make_total_prompt(he_summary, acc_summary, ppe_summary, period_start, period
 {extra_note if extra_note else '- 해당 없음'}
 """
 
-
-# 4. Flask 세팅
-app = Flask(__name__)
-CORS(app,resources={r"/*": {"origins": "*"}})
-
-# 8. Flask 엔드포인트 (유형별, 커스텀 프롬프트까지 지원)
+# 5. 보고서 생성 엔드포인트
 @app.route('/api/report/generate', methods=['POST'])
 def generate_report():
     data = request.json
-    period_start = data['period_start']  # 쓰이진 않지만 프롬프트 포맷 유지용
+    period_start = data['period_start']
     period_end = data['period_end']
     user_id = data['user_id']
     report_type = data['report_type']
@@ -170,22 +102,19 @@ def generate_report():
     custom_prompt = data.get('custom_prompt', '')
     extra_note = data.get('extra_note', '')
 
-    session = Session()
-    prompt = None
+    # 샘플 요약 텍스트 (DB 제거 → 실제 감지 내역은 Spring에서 분석)
+    acc_summary = "- 사고 없음 (샘플)"
+    he_summary = "- 입출입 없음 (샘플)"
+    ppe_summary = "- 미착용 없음 (샘플)"
 
     if use_custom_prompt and custom_prompt.strip():
         prompt = custom_prompt
     else:
         if report_type == "accident":
-            acc_summary = fetch_acc_summary(session)
             prompt = make_accident_prompt(acc_summary, period_start, period_end, user_id, extra_note)
         elif report_type == "entry":
-            he_summary = fetch_he_summary(session)
             prompt = make_entry_prompt(he_summary, period_start, period_end, user_id, extra_note)
         elif report_type == "total":
-            he_summary = fetch_he_summary(session)
-            acc_summary = fetch_acc_summary(session)
-            ppe_summary = fetch_ppe_summary(session)
             prompt = make_total_prompt(he_summary, acc_summary, ppe_summary, period_start, period_end, user_id, extra_note)
         else:
             return jsonify({"error": "Invalid report_type"}), 400
@@ -193,6 +122,6 @@ def generate_report():
     report_html = call_gpt_report(prompt)
     return jsonify({'report_html': report_html})
 
+# 6. 앱 실행
 if __name__ == "__main__":
-    Base.metadata.create_all(engine)
     app.run(host="0.0.0.0", port=5000)
