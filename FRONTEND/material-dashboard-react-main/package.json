@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/creativetimofficial/material-dashboard-react.git"
   },
-  "dependencies": {
+    "dependencies": {
     "@emotion/cache": "11.10.8",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -22,17 +22,10 @@
     "axios": "^1.11.0",
     "chart.js": "^4.5.0",
     "chroma-js": "2.4.2",
-<<<<<<< HEAD
     "date-fns": "^2.29.3",
     "dayjs": "^1.11.13",
-    "prop-types": "^15.8.1",
-=======
-<<<<<<< HEAD
-=======
     "lucide-react": "^0.527.0",
->>>>>>> ff20b47 (프론트 작업 추가)
-    "prop-types": "15.8.1",
->>>>>>> 7427517ac45ed92a131e502412c7de66b79194d4
+    "prop-types": "^15.8.1",
     "react": "18.2.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "18.2.0",
@@ -40,10 +33,7 @@
     "react-router-dom": "6.11.0",
     "react-scripts": "^5.0.1",
     "react-table": "7.8.0",
-<<<<<<< HEAD
-=======
     "socket.io-client": "^4.8.1",
->>>>>>> ff20b47 (프론트 작업 추가)
     "stylis": "4.1.4",
     "stylis-plugin-rtl": "2.1.1",
     "yup": "1.1.1"
