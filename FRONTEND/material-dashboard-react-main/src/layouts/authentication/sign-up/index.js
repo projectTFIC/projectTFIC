@@ -48,15 +48,18 @@ function Cover() {
           textAlign="center"
         >
           <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
+
             회원가입
           </MDTypography>
           <MDTypography display="block" variant="button" color="white" my={1}>
             회원가입을 위해 아이디와 비밀번호를 입력해주세요
+
           </MDTypography>
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>
           <MDBox component="form" role="form">
             <MDBox mb={2}>
+
               <MDInput type="text" label="이름" variant="standard" fullWidth />
             </MDBox>
             <MDBox mb={2}>
@@ -64,6 +67,7 @@ function Cover() {
             </MDBox>
             <MDBox mb={2}>
               <MDInput type="password" label="비밀번호" variant="standard" fullWidth />
+
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Checkbox />
@@ -74,6 +78,7 @@ function Cover() {
                 sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
               >
                 &nbsp;&nbsp;[필수]이 약관에 동의합니다.&nbsp;
+
               </MDTypography>
               <MDTypography
                 component="a"
@@ -84,6 +89,7 @@ function Cover() {
                 textGradient
               >
                 전체보기
+
               </MDTypography>
             </MDBox>
             <MDBox mt={4} mb={1}>

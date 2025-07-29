@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.cloud.web.mapper.ReportMapper">
+    <!-- 기간별 보고서 조회 -->
+    <select id="selectReportsByPeriod" resultType="kr.cloud.web.entity.Report">
+        SELECT
+            report_id AS reportId,
+            report_title AS reportTitle,
+            type_id AS typeId,
+            report_file AS reportFile,
+            user_id AS userId,
+            name,
+            reg_date AS regDate
+        FROM report
+        WHERE reg_date BETWEEN #{start} AND #{end}
+    </select>
+
+    <!-- reportId로 단건 조회 -->
+    <select id="selectReportById" resultType="kr.cloud.web.entity.Report">
+        SELECT
+            report_id AS reportId,
+            report_title AS reportTitle,
+            type_id AS typeId,
+            report_file AS reportFile,
+            user_id AS userId,
+            name,
+            reg_date AS regDate
+        FROM report
+        WHERE report_id = #{reportId}
+    </select>
+
+    <!-- 전체 리스트 조회 -->
+    <select id="selectAllReports" resultType="kr.cloud.web.entity.Report">
+        SELECT
+            report_id AS reportId,
+            report_title AS reportTitle,
+            type_id AS typeId,
+            report_file AS reportFile,
+            user_id AS userId,
+            name,
+            reg_date AS regDate
+        FROM report
+    </select>
+</mapper>

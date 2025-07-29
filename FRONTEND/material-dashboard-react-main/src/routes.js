@@ -1,7 +1,7 @@
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
-import Tables2 from "layouts/기록관리";
+import Monitoring from "layouts/monitoring/monitoring.js";
 import Billing from "layouts/billing";
 import RTL from "layouts/rtl";
 import Notifications from "layouts/notifications";
@@ -48,6 +48,16 @@ const routes = [
   {
     type: "collapse",
     name: "통계",
+    name: "알림",
+    name: "모니터링",
+    key: "monitoring",
+    icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
+    route: "/monitoring",
+    component: <Monitoring />,
+  },
+  {
+    type: "collapse",
+    name: "Notifications",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",

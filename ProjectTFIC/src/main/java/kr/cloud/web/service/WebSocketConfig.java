@@ -1,11 +1,9 @@
-package kr.cloud.web.controller;
+package kr.cloud.web.service;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
-
-import kr.cloud.web.controller.VideoWebSocketHandler;
 
 
 @Configuration
