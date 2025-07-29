@@ -8,6 +8,7 @@ import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
+import Report from "layouts/보고서 생성";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -20,6 +21,14 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
+  },
+  {
+    type: "collapse",
+    name: "테스트페이지",
+    key: "Report",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/dashboard",
+    component: <Report />,
   },
   {
     type: "collapse",
@@ -39,6 +48,15 @@ const routes = [
   },
   {
     type: "collapse",
+    name: "보고서 생성",
+    key: "report",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/report",
+    component: <Report />,
+  },
+  
+  {
+    type: "collapse",
     name: "RTL",
     key: "rtl",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
@@ -47,8 +65,6 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "통계",
-    name: "알림",
     name: "모니터링",
     key: "monitoring",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
@@ -57,7 +73,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Notifications",
+    name: "통계",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
