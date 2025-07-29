@@ -1,7 +1,7 @@
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
-import Monitoring from "layouts/monitoring/monitoring.js";
+import Monitoring from "layouts/모니터링";
 import Billing from "layouts/billing";
 import RTL from "layouts/rtl";
 import Notifications from "layouts/notifications";
@@ -21,14 +21,6 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
-  },
-  {
-    type: "collapse",
-    name: "테스트페이지",
-    key: "Report",
-    icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/dashboard",
-    component: <Report />,
   },
   {
     type: "collapse",
@@ -54,7 +46,6 @@ const routes = [
     route: "/report",
     component: <Report />,
   },
-  
   {
     type: "collapse",
     name: "RTL",
