@@ -131,12 +131,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>kr.cloud</groupId>
-			<artifactId>SpringBoot1</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 		
 		
 		<!-- [ 클라우드 서버 - 스프링부트 모니터링 ] -->
