@@ -137,6 +137,14 @@
 			<artifactId>SpringBoot1</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		
+		<!-- [ 클라우드 서버 - 스프링부트 모니터링 ] -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>		
+		
 	</dependencies>
 
 	<build>
