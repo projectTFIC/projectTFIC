@@ -5,8 +5,6 @@ import React, { useState, useMemo } from "react";
 // MUI
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
 
 // MD components
@@ -24,148 +22,270 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 
 // Charts
-import Chart from "./components/Chart";
-import PieChart from "./components/PieChart";
+import { Pie, Line, Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+} from "chart.js";
+
+ChartJS.register(
+  ArcElement,
+  BarElement,
+  PointElement,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 
 export default function Notifications() {
-  const [tabIndex, setTabIndex] = useState(0); // 0=유형별(Pie),1=구역별(Bar)
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  // 1) 샘플 데이터
-  const records = [
-    { date: "2025-07-01", type: "사고 감지", area: "A" },
-    { date: "2025-07-01", type: "안전장비 미착용", area: "B" },
-    { date: "2025-07-01", type: "입출입", area: "C" },
-    { date: "2025-07-02", type: "사고 감지", area: "A" },
-    { date: "2025-07-02", type: "사고 감지", area: "C" },
-    { date: "2025-07-02", type: "안전장비 미착용", area: "B" },
-    { date: "2025-07-03", type: "입출입", area: "A" },
-    { date: "2025-07-03", type: "입출입", area: "B" },
-    { date: "2025-07-03", type: "안전장비 미착용", area: "C" },
-    { date: "2025-07-04", type: "사고 감지", area: "B" },
-    { date: "2025-07-04", type: "입출입", area: "C" },
-  ];
+  // 1) 랜덤 레코드 생성 (2025년 전체)
+  const records = useMemo(() => {
+    const types = ["사고 감지", "안전장비 미착용", "입출입"];
+    const areas = ["A", "B", "C"];
+    const recs = [];
+    for (let i = 0; i < 1000; i++) {
+      const month = String(Math.ceil(Math.random() * 12)).padStart(2, "0");
+      const day = String(Math.ceil(Math.random() * 28)).padStart(2, "0");
+      recs.push({
+        date: `2025-${month}-${day}`,
+        type: types[Math.floor(Math.random() * types.length)],
+        area: areas[Math.floor(Math.random() * areas.length)],
+      });
+    }
+    return recs;
+  }, []);
 
-  const normalize = (d) => d; // 이미 ISO 포맷
+  // 2) 필터링 & 집계
+  const { typeData, lineData, areaBarData } = useMemo(() => {
+    const types = ["사고 감지", "안전장비 미착용", "입출입"];
+    const areas = ["A", "B", "C"];
 
-  // 2) 필터 + 집계(useMemo)
-  const { labels, areaDatasets, piePerDate } = useMemo(() => {
-    // a) 날짜 필터
+    // 필터
     const filtered = records.filter((r) => {
-      const d = normalize(r.date);
-      if (startDate && d < startDate) return false;
-      if (endDate && d > endDate) return false;
+      if (startDate && r.date < startDate) return false;
+      if (endDate && r.date > endDate) return false;
       return true;
     });
 
-    // b) 고유 날짜 정렬
-    const labels = Array.from(new Set(filtered.map((r) => normalize(r.date)))).sort();
-
-    // c) Bar용: 구역별 집계
-    const blue = "#36A2EB";
-    const areas = ["A", "B", "C"];
-    const areaDatasets = areas.map((a) => ({
-      label: a,
-      data: labels.map((date) => filtered.filter((r) => r.date === date && r.area === a).length),
-      backgroundColor: blue,
-      borderColor: blue,
-      borderWidth: 1,
-    }));
-
-    // d) Pie용: 날짜별 유형 분포 + size
-    const types = ["사고 감지", "안전장비 미착용", "입출입"];
-    const palette = ["#36A2EB", "#FFCE56", "#4BC0C0"];
-
-    const pies = labels.map((date) => {
-      const counts = types.map(
-        (t) => filtered.filter((r) => r.date === date && r.type === t).length
-      );
-      const total = counts.reduce((sum, x) => sum + x, 0);
-      return { date, counts, total };
-    });
-    const maxTotal = Math.max(...pies.map((p) => p.total), 1);
-
-    const piePerDate = pies.map(({ date, counts, total }) => {
-      const ratio = total / maxTotal;
-      const size = 120 + 80 * ratio; // 120~200px
-
-      return {
-        date,
-        data: {
-          labels: types,
-          datasets: [
-            {
-              data: counts,
-              backgroundColor: palette,
-              borderColor: palette,
-              borderWidth: 2,
-            },
-          ],
+    // Pie 데이터 (유형별)
+    const typeCounts = types.map((t) => filtered.filter((r) => r.type === t).length);
+    const typeData = {
+      labels: types,
+      datasets: [
+        {
+          data: typeCounts,
+          backgroundColor: ["#4dc9f6", "#f67019", "#f53794"],
+          borderColor: ["#4dc9f6", "#f67019", "#f53794"],
+          borderWidth: 2,
         },
-        size,
-        total,
-      };
-    });
+      ],
+    };
 
-    return { labels, areaDatasets, piePerDate };
-  }, [startDate, endDate]);
+    // Line 데이터 (일별 추이)
+    const days = Array.from(new Set(filtered.map((r) => r.date))).sort();
+    const lineData = {
+      labels: days,
+      datasets: types.map((t, i) => ({
+        label: t,
+        data: days.map((d) => filtered.filter((r) => r.date === d && r.type === t).length),
+        fill: true,
+        backgroundColor: [
+          "rgba(77,201,246,0.15)",
+          "rgba(246,112,25,0.15)",
+          "rgba(246,55,148,0.15)",
+        ][i],
+        borderColor: ["#4dc9f6", "#f67019", "#f53794"][i],
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      })),
+    };
+
+    // Area별 Bar 데이터 (구역 A, B, C 각각: x=날짜, datasets=유형별)
+    const areaBarData = areas.reduce((acc, area) => {
+      acc[area] = {
+        labels: days,
+        datasets: types.map((t, i) => ({
+          label: t,
+          data: days.map(
+            (d) => filtered.filter((r) => r.area === area && r.date === d && r.type === t).length
+          ),
+          backgroundColor: ["#4dc9f6", "#f67019", "#f53794"][i],
+          borderColor: ["#4dc9f6", "#f67019", "#f53794"][i],
+          borderWidth: 1,
+        })),
+      };
+      return acc;
+    }, {});
+
+    return { typeData, lineData, areaBarData };
+  }, [records, startDate, endDate]);
+
+  // 공통 옵션
+  const pieOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}건` } },
+    },
+  };
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "top", labels: { usePointStyle: true, padding: 16 } },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          title: (items) => `날짜: ${items[0].label}`,
+          label: (ctx) => `${ctx.label}: ${ctx.parsed.y}건`,
+        },
+      },
+    },
+    interaction: { mode: "nearest", axis: "x", intersect: false },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        beginAtZero: true,
+        grid: { color: "rgba(0,0,0,0.05)" },
+        ticks: { stepSize: 1 },
+      },
+    },
+  };
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "top", labels: { usePointStyle: true } },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          title: (items) => `날짜: ${items[0].label}`,
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}건`,
+        },
+      },
+    },
+    interaction: { mode: "nearest", axis: "x", intersect: false },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: "#666",
+          autoSkip: true,
+          maxRotation: 0,
+          minRotation: 0,
+          callback: function (value) {
+            const label = this.getLabelForValue(value);
+            return label.length > 5 ? label.slice(5) : label;
+          },
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: "rgba(0,0,0,0.05)" },
+        ticks: { stepSize: 1, color: "#666" },
+      },
+    },
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DashboardLayout>
         <DashboardNavbar />
 
-        <MDBox pt={6} pb={3}>
-          <Grid container spacing={6}>
-            <Grid item xs={12}>
-              <Card>
-                {/* 탭 + 날짜 필터 */}
-                <MDBox
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  p={2}
-                  flexWrap="wrap"
-                  gap={2}
-                >
-                  <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)}>
-                    <Tab label="유형별 (Pie)" />
-                    <Tab label="구역별 (Bar)" />
-                  </Tabs>
-                  <MDBox display="flex" alignItems="center" gap={1}>
-                    <DatePicker
-                      label="시작일"
-                      value={startDate}
-                      onChange={(d) => setStartDate(d?.toISOString().split("T")[0] || null)}
-                      renderInput={(params) => <TextField {...params} size="small" />}
-                    />
-                    <span>~</span>
-                    <DatePicker
-                      label="종료일"
-                      value={endDate}
-                      onChange={(d) => setEndDate(d?.toISOString().split("T")[0] || null)}
-                      renderInput={(params) => <TextField {...params} size="small" />}
-                    />
-                  </MDBox>
-                </MDBox>
+        {/* Date filters */}
+        <MDBox px={3} pt={3} pb={1} display="flex" gap={2}>
+          <DatePicker
+            label="시작일"
+            value={startDate}
+            onChange={(d) => setStartDate(d?.toISOString().slice(0, 10) || null)}
+            renderInput={(p) => <TextField {...p} size="small" />}
+          />
+          <DatePicker
+            label="종료일"
+            value={endDate}
+            onChange={(d) => setEndDate(d?.toISOString().slice(0, 10) || null)}
+            renderInput={(p) => <TextField {...p} size="small" />}
+          />
+        </MDBox>
 
-                {/* 차트 영역 */}
+        {/* Top: Pie & Line */}
+        <MDBox pt={1} pb={3}>
+          <Grid container spacing={3}>
+            {/* Pie */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <MDBox px={2} pt={1}>
+                  <MDTypography variant="h6">유형별 탐지</MDTypography>
+                </MDBox>
                 <MDBox p={2}>
-                  {tabIndex === 0 ? (
-                    <Grid container spacing={2} alignItems="flex-start" alignContent="flex-start">
-                      {piePerDate.map(({ date, data, size, total }) => (
-                        <Grid item xs={12} sm={6} md={3} key={date} sx={{ display: "flex" }}>
-                          <PieChart title={`${date} (${total})`} data={data} />
-                        </Grid>
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={6}>
+                      <Pie data={typeData} options={pieOptions} />
+                    </Grid>
+                    <Grid item xs={6}>
+                      {typeData.labels.map((label, i) => (
+                        <MDBox key={label} display="flex" alignItems="center" mb={1}>
+                          <MDBox
+                            width={12}
+                            height={12}
+                            mr={1}
+                            sx={{ backgroundColor: typeData.datasets[0].backgroundColor[i] }}
+                          />
+                          <MDTypography variant="body2">
+                            {label} ({typeData.datasets[0].data[i]}건)
+                          </MDTypography>
+                        </MDBox>
                       ))}
                     </Grid>
-                  ) : (
-                    <Chart title="구역별 통계" data={{ labels, datasets: areaDatasets }} />
-                  )}
+                  </Grid>
                 </MDBox>
               </Card>
             </Grid>
+            {/* Line */}
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: 400, position: "relative" }}>
+                <MDBox px={2} pt={1}>
+                  <MDTypography variant="h6">일별 감지 추이</MDTypography>
+                </MDBox>
+                <MDBox p={2} sx={{ height: "calc(100% - 56px)" }}>
+                  <Line data={lineData} options={lineOptions} />
+                </MDBox>
+              </Card>
+            </Grid>
+          </Grid>
+        </MDBox>
+
+        {/* Bottom: 구역별 막대 3개 */}
+        <MDBox pb={3}>
+          <Grid container spacing={3}>
+            {["A", "B", "C"].map((area) => (
+              <Grid item xs={12} md={4} key={area}>
+                <Card sx={{ height: 350, position: "relative" }}>
+                  <MDBox px={2} pt={1}>
+                    <MDTypography variant="h6">{`구역 ${area} 탐지`}</MDTypography>
+                  </MDBox>
+                  <MDBox p={2} sx={{ height: "calc(100% - 56px)" }}>
+                    <Bar data={areaBarData[area]} options={barOptions} />
+                  </MDBox>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
         </MDBox>
 

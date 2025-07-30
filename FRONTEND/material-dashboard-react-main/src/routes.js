@@ -47,8 +47,6 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "통계",
-    name: "알림",
     name: "모니터링",
     key: "monitoring",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
@@ -57,7 +55,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Notifications",
+    name: "통계",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
