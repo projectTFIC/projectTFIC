@@ -1,34 +1,36 @@
 package kr.cloud.web.controller;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Base64;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpSession;
 import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
 import kr.cloud.web.entity.ImageUploadRequest;
+import kr.cloud.web.entity.Report;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.UsernameCheckRequestDto;
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
+import kr.cloud.web.service.ReportApiService;
 import kr.cloud.web.service.UserService;
 import lombok.RequiredArgsConstructor;
 
@@ -66,42 +68,53 @@ public class MyController {
 	}   
 	@RestController
 	@RequestMapping("/api")
-	// React 앱(localhost:3000)에서의 요청을 허용하기 위한 CORS 설정
-	@CrossOrigin(origins = "http://localhost:3000")
-	public class FileUploadController {
+	@CrossOrigin(origins = "http://localhost:5001") // AI 서버 주소 허용
+	public class ViolationReportController {
 
-	    @PostMapping("/upload")
-	    public ResponseEntity<String> uploadImage(@RequestBody ImageUploadRequest request) {
-	        // imageData는 "data:image/png;base64,iVBORw0go..." 형식이므로, 실제 데이터 부분만 분리합니다.
-	        String[] parts = request.getImageData().split(",");
-	        if (parts.length != 2) {
-	            return ResponseEntity.badRequest().body("잘못된 이미지 데이터 형식입니다.");
+	    // Object Storage 서비스 로직이 주입되었다고 가정
+	    // private final ObjectStorageService objectStorageService;
+
+	    /**
+	     * AI 서버로부터 위반 보고(이미지 파일 + 메타데이터)를 받습니다.
+	     * @param imageFile 실제 이미지 파일
+	     * @param violationType 위반 종류 (문자열)
+	     * @param timestamp 발생 시각 (문자열)
+	     * @param deviceLabel 발생 장치 (문자열)
+	     * @return
+	     */
+	    @PostMapping("/report-violation")
+	    public ResponseEntity<String> reportViolation(
+	            @RequestParam("imageFile") MultipartFile imageFile,
+	            @RequestParam("violationType") String violationType,
+	            @RequestParam("timestamp") String timestamp,
+	            @RequestParam("deviceLabel") String deviceLabel){
+
+	        if (imageFile.isEmpty()) {
+	            return ResponseEntity.badRequest().body("이미지 파일이 비어있습니다.");
 	        }
-	        
-	        String imageString = parts[1];
-	        byte[] imageBytes = Base64.getDecoder().decode(imageString);
 
 	        try {
-	            // "uploads" 폴더 아래에 label 이름으로 된 하위 폴더를 생성합니다.
-	            Path uploadPath = Paths.get("uploads", request.getLabel());
-	            if (!Files.exists(uploadPath)) {
-	                Files.createDirectories(uploadPath);
-	            }
+	            // 여기에서 Object Storage 업로드 로직을 호출합니다.
+	            // String fileUrl = objectStorageService.upload(imageFile, violationType);
 
-	            // 파일 이름은 현재 시간(timestamp)을 사용하여 고유하게 만듭니다.
-	            String fileName = System.currentTimeMillis() + ".png";
-	            Path filePath = uploadPath.resolve(fileName);
+	            // 임시로 파일 정보와 메타데이터를 출력하는 예시
+	            System.out.println("===== 위반 보고 접수 =====");
+	            System.out.println("파일 이름: " + imageFile.getOriginalFilename());
+	            System.out.println("파일 크기: " + imageFile.getSize() + " bytes");
+	            System.out.println("위반 종류: " + violationType);
+	            System.out.println("발생 시각: " + timestamp);
+	            System.out.println("발생 장치: " + deviceLabel);
+	            System.out.println("=======================");
 
-	            // 파일을 저장합니다.
-	            try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
-	                fos.write(imageBytes);
-	            }
+	            // DB에 위반 기록 저장 로직
+	            // reportService.saveReport(fileUrl, violationType, timestamp);
 
-	            return ResponseEntity.ok("업로드 성공: " + filePath.toString());
+	            // 클라이언트에게 성공 응답과 함께 Object Storage에 업로드된 URL을 반환할 수 있습니다.
+	            return ResponseEntity.ok("보고서가 성공적으로 접수되었습니다. 파일: " + imageFile.getOriginalFilename());
 
-	        } catch (IOException e) {
+	        } catch (Exception e) {
 	            e.printStackTrace();
-	            return ResponseEntity.internalServerError().body("업로드 실패: " + e.getMessage());
+	            return ResponseEntity.internalServerError().body("보고 처리 중 오류 발생: " + e.getMessage());
 	        }
 	    }
 	}
@@ -192,7 +205,34 @@ public class MyController {
 	    return "list";
 	}
 	
+	@RestController
+	@RequestMapping("/api/reports")
+	@CrossOrigin(origins = "http://localhost:3000")
+	public class ReportController {
+
+	    @Autowired
+	    private ReportApiService reportApiService;
+
+	    // 전체 조회
+	    @GetMapping
+	    public List<Report> getAllReports() {
+	        return reportApiService.getAllReports();
+	    }
+
+	    // ID로 조회
+	    @GetMapping("/{id}")
+	    public Report getReportById(@PathVariable("id") int id) {
+	        return reportApiService.getReportById(id);
+	    }
+
+	    // 날짜 조건 조회
+	    @GetMapping("/search")
+	    public List<Report> getReportsByPeriod(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+	                                           @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+	        return reportApiService.getReportsByPeriod(start, end);
+	    }
+
+
+}
 	
-
-
 }

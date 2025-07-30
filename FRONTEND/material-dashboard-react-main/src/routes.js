@@ -1,13 +1,14 @@
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
-import Monitoring from "layouts/monitoring/monitoring.js";
+import Monitoring from "layouts/모니터링";
 import Billing from "layouts/billing";
 import RTL from "layouts/rtl";
 import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
+import Report from "layouts/보고서 생성";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -36,6 +37,14 @@ const routes = [
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/billing",
     component: <Billing />,
+  },
+  {
+    type: "collapse",
+    name: "보고서 생성",
+    key: "report",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/report",
+    component: <Report />,
   },
   {
     type: "collapse",
