@@ -19,7 +19,7 @@ public interface BoardMapper {
 	List<Devices> selectDevicesAll();
 	
 	
-	@Select("SELECT idx FROM users WHERE user_id = #{user_id} AND password = #{password}")
+	@Select("SELECT * FROM users WHERE user_id = #{user_id} AND password = #{password}")
 	public Users gologin(Users login);
 
 	

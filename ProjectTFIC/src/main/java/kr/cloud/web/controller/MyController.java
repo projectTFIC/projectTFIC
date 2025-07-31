@@ -1,6 +1,7 @@
 package kr.cloud.web.controller;
 
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -123,16 +125,18 @@ public class MyController {
 	
 	// [유저 페이지 - 로그인]
 	// 로그인 기능 
+	@CrossOrigin(origins = "http://localhost:3000")
 	@PostMapping("/GoLogin")
-	public String goLogin(HttpSession session ,Users login) {
+	public ResponseEntity<?> goLogin(HttpSession session, @RequestBody Users login) {
 		
 		Users logininfo = mapper.gologin(login);
 		
-		if (logininfo != null) {
-			session.setAttribute("loginUser", logininfo);
-			return "DashBoard";
-		}else {
-			return "GoLogin";
+		if(logininfo != null) {
+	        session.setAttribute("loginUser", logininfo);
+	        return ResponseEntity.ok(logininfo);  // 로그인 성공 유저 정보 JSON 응답
+	    } else {
+	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	    		    .body(Collections.singletonMap("message", "Login Failed"));
 		}
 	}
 	
