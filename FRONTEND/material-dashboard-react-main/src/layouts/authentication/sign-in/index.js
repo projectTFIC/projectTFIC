@@ -15,6 +15,8 @@ Coded by www.creative-tim.com
 
 import { useState } from "react";
 
+import { useNavigate } from "react-router-dom"; // import 추가
+
 // react-router-dom components
 import { Link } from "react-router-dom";
 
@@ -41,8 +43,43 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 
+// 백엔드 연결
+import axios from "axios";
+
 function Basic() {
+  const navigate = useNavigate(); // 함수 내부에 선언되어 있어야 함
+
   const [rememberMe, setRememberMe] = useState(false);
+  const [user_id, setUserid] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault(); // 새로고침 막기
+
+    try {
+      const response = await axios.post("http://localhost:8090/web/GoLogin", {
+        user_id,
+        password,
+      });
+      console.log("로그인 성공:", response.data);
+      // 성공 후 처리 (토큰 저장, 페이지 이동 등)
+      // (2) 로그인 성공 시 대시보드 페이지로 이동
+      navigate("/dashboard");
+    } catch (error) {
+      let msg = "아이디와 비밀번호를 확인해주세요";
+      if (error.response) {
+        if (typeof error.response.data === "string") {
+          msg = error.response.data;
+        } else if (error.response.data.message) {
+          msg = error.response.data.message;
+        } else {
+          msg = JSON.stringify(error.response.data);
+        }
+      }
+      alert(msg); // 여기서 alert로 바로 팝업 표시
+    }
+  };
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
@@ -82,12 +119,24 @@ function Basic() {
           </Grid>
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>
-          <MDBox component="form" role="form">
+          <MDBox component="form" role="form" onSubmit={handleLogin}>
             <MDBox mb={2}>
-              <MDInput type="email" label="아이디" fullWidth />
+              <MDInput
+                type="email"
+                label="아이디"
+                fullWidth
+                value={user_id}
+                onChange={(e) => setUserid(e.target.value)}
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="password" label="비밀번호" fullWidth />
+              <MDInput
+                type="password"
+                label="비밀번호"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Switch checked={rememberMe} onChange={handleSetRememberMe} />
@@ -102,7 +151,7 @@ function Basic() {
               </MDTypography>
             </MDBox>
             <MDBox mt={4} mb={1}>
-              <MDButton variant="gradient" color="info" fullWidth>
+              <MDButton variant="gradient" color="info" fullWidth type="submit">
                 로그인
               </MDButton>
             </MDBox>
