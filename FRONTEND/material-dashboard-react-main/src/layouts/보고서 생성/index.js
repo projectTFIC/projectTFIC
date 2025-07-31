@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { callApi } from "api/api"; // < Spring Boot - React 연동 : callApi 사용 >
 import {
   Grid,
   Card,
@@ -49,17 +50,21 @@ function ReportPage() {
     const use_custom_prompt = promptType === "custom";
 
     try {
-      const res = await axios.post("http://localhost:5000/api/report/generate", {
-        period_start,
-        period_end,
-        user_id: "user123",
-        report_type,
-        use_custom_prompt,
-        custom_prompt: promptText,
-        extra_note: "",
+      // < Spring Boot - React 연동 : callApi 사용 >
+      const data = await callApi("/api/report/generate", {
+        method: "POST",
+        body: {
+          period_start,
+          period_end,
+          user_id: "user123",
+          report_type,
+          use_custom_prompt,
+          custom_prompt: promptText,
+          extra_note: "",
+        },
       });
 
-      setReportHtml(res.data.report_html || "응답이 없습니다.");
+      setReportHtml(data.report_html || "응답이 없습니다.");
       setReportGenerated(true);
     } catch (err) {
       console.error("보고서 생성 오류:", err);
