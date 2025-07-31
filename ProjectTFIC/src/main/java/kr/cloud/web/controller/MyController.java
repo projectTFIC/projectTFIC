@@ -1,6 +1,5 @@
 package kr.cloud.web.controller;
 
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,210 +32,196 @@ import kr.cloud.web.entity.UsernameCheckRequestDto;
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
 import kr.cloud.web.service.ReportApiService;
-import kr.cloud.web.service.UserService;
 import lombok.RequiredArgsConstructor;
-
 
 @Controller
 public class MyController {
-	
+
 	private final ProjectTFICApplication projectTficApplication;
-	
+
 	MyController(ProjectTFICApplication projectTficApplication) {
-		
-        this.projectTficApplication = projectTficApplication;
-        
-    }
-	
-	
+
+		this.projectTficApplication = projectTficApplication;
+
+	}
+
 	// ㅇ mapper 객체 사용
 	@Autowired
 	BoardMapper mapper;
-	
-	
+
 	// [ 모니터링 페이지 - 영상장비 리스트 ]
 	// 등록된 영상장비의 리스트를 출력하는 기능
 	@GetMapping("/GoMonitoring")
 	public String goMonitoring(Model model) {
-							
+
 		List<Devices> devicelist = mapper.selectDevicesAll();
-			
+
 		model.addAttribute("devicelist", devicelist);
-			
+
 		return "Monitoring";
-		
-			
- 
-	}   
+
+	}
+
 	@RestController
-	@RequestMapping("/api")
+	@RequestMapping("/ai")
 	@CrossOrigin(origins = "http://localhost:5001") // AI 서버 주소 허용
 	public class ViolationReportController {
 
-	    // Object Storage 서비스 로직이 주입되었다고 가정
-	    // private final ObjectStorageService objectStorageService;
+		// Object Storage 서비스 로직이 주입되었다고 가정
+		// private final ObjectStorageService objectStorageService;
 
-	    /**
-	     * AI 서버로부터 위반 보고(이미지 파일 + 메타데이터)를 받습니다.
-	     * @param imageFile 실제 이미지 파일
-	     * @param violationType 위반 종류 (문자열)
-	     * @param timestamp 발생 시각 (문자열)
-	     * @param deviceLabel 발생 장치 (문자열)
-	     * @return
-	     */
-	    @PostMapping("/report-violation")
-	    public ResponseEntity<String> reportViolation(
-	            @RequestParam("imageFile") MultipartFile imageFile,
-	            @RequestParam("violationType") String violationType,
-	            @RequestParam("timestamp") String timestamp,
-	            @RequestParam("deviceLabel") String deviceLabel){
+		/**
+		 * AI 서버로부터 위반 보고(이미지 파일 + 메타데이터)를 받습니다.
+		 * 
+		 * @param imageFile     실제 이미지 파일
+		 * @param violationType 위반 종류 (문자열)
+		 * @param timestamp     발생 시각 (문자열)
+		 * @param deviceLabel   발생 장치 (문자열)
+		 * @return
+		 */
+		@PostMapping("/report-violation")
+		public ResponseEntity<String> reportViolation(@RequestParam("imageFile") MultipartFile imageFile,
+				@RequestParam("violationType") String violationType, @RequestParam("timestamp") String timestamp,
+				@RequestParam("deviceLabel") String deviceLabel) {
 
-	        if (imageFile.isEmpty()) {
-	            return ResponseEntity.badRequest().body("이미지 파일이 비어있습니다.");
-	        }
+			if (imageFile.isEmpty()) {
+				return ResponseEntity.badRequest().body("이미지 파일이 비어있습니다.");
+			}
 
-	        try {
-	            // 여기에서 Object Storage 업로드 로직을 호출합니다.
-	            // String fileUrl = objectStorageService.upload(imageFile, violationType);
+			try {
+				// 여기에서 Object Storage 업로드 로직을 호출합니다.
+				// String fileUrl = objectStorageService.upload(imageFile, violationType);
 
-	            // 임시로 파일 정보와 메타데이터를 출력하는 예시
-	            System.out.println("===== 위반 보고 접수 =====");
-	            System.out.println("파일 이름: " + imageFile.getOriginalFilename());
-	            System.out.println("파일 크기: " + imageFile.getSize() + " bytes");
-	            System.out.println("위반 종류: " + violationType);
-	            System.out.println("발생 시각: " + timestamp);
-	            System.out.println("발생 장치: " + deviceLabel);
-	            System.out.println("=======================");
+				// 임시로 파일 정보와 메타데이터를 출력하는 예시
+				System.out.println("===== 위반 보고 접수 =====");
+				System.out.println("파일 이름: " + imageFile.getOriginalFilename());
+				System.out.println("파일 크기: " + imageFile.getSize() + " bytes");
+				System.out.println("위반 종류: " + violationType);
+				System.out.println("발생 시각: " + timestamp);
+				System.out.println("발생 장치: " + deviceLabel);
+				System.out.println("=======================");
 
-	            // DB에 위반 기록 저장 로직
-	            // reportService.saveReport(fileUrl, violationType, timestamp);
+				// DB에 위반 기록 저장 로직
+				// reportService.saveReport(fileUrl, violationType, timestamp);
 
-	            // 클라이언트에게 성공 응답과 함께 Object Storage에 업로드된 URL을 반환할 수 있습니다.
-	            return ResponseEntity.ok("보고서가 성공적으로 접수되었습니다. 파일: " + imageFile.getOriginalFilename());
+				// 클라이언트에게 성공 응답과 함께 Object Storage에 업로드된 URL을 반환할 수 있습니다.
+				return ResponseEntity.ok("보고서가 성공적으로 접수되었습니다. 파일: " + imageFile.getOriginalFilename());
 
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            return ResponseEntity.internalServerError().body("보고 처리 중 오류 발생: " + e.getMessage());
-	        }
-	    }
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body("보고 처리 중 오류 발생: " + e.getMessage());
+			}
+		}
 	}
-	
-	
-	
+
 	// [유저 페이지 - 로그인]
-	// 로그인 기능 
+	// 로그인 기능
 	@CrossOrigin(origins = "http://localhost:3000")
 	@PostMapping("/GoLogin")
 	public ResponseEntity<?> goLogin(HttpSession session, @RequestBody Users login) {
-		
+
 		Users logininfo = mapper.gologin(login);
-		
-		if(logininfo != null) {
-	        session.setAttribute("loginUser", logininfo);
-	        return ResponseEntity.ok(logininfo);  // 로그인 성공 유저 정보 JSON 응답
-	    } else {
-	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	    		    .body(Collections.singletonMap("message", "Login Failed"));
+
+		if (logininfo != null) {
+			session.setAttribute("loginUser", logininfo);
+			return ResponseEntity.ok(logininfo); // 로그인 성공 유저 정보 JSON 응답
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Collections.singletonMap("message", "Login Failed"));
 		}
 	}
-	
-	
+
 	// [유저 페이지 - 로그아웃]
 	// 로그아웃 기능
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
-	    session.invalidate(); // 현재 사용자 세션 완전 삭제
-	    return "main";  // 로그아웃 후 메인 또는 로그인 페이지 등으로 리다이렉트
-	    
+		session.invalidate(); // 현재 사용자 세션 완전 삭제
+		return "main"; // 로그아웃 후 메인 또는 로그인 페이지 등으로 리다이렉트
+
 	}
-	
-	
+
 	// [유저 페이지 - 회원가입]
 	// 회원가입 기능
 	@PostMapping("/GoRegister")
 	public String register(Users info, Model model) {
-		
+
 		int cnt = mapper.goRegister(info);
-		
+
 		if (cnt > 0) {
 			return "main";
-		}else {
+		} else {
 			model.addAttribute("errorMsg", "회원가입에 실패했습니다.");
 			return "register";
 		}
-		
+
 	}
-	
+
 	// [회원가입 - 중복 아이디 확인]
-	// 중복 아이디 확인 
+	// 중복 아이디 확인
 	@RestController
-	@RequestMapping("/api/v1/users")
-	@RequiredArgsConstructor // final 필드에 대한 생성자 주입
+	@CrossOrigin(origins = "http://localhost:3000")
+	@RequestMapping("/api")
 	public class UserController {
 
-	    private final UserService userService;
+		@Autowired
+		private BoardMapper mapper;
 
-	    // 아이디 중복 확인 요청을 처리하는 핸들러
-	    @PostMapping("/check-username")
-	    public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestBody UsernameCheckRequestDto requestDto) {
-	        // 서비스 레이어를 호출하여 아이디 중복 여부 확인
-	        boolean isAvailable = !userService.isUsernameDuplicated(requestDto.getUsername());
+		// 아이디 중복 확인 API
+		@PostMapping("/usersidcheck")
+		public Map<String, Boolean> checkUsername(@RequestBody Map<String, String> payload) {
+			String user_id = payload.get("user_id");
+			int cnt = mapper.countByUserId(user_id);
+			boolean isAvailable = cnt == 0;
 
-	        // 결과를 Map 객체에 담아 JSON으로 반환
-	        Map<String, Boolean> response = new HashMap<>();
-	        response.put("isAvailable", isAvailable);
+			Map<String, Boolean> result = new HashMap<>();
+			result.put("isAvailable", isAvailable);
+			return result;
+		}
 
-	        return ResponseEntity.ok(response);
-	    }
+		// [알람 페이지 - 전체 알람 조회 기능]
+		// 전체 알람에 관한 리스트를 최신순 기준으로 받아음
+		@GetMapping("/Golist")
+		public String home(Model model, HttpSession session) {
+			// 로그인 정보가 있는지 확인하는 과정
+			Users loginUser = (Users) session.getAttribute("loginUser");
+			if (loginUser == null) {
+				// 로그인 정보가 없으면 로그인 페이지로 리다이렉트
+				return "redirect:/GoLogin"; // 로그인 화면의 엔드포인트를 실제 경로에 맞게 수정
+			}
+			// List 값으로 type_info 테이블에 있는 값 전부 가지고 오기
+			List<TypeInfo> TypeInfoList = mapper.selectAll();
+			model.addAttribute("TypeInfoList", TypeInfoList);
+
+			return "list";
+		}
+
+		@RestController
+		@RequestMapping("/reports")
+		@CrossOrigin(origins = "http://localhost:3000")
+		public class ReportController {
+
+			@Autowired
+			private ReportApiService reportApiService;
+
+			// 전체 조회
+			@GetMapping
+			public List<Report> getAllReports() {
+				return reportApiService.getAllReports();
+			}
+
+			// ID로 조회
+			@GetMapping("/{id}")
+			public Report getReportById(@PathVariable("id") int id) {
+				return reportApiService.getReportById(id);
+			}
+
+			// 날짜 조건 조회
+			@GetMapping("/search")
+			public List<Report> getReportsByPeriod(
+					@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+					@RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+				return reportApiService.getReportsByPeriod(start, end);
+			}
+		}
 	}
-	
-	
-	
-	// [알람 페이지 - 전체 알람 조회 기능]
-	// 전체 알람에 관한 리스트를 최신순 기준으로 받아음
-	@GetMapping("/Golist")
-	public String home(Model model, HttpSession session) {
-		// 로그인 정보가 있는지 확인하는 과정
-	    Users loginUser = (Users) session.getAttribute("loginUser");
-	    if (loginUser == null) {
-	        // 로그인 정보가 없으면 로그인 페이지로 리다이렉트
-	        return "redirect:/GoLogin"; // 로그인 화면의 엔드포인트를 실제 경로에 맞게 수정
-	    }
-	    // List 값으로 type_info 테이블에 있는 값 전부 가지고 오기
-	    List<TypeInfo> TypeInfoList = mapper.selectAll();
-	    model.addAttribute("TypeInfoList", TypeInfoList);
-
-	    return "list";
-	}
-	
-	@RestController
-	@RequestMapping("/api/reports")
-	@CrossOrigin(origins = "http://localhost:3000")
-	public class ReportController {
-
-	    @Autowired
-	    private ReportApiService reportApiService;
-
-	    // 전체 조회
-	    @GetMapping
-	    public List<Report> getAllReports() {
-	        return reportApiService.getAllReports();
-	    }
-
-	    // ID로 조회
-	    @GetMapping("/{id}")
-	    public Report getReportById(@PathVariable("id") int id) {
-	        return reportApiService.getReportById(id);
-	    }
-
-	    // 날짜 조건 조회
-	    @GetMapping("/search")
-	    public List<Report> getReportsByPeriod(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-	                                           @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
-	        return reportApiService.getReportsByPeriod(start, end);
-	    }
-
-
-}
-	
 }

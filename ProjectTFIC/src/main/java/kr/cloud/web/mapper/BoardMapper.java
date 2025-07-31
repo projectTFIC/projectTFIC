@@ -27,7 +27,8 @@ public interface BoardMapper {
 
 	public List<TypeInfo> selectAll();
 	
-	public int checkUserIdExists(String user_id);
+	@Select("SELECT COUNT(*) FROM users WHERE user_id = #{user_id}")
+	Integer countByUserId(String user_id);
 
 }
 	
