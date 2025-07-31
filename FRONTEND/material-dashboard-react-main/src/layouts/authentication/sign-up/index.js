@@ -10,7 +10,8 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 // react-router-dom components
 import { Link } from "react-router-dom";
 // @mui material components
@@ -27,9 +28,37 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
 
 export default function Cover() {
+  const [user_id, setuser_id] = useState("");
+  const [isIdAvailable, setIsIdAvailable] = useState(null);
+  const [checkMessage, setCheckMessage] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(false);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
   // 아이디 중복확인 버튼 클릭 핸들러 (실제 로직 연결 필요)
-  const handleCheckId = () => {
-    alert("아이디 중복확인 로직을 구현하세요.");
+  const handleCheckId = async () => {
+    if (!user_id.trim()) {
+      alert("아이디를 입력해 주세요.");
+      return;
+    }
+    try {
+      const response = await axios.post("http://localhost:8090/web/api/usersidcheck", {
+        user_id: user_id,
+      });
+      if (response.data.isAvailable) {
+        setIsIdAvailable(true);
+        setCheckMessage("사용 가능한 아이디입니다.");
+      } else {
+        setIsIdAvailable(false);
+        setCheckMessage("이미 사용 중인 아이디입니다.");
+      }
+    } catch (error) {
+      alert("중복 확인 중 오류가 발생했습니다.");
+      setIsIdAvailable(null);
+      setCheckMessage("");
+    }
   };
 
   return (
@@ -70,12 +99,41 @@ export default function Cover() {
 
             {/* 아이디 + 중복확인 버튼 */}
             <MDBox mb={2} display="flex" alignItems="center" gap={1}>
-              <MDInput type="text" label="아이디" variant="standard" sx={{ flexGrow: 1 }} />
-              <MDButton variant="outlined" color="info" onClick={handleCheckId}>
+              <MDInput
+                type="email"
+                label="아이디"
+                variant="standard"
+                sx={{ flexGrow: 1 }}
+                value={user_id}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // 입력 가능 여부 관련 기존 로직 유지, 단 변경 막는 로직 없앰
+                  setuser_id(val);
+                  setIsIdAvailable(null);
+                  setCheckMessage("");
+                  setIsEmailValid(validateEmail(val));
+                }}
+                disabled={isIdAvailable === true}
+                // 중복 체크 통과 후 입력 비활성화
+              />
+              <MDButton
+                variant="outlined"
+                color="info"
+                onClick={handleCheckId}
+                disabled={!isEmailValid}
+              >
                 중복확인
               </MDButton>
             </MDBox>
-
+            {checkMessage && (
+              <MDTypography
+                variant="caption"
+                color={isIdAvailable ? "success.main" : "error"}
+                mb={2}
+              >
+                {checkMessage}
+              </MDTypography>
+            )}
             {/* 비밀번호 */}
             <MDBox mb={2}>
               <MDInput type="password" label="비밀번호" variant="standard" fullWidth />
