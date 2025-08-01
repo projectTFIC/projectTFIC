@@ -25,7 +25,7 @@ import kr.cloud.web.service.ReportListService;
 @RestController
 @RequestMapping("/reportlist")
 @CrossOrigin(origins = "http://localhost:3000")
-public class ReportController {
+public class ReportListController {
 
     @Autowired
     private ReportListService reportApiService;
