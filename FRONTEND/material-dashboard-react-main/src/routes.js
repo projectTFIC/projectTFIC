@@ -1,14 +1,13 @@
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/대시보드";
-import Tables from "layouts/tables";
-import Monitoring from "layouts/모니터링";
+import 기록관리 from "layouts/기록관리";
+import 모니터링 from "layouts/모니터링";
 import Billing from "layouts/billing";
 import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import Report from "layouts/보고서 생성";
-import 알림 from "layouts/알림 애니";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -24,11 +23,19 @@ const routes = [
   },
   {
     type: "collapse",
+    name: "모니터링",
+    key: "monitoring",
+    icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
+    route: "/monitoring",
+    component: <모니터링 />,
+  },
+  {
+    type: "collapse",
     name: "기록관리",
     key: "tables",
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/tables",
-    component: <Tables />,
+    component: <기록관리 />,
   },
   {
     type: "collapse",
@@ -45,14 +52,6 @@ const routes = [
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/report",
     component: <Report />,
-  },
-  {
-    type: "collapse",
-    name: "모니터링",
-    key: "monitoring",
-    icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
-    route: "/monitoring",
-    component: <Monitoring />,
   },
   {
     type: "collapse",

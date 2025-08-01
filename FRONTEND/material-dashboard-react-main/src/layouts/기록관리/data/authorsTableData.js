@@ -1,3 +1,20 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react/function-component-definition */
+/**
+=========================================================
+* Material Dashboard 2 React - v2.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard-react
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -10,21 +27,18 @@ import team3 from "assets/images/team-3.jpg";
 import team4 from "assets/images/team-4.jpg";
 
 export default function data() {
-  const Author = ({ image, name, email }) => (
-    <MDBox display="flex" alignItems="center" lineHeight={1}>
-      <MDAvatar src={image} name={name} size="sm" />
-      <MDBox ml={2} lineHeight={1}>
-        <MDTypography display="block" variant="button" fontWeight="medium">
-          {name}
-        </MDTypography>
-        <MDTypography variant="caption">{email}</MDTypography>
-      </MDBox>
+  const ListNum = ({ num, description }) => (
+    <MDBox lineHeight={1} textAlign="left">
+      <MDTypography display="block" variant="caption" fontWeight="medium" fontSize="17px">
+        {num}
+      </MDTypography>
+      <MDTypography variant="caption">{description}</MDTypography>
     </MDBox>
   );
 
-  const Job = ({ title, description }) => (
+  const Title = ({ title, description }) => (
     <MDBox lineHeight={1} textAlign="left">
-      <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
+      <MDTypography display="block" variant="caption" fontWeight="medium" fontSize="15px">
         {title}
       </MDTypography>
       <MDTypography variant="caption">{description}</MDTypography>
@@ -33,125 +47,122 @@ export default function data() {
 
   return {
     columns: [
-      { Header: "author", accessor: "author", width: "45%", align: "left" },
-      { Header: "function", accessor: "function", align: "left" },
-      { Header: "status", accessor: "status", align: "center" },
-      { Header: "employed", accessor: "employed", align: "center" },
-      { Header: "action", accessor: "action", align: "center" },
+      { Header: "No.", accessor: "listNum", align: "center" },
+      { Header: "제목", accessor: "title", width: "50%", align: "center" },
+      { Header: "유형", accessor: "type", align: "center" },
+      { Header: "날짜", accessor: "date", align: "center" },
     ],
 
     rows: [
       {
-        author: <Author image={team2} name="1" email="ative-tim.com" />,
-        function: <Job title="Manager" description="Organization" />,
-        status: (
+        listNum: <ListNum num="1" />,
+        title: <Title title="작업자 위험 행동 감지" />,
+        type: (
           <MDBox ml={-1}>
-            <MDBadge badgeContent="online" color="success" variant="gradient" size="sm" />
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
           </MDBox>
         ),
-        employed: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            23/04/18
-          </MDTypography>
-        ),
-        action: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            Edit
+            25/07/18
           </MDTypography>
         ),
       },
       {
-        author: <Author image={team3} name="Alexa Liras" email="alexa@creative-tim.com" />,
-        function: <Job title="Programator" description="Developer" />,
-        status: (
+        listNum: <ListNum num="2" />,
+        title: <Title title="작업자 낙상 감지" />,
+        type: (
           <MDBox ml={-1}>
-            <MDBadge badgeContent="offline" color="dark" variant="gradient" size="sm" />
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
           </MDBox>
         ),
-        employed: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            11/01/19
-          </MDTypography>
-        ),
-        action: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            Edit
+            25/07/15
           </MDTypography>
         ),
       },
       {
-        author: <Author image={team4} name="Laurent Perrier" email="laurent@creative-tim.com" />,
-        function: <Job title="Executive" description="Projects" />,
-        status: (
+        listNum: <ListNum num="3" />,
+        title: <Title title="작업자 위험 행동 감지" />,
+        type: (
           <MDBox ml={-1}>
-            <MDBadge badgeContent="online" color="success" variant="gradient" size="sm" />
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
           </MDBox>
         ),
-        employed: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            19/09/17
-          </MDTypography>
-        ),
-        action: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            Edit
+            25/07/12
           </MDTypography>
         ),
       },
       {
-        author: <Author image={team3} name="Michael Levi" email="michael@creative-tim.com" />,
-        function: <Job title="Programator" description="Developer" />,
-        status: (
+        listNum: <ListNum num="4" />,
+        title: <Title title="작업자 끼임 감지" />,
+        type: (
           <MDBox ml={-1}>
-            <MDBadge badgeContent="online" color="success" variant="gradient" size="sm" />
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
           </MDBox>
         ),
-        employed: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            24/12/08
-          </MDTypography>
-        ),
-        action: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            Edit
+            25/07/06
           </MDTypography>
         ),
       },
       {
-        author: <Author image={team3} name="Richard Gran" email="richard@creative-tim.com" />,
-        function: <Job title="Manager" description="Executive" />,
-        status: (
+        listNum: <ListNum num="5" />,
+        title: <Title title="작업자 중장비 추돌 감지" />,
+        type: (
           <MDBox ml={-1}>
-            <MDBadge badgeContent="offline" color="dark" variant="gradient" size="sm" />
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
           </MDBox>
         ),
-        employed: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            04/10/21
-          </MDTypography>
-        ),
-        action: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            Edit
+            25/06/28
           </MDTypography>
         ),
       },
       {
-        author: <Author image={team4} name="Miriam Eric" email="miriam@creative-tim.com" />,
-        function: <Job title="Programator" description="Developer" />,
-        status: (
+        listNum: <ListNum num="6" />,
+        title: <Title title="작업자 낙상 감지" />,
+        type: (
           <MDBox ml={-1}>
-            <MDBadge badgeContent="offline" color="dark" variant="gradient" size="sm" />
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
           </MDBox>
         ),
-        employed: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            14/09/20
+            25/06/21
           </MDTypography>
         ),
-        action: (
+      },
+      {
+        listNum: <ListNum num="7" />,
+        title: <Title title="작업자 쓰러짐 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            Edit
+            25/06/19
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="8" />,
+        title: <Title title="작업자 쓰러짐 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/13
           </MDTypography>
         ),
       },

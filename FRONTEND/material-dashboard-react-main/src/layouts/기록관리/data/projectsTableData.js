@@ -15,165 +15,154 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-// @mui material components
-import Icon from "@mui/material/Icon";
-
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAvatar from "components/MDAvatar";
-import MDProgress from "components/MDProgress";
+import MDBadge from "components/MDBadge";
 
 // Images
-import LogoAsana from "assets/images/small-logos/logo-asana.svg";
-import logoGithub from "assets/images/small-logos/github.svg";
-import logoAtlassian from "assets/images/small-logos/logo-atlassian.svg";
-import logoSlack from "assets/images/small-logos/logo-slack.svg";
-import logoSpotify from "assets/images/small-logos/logo-spotify.svg";
-import logoInvesion from "assets/images/small-logos/logo-invision.svg";
+import team2 from "assets/images/team-2.jpg";
+import team3 from "assets/images/team-3.jpg";
+import team4 from "assets/images/team-4.jpg";
 
 export default function data() {
-  const Project = ({ image, name }) => (
-    <MDBox display="flex" alignItems="center" lineHeight={1}>
-      <MDAvatar src={image} name={name} size="sm" variant="rounded" />
-      <MDTypography display="block" variant="button" fontWeight="medium" ml={1} lineHeight={1}>
-        {name}
+  const ListNum = ({ num, description }) => (
+    <MDBox lineHeight={1} textAlign="left">
+      <MDTypography display="block" variant="caption" fontWeight="medium" fontSize="17px">
+        {num}
       </MDTypography>
+      <MDTypography variant="caption">{description}</MDTypography>
     </MDBox>
   );
 
-  const Progress = ({ color, value }) => (
-    <MDBox display="flex" alignItems="center">
-      <MDTypography variant="caption" color="text" fontWeight="medium">
-        {value}%
+  const Title = ({ title, description }) => (
+    <MDBox lineHeight={1} textAlign="left">
+      <MDTypography display="block" variant="caption" fontWeight="medium" fontSize="15px">
+        {title}
       </MDTypography>
-      <MDBox ml={0.5} width="9rem">
-        <MDProgress variant="gradient" color={color} value={value} />
-      </MDBox>
+      <MDTypography variant="caption">{description}</MDTypography>
     </MDBox>
   );
 
   return {
     columns: [
-      { Header: "project", accessor: "project", width: "30%", align: "left" },
-      { Header: "budget", accessor: "budget", align: "left" },
-      { Header: "status", accessor: "status", align: "center" },
-      { Header: "completion", accessor: "completion", align: "center" },
-      { Header: "action", accessor: "action", align: "center" },
+      { Header: "No.", accessor: "listNum", align: "center" },
+      { Header: "제목", accessor: "title", width: "50%", align: "center" },
+      { Header: "유형", accessor: "type", align: "center" },
+      { Header: "날짜", accessor: "date", align: "center" },
     ],
 
     rows: [
       {
-        project: <Project image={LogoAsana} name="Asana" />,
-        budget: (
-          <MDTypography component="a" href="#" variant="button" color="text" fontWeight="medium">
-            $2,500
-          </MDTypography>
+        listNum: <ListNum num="1" />,
+        title: <Title title="작업자 안전화 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
         ),
-        status: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            working
-          </MDTypography>
-        ),
-        completion: <Progress color="info" value={60} />,
-        action: (
-          <MDTypography component="a" href="#" color="text">
-            <Icon>more_vert</Icon>
+            25/07/18
           </MDTypography>
         ),
       },
       {
-        project: <Project image={logoGithub} name="Github" />,
-        budget: (
-          <MDTypography component="a" href="#" variant="button" color="text" fontWeight="medium">
-            $5,000
-          </MDTypography>
+        listNum: <ListNum num="2" />,
+        title: <Title title="작업자 헬멧 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
         ),
-        status: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            done
-          </MDTypography>
-        ),
-        completion: <Progress color="success" value={100} />,
-        action: (
-          <MDTypography component="a" href="#" color="text">
-            <Icon>more_vert</Icon>
+            25/07/15
           </MDTypography>
         ),
       },
       {
-        project: <Project image={logoAtlassian} name="Atlassian" />,
-        budget: (
-          <MDTypography component="a" href="#" variant="button" color="text" fontWeight="medium">
-            $3,400
-          </MDTypography>
+        listNum: <ListNum num="3" />,
+        title: <Title title="작업자 헬멧 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
         ),
-        status: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            canceled
-          </MDTypography>
-        ),
-        completion: <Progress color="error" value={30} />,
-        action: (
-          <MDTypography component="a" href="#" color="text">
-            <Icon>more_vert</Icon>
+            25/07/12
           </MDTypography>
         ),
       },
       {
-        project: <Project image={logoSpotify} name="Spotify" />,
-        budget: (
-          <MDTypography component="a" href="#" variant="button" color="text" fontWeight="medium">
-            $14,000
-          </MDTypography>
+        listNum: <ListNum num="4" />,
+        title: <Title title="작업자 보호조끼 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
         ),
-        status: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            working
-          </MDTypography>
-        ),
-        completion: <Progress color="info" value={80} />,
-        action: (
-          <MDTypography component="a" href="#" color="text">
-            <Icon>more_vert</Icon>
+            25/07/06
           </MDTypography>
         ),
       },
       {
-        project: <Project image={logoSlack} name="Slack" />,
-        budget: (
-          <MDTypography component="a" href="#" variant="button" color="text" fontWeight="medium">
-            $1,000
-          </MDTypography>
+        listNum: <ListNum num="5" />,
+        title: <Title title="작업자 안전화 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
         ),
-        status: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            canceled
-          </MDTypography>
-        ),
-        completion: <Progress color="error" value={0} />,
-        action: (
-          <MDTypography component="a" href="#" color="text">
-            <Icon>more_vert</Icon>
+            25/06/28
           </MDTypography>
         ),
       },
       {
-        project: <Project image={logoInvesion} name="Invesion" />,
-        budget: (
-          <MDTypography component="a" href="#" variant="button" color="text" fontWeight="medium">
-            $2,300
-          </MDTypography>
+        listNum: <ListNum num="6" />,
+        title: <Title title="작업자 보호조끼 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
         ),
-        status: (
+        date: (
           <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            done
+            25/06/21
           </MDTypography>
         ),
-        completion: <Progress color="success" value={100} />,
-        action: (
-          <MDTypography component="a" href="#" color="text">
-            <Icon>more_vert</Icon>
+      },
+      {
+        listNum: <ListNum num="7" />,
+        title: <Title title="작업자 헬멧 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/19
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="8" />,
+        title: <Title title="작업자 헬멧 미착용" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/13
           </MDTypography>
         ),
       },
