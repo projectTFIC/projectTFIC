@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { callApi } from "api/api"; // < Spring Boot - React 연동 : callApi 사용 >
 import {
   Box,
   Typography,
@@ -32,14 +33,18 @@ const MonitoringPage = () => {
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-        const res = await axios.get("http://localhost:5050/api/devices");
-        const devices = res.data.map((d) => ({
+        // < Spring Boot - React 연동 : callApi 사용 >
+        const devices = await callApi("/api/devices"); // GET은 method 생략 가능
+
+        // 상태 기본값 설정
+        const deviceList = devices.map((d) => ({
           ...d,
           status: d.status || "online", // status 없을 경우 기본값
         }));
-        setCameraList(devices);
-        if (devices.length > 0) {
-          setSelectedCam(devices[0].device_id);
+
+        setCameraList(deviceList);
+        if (deviceList.length > 0) {
+          setSelectedCam(deviceList[0].device_id);
         }
       } catch (err) {
         console.error("장비 리스트 불러오기 실패", err);

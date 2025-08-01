@@ -15,9 +15,9 @@ public class Report {
 	// [ Report 테이블 ]
 	// 보고서 작성 관련 정보
 	
-	private int reportId;			// 레포트 아이디
+	private int report_Id;			// 레포트 아이디
 	private String reportTitle;		// 레포트 제목		
-	private String typeId;		// 사건 분류
+	private Long typeId;		// 사건 분류
 	private String reportFile;		// 사건 관련 자료
 	private String userId;		// 사용자 아이디
 	private String name;			// 작성자

@@ -139,6 +139,22 @@
 		    <artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>		
 		
+		
+		<!-- 
+		[ Spring Boot Hot Swap ]
+		Spring Boot 에서 코드 변경 시, 자동으로 어플리케이션 재시작됨
+		-->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-devtools</artifactId>
+		    <optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>kr.cloud</groupId>
+			<artifactId>SpringBoot1</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
