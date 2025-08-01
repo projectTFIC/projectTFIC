@@ -1,5 +1,5 @@
-// ✅ React 및 MUI 기본 컴포넌트 import
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
@@ -7,47 +7,77 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
-// ✅ 프로젝트 내부 공통 컴포넌트 import
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import MDBox from "components/MDBox";
 import DataTable from "examples/Tables/DataTable";
 
-// ✅ 테이블에 표시할 데이터 (columns + rows)
-import authorsTableData from "layouts/billing/data/authorsTableData";
+// projectsTableData 파일에 구현한 커스텀 훅 불러오기 (또는 API 연동 훅)
+import useProjectsTableData from "layouts/billing/data/projectsTableData";
 
+// 제목 컬럼 셀 컴포넌트 (다운로드 링크 포함)
+function TitleCell({ row }) {
+  return (
+    <a
+      href={`http://localhost:8090/reportlist/download?fileName=${encodeURIComponent(
+        row.original.reportFile
+      )}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
+      download
+    >
+      {row.original.title}
+    </a>
+  );
+}
+TitleCell.propTypes = {
+  row: PropTypes.shape({
+    original: PropTypes.shape({
+      reportFile: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
+};
 function Billing() {
-  // 🔸 검색창 관련 상태
-  const [searchText, setSearchText] = useState(""); // 검색어
-  const [filterType, setFilterType] = useState("title"); // 필터 타입: 제목/작성자/모두
-  const [anchorEl, setAnchorEl] = useState(null); // 필터 메뉴 anchor (버튼 위치 저장)
+  // 검색어, 필터 상태
+  const [searchText, setSearchText] = useState("");
+  const [filterType, setFilterType] = useState("title");
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  // 🔸 날짜 필터 상태
-  const [startDate, setStartDate] = useState(""); // 시작일
-  const [endDate, setEndDate] = useState(""); // 종료일
+  // 날짜 필터 상태 (중복 선언 제거)
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  // 🔸 테이블 데이터 가져오기
-  const { columns, rows } = authorsTableData();
+  // API에서 컬럼과 행 데이터 받아오기 (날짜 필터 인자 전달)
+  const { columns, rows } = useProjectsTableData(startDate, endDate);
 
-  // 🔹 날짜 문자열을 표준 형식으로 변환 (필요 시 사용 가능)
-  const convertToDateStr = (shortDate) => {
-    if (!shortDate) return "";
-    const normalized = shortDate.replaceAll("/", "-");
-    const [yy, mm, dd] = normalized.split("-");
-    return `20${yy}-${mm}-${dd}`;
-  };
+  // 제목 컬럼에 다운로드 링크 Cell 추가
+  const columnsWithDownload = columns.map((col) => {
+    if (col.accessor === "title") {
+      return {
+        ...col,
+        Cell: TitleCell,
+      };
+    }
+    return col;
+  });
 
-  // 🔹 필터링된 데이터 (날짜 및 텍스트 검색 조건 반영)
+  // 필터링된 데이터 계산
   const filteredRows = rows.filter((item) => {
     const text = searchText.toLowerCase();
 
-    // 🔸 날짜 필터 조건
-    const isDateInRange =
-      (!startDate || item.date >= startDate) && (!endDate || item.date <= endDate);
+    // originDate가 "2025-08-01T..." 형식 문자열이라 startDate/endDate와 비교하기 위해 Date 객체로 변환
+    const itemDate = new Date(item.originDate);
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    // 날짜 필터 (item.date 포맷 주의)
+    const isDateInRange = (!start || itemDate >= start) && (!end || itemDate <= end);
     if (!isDateInRange) return false;
 
-    // 🔸 텍스트 필터 조건
+    // 텍스트 필터링 조건
     if (filterType === "title") {
       return item.title?.toLowerCase().includes(text);
     } else if (filterType === "author") {
@@ -58,7 +88,7 @@ function Billing() {
     return true;
   });
 
-  // 🔹 필터 드롭다운 메뉴 제어 함수
+  // 필터 메뉴 열기/닫기 이벤트
   const open = Boolean(anchorEl);
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -71,12 +101,11 @@ function Billing() {
     <DashboardLayout>
       <DashboardNavbar />
 
-      {/* 📦 콘텐츠 패딩 설정 */}
       <MDBox pt={6} pb={3}>
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
-              {/* 🔍 필터 바: 검색창 + 날짜 선택 */}
+              {/* 필터 바 */}
               <MDBox
                 mx={2}
                 mt={2}
@@ -87,9 +116,8 @@ function Billing() {
                 flexWrap="wrap"
                 gap={2}
               >
-                {/* 🔸 왼쪽: 필터 버튼 + 검색창 */}
+                {/* 왼쪽: 필터 버튼 + 검색 입력 */}
                 <MDBox display="flex" alignItems="center" gap={2} flexGrow={1}>
-                  {/* 🔘 필터 타입 선택 버튼 */}
                   <Button
                     variant="outlined"
                     onClick={handleClick}
@@ -110,14 +138,12 @@ function Billing() {
                       : "제목+작성자"}
                   </Button>
 
-                  {/* 🔘 필터 선택 메뉴 */}
                   <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                     <MenuItem onClick={() => handleMenuItemClick("title")}>제목</MenuItem>
                     <MenuItem onClick={() => handleMenuItemClick("author")}>작성자</MenuItem>
                     <MenuItem onClick={() => handleMenuItemClick("all")}>제목+작성자</MenuItem>
                   </Menu>
 
-                  {/* 🔍 검색 입력창 (고정 너비 설정) */}
                   <TextField
                     label="검색"
                     variant="outlined"
@@ -128,7 +154,7 @@ function Billing() {
                   />
                 </MDBox>
 
-                {/* 📅 오른쪽: 날짜 필터 입력창 */}
+                {/* 오른쪽: 날짜 필터 */}
                 <MDBox display="flex" alignItems="center" gap={1}>
                   <TextField
                     type="date"
@@ -148,10 +174,10 @@ function Billing() {
                 </MDBox>
               </MDBox>
 
-              {/* 📋 데이터 테이블 출력 */}
+              {/* 데이터 테이블 출력 */}
               <MDBox pt={3}>
                 <DataTable
-                  table={{ columns, rows: filteredRows }} // 🔎 필터링된 데이터 반영
+                  table={{ columns: columnsWithDownload, rows: filteredRows }}
                   isSorted={false}
                   entriesPerPage={false}
                   showTotalEntries={false}
