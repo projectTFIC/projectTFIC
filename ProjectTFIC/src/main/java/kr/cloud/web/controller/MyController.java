@@ -116,7 +116,7 @@ public class MyController {
 
    // [유저 페이지 - 로그인]
    // 로그인 기능
-   @CrossOrigin(origins = "http://localhost:3000")
+   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
    @PostMapping("/GoLogin")
    public ResponseEntity<?> goLogin(HttpSession session, @RequestBody Users login) {
 
@@ -133,27 +133,30 @@ public class MyController {
 
    // [유저 페이지 - 로그아웃]
    // 로그아웃 기능
+   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
    @GetMapping("/logout")
-   public String logout(HttpSession session) {
-      session.invalidate(); // 현재 사용자 세션 완전 삭제
-      return "main"; // 로그아웃 후 메인 또는 로그인 페이지 등으로 리다이렉트
-
+   public ResponseEntity<String> logout(HttpSession session) {
+       session.invalidate();
+       return ResponseEntity.ok("로그아웃 성공");
    }
+
 
    // [유저 페이지 - 회원가입]
    // 회원가입 기능
    @PostMapping("/GoRegister")
-   public String register(Users info, Model model) {
+   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+   public ResponseEntity<?> register(@RequestBody Users info) {
+       int cnt = mapper.goRegister(info);
 
-      int cnt = mapper.goRegister(info);
-
-      if (cnt > 0) {
-         return "main";
-      } else {
-         model.addAttribute("errorMsg", "회원가입에 실패했습니다.");
-         return "register";
-      }
-
+       if (cnt > 0) {
+           // 회원가입 성공
+           // JSON body로 성공 메시지를 보낼 수도 있음
+           return ResponseEntity.ok(Collections.singletonMap("message", "회원가입 성공"));
+       } else {
+           // 회원가입 실패
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+               .body(Collections.singletonMap("error", "회원가입에 실패했습니다."));
+       }
    }
 
    // [회원가입 - 중복 아이디 확인]
