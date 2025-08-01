@@ -1,5 +1,5 @@
 // Material Dashboard 2 React layouts
-import Dashboard from "layouts/dashboard";
+import Dashboard from "layouts/대시보드";
 import Tables from "layouts/tables";
 import Monitoring from "layouts/모니터링";
 import Billing from "layouts/billing";
@@ -9,6 +9,7 @@ import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import Report from "layouts/보고서 생성";
+import 알림 from "layouts/알림 애니";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
