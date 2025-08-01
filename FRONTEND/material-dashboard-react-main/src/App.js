@@ -5,6 +5,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Icon from "@mui/material/Icon";
+import { AnimatePresence } from "framer-motion";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -43,7 +44,8 @@ export default function App() {
   } = controller;
 
   const [onMouseEnter, setOnMouseEnter] = useState(false);
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
 
   // 강제로 LTR direction 세팅
   useEffect(() => {
@@ -128,10 +130,12 @@ export default function App() {
         </>
       )}
       {layout === "vr" && <Configurator />}
-      <Routes>
-        {getRoutes(routes)}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={pathname}>
+          {getRoutes(routes)}
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </AnimatePresence>
     </ThemeProvider>
   );
 }
