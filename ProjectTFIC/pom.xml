@@ -138,7 +138,12 @@
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>		
-		
+		<!-- [ pdf생성 ] -->
+		<dependency>
+    		<groupId>com.itextpdf</groupId>
+    		<artifactId>itextpdf</artifactId>
+    		<version>5.5.13.3</version>
+		</dependency>
 		
 		<!-- 
 		[ Spring Boot Hot Swap ]
@@ -153,6 +158,11 @@
 		<dependency>
 			<groupId>kr.cloud</groupId>
 			<artifactId>SpringBoot1</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>kr.cloud</groupId>
+			<artifactId>ThymeleafJPA</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>

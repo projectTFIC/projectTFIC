@@ -1,0 +1,27 @@
+# 🔐 환경 변수 파일 (절대 커밋 금지)
+.env
+
+# 🧪 SQLite DB 파일 (불필요하면 제거 가능)
+*.db
+
+# 🐍 Python 캐시 및 임시 파일
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# 🧪 pytest 캐시
+.pytest_cache/
+
+# 📦 가상환경 폴더 (예: venv, env)
+venv/
+env/
+
+# 📂 VS Code 설정 폴더
+.vscode/
+
+# 📋 로그 파일
+*.log
+
+# 🗂 Jupyter Notebook 체크포인트
+.ipynb_checkpoints/
