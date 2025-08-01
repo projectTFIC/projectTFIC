@@ -1,5 +1,3 @@
-// File: src/layouts/authentication/sign-up/index.js
-
 import React from "react";
 import {
   ThemeProvider,
@@ -27,10 +25,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import PropTypes from "prop-types";
-// 왼쪽 로고 이미지
 import LOGO_IMG from "assets/images/logo.png";
-// 레이아웃 숨김용 컨텍스트
 import { useMaterialUIController, setLayout } from "context";
 
 const theme = createTheme({
@@ -73,32 +68,42 @@ const theme = createTheme({
   },
 });
 
+// 전화번호 유효성 함수 (010-1234-5678 형식만 허용)
+function isValidPhone(phone) {
+  return /^01[016789]-\d{3,4}-\d{4}$/.test(phone);
+}
+
 export default function SignUp() {
-  // layout="page" 설정 → 사이드바 숨김
   const [, dispatch] = useMaterialUIController();
   React.useEffect(() => {
     setLayout(dispatch, "page");
   }, [dispatch]);
 
+  // 폼 상태
   const [values, setValues] = React.useState({
     name: "",
-    dob: null, // 생년월일
+    dob: null,
     department: "",
     phone: "",
     emailLocal: "",
-    emailDomain: "gmail.com", // 초기 도메인
+    emailDomain: "gmail.com",
     id: "",
     password: "",
     confirmPassword: "",
     agree: false,
   });
+
+  const [passMatch, setPassMatch] = React.useState(true);
+
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
-  const [passMatch, setPassMatch] = React.useState(true);
-  const [openTOS, setOpenTOS] = React.useState(false);
-  const [hasViewedTOS, setHasViewedTOS] = React.useState(false);
 
-  // 비밀번호 일치 실시간 검사
+  const [openTOS, setOpenTOS] = React.useState(false);
+  const [hasAgreedTOS, setHasAgreedTOS] = React.useState(false);
+
+  const [idChecked, setIdChecked] = React.useState(false);
+  const [idAvailable, setIdAvailable] = React.useState(null);
+
   React.useEffect(() => {
     setPassMatch(values.confirmPassword === "" || values.password === values.confirmPassword);
   }, [values.password, values.confirmPassword]);
@@ -113,33 +118,107 @@ export default function SignUp() {
         val = `${val.slice(0, 3)}-${val.slice(3, 7)}-${val.slice(7, 11)}`;
       }
     }
+    if (prop === "id") {
+      setIdChecked(false);
+      setIdAvailable(null);
+    }
     setValues((prev) => ({ ...prev, [prop]: val }));
   };
 
-  const handleDOBChange = (date) => {
-    setValues((prev) => ({ ...prev, dob: date }));
-  };
-
+  const handleDOBChange = (date) => setValues((prev) => ({ ...prev, dob: date }));
   const handleDomainChange = (e) => setValues((prev) => ({ ...prev, emailDomain: e.target.value }));
-
   const toggleShowPassword = () => setShowPassword((v) => !v);
   const toggleShowConfirm = () => setShowConfirm((v) => !v);
   const handleAgree = (e) => setValues((prev) => ({ ...prev, agree: e.target.checked }));
 
-  const handleSubmit = (e) => {
+  const handleOpenTOS = () => setOpenTOS(true);
+  const handleCloseTOS = () => setOpenTOS(false);
+  const handleAgreeInModal = () => {
+    setHasAgreedTOS(true);
+    setValues((prev) => ({ ...prev, agree: true }));
+    setOpenTOS(false);
+  };
+
+  // 아이디 중복확인
+  const checkIdAvailability = async () => {
+    if (!values.id) return;
+    try {
+      const res = await fetch("http://localhost:8090/web/api/usersidcheck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: values.id }),
+      });
+      if (!res.ok) {
+        alert("서버 오류: 중복 확인에 실패했습니다.");
+        return;
+      }
+      const data = await res.json();
+      if (data.isAvailable) {
+        alert("사용 가능한 아이디입니다.");
+        setIdChecked(true);
+        setIdAvailable(true);
+      } else {
+        alert("이미 존재하는 아이디입니다. 다른 아이디를 입력해주세요.");
+        setIdChecked(false);
+        setIdAvailable(false);
+      }
+    } catch (error) {
+      alert("중복 확인 중 오류가 발생했습니다.");
+      console.error(error);
+    }
+  };
+
+  // 회원가입 제출
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!idChecked) {
+      alert("아이디 중복확인을 해주세요.");
+      return;
+    }
     if (!passMatch) {
       alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    if (!isValidPhone(values.phone)) {
+      alert("전화번호 형식이 올바르지 않습니다. 예시: 010-1234-5678");
       return;
     }
     if (!values.agree) {
       alert("약관에 동의해주세요.");
       return;
     }
-    const email = `${values.emailLocal}@${values.emailDomain}`;
-    console.log("회원가입 데이터:", { ...values, email });
-  };
 
+    const email = `${values.emailLocal}@${values.emailDomain}`;
+    const signupData = {
+      user_id: values.id,
+      password: values.password,
+      name: values.name,
+      department: values.department,
+      email: `${values.emailLocal}@${values.emailDomain}`,
+      phone: values.phone,
+    };
+    try {
+      const response = await fetch("http://localhost:8090/web/GoRegister", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 쿠키 세션이 필요한 경우
+        body: JSON.stringify(signupData),
+      });
+
+      if (response.ok) {
+        alert("회원가입이 성공적으로 완료되었습니다!");
+        // 로그인 페이지로 이동 (react-router-dom useNavigate 또는 window.location)
+        window.location.href = "/authentication/sign-in";
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "회원가입 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      alert("서버와 통신 중 오류가 발생했습니다.");
+      console.error(error);
+    }
+  };
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -161,7 +240,7 @@ export default function SignUp() {
             maxWidth: 960,
           }}
         >
-          {/* LEFT: 로고 + 안전 메시지 */}
+          {/* LEFT 로고 및 설명 */}
           <Box
             sx={{
               flex: 1,
@@ -174,11 +253,7 @@ export default function SignUp() {
               component="img"
               src={LOGO_IMG}
               alt="Logo"
-              sx={{
-                width: "100%",
-                maxWidth: 600,
-                objectFit: "contain",
-              }}
+              sx={{ width: "100%", maxWidth: 600, objectFit: "contain" }}
             />
             <Typography
               variant="h5"
@@ -190,7 +265,7 @@ export default function SignUp() {
             </Typography>
           </Box>
 
-          {/* RIGHT: 회원가입 폼 */}
+          {/* RIGHT 회원가입 폼 */}
           <Box sx={{ flex: 1, maxWidth: 360 }}>
             <Box
               component="form"
@@ -219,12 +294,17 @@ export default function SignUp() {
                   label="생년월일"
                   value={values.dob}
                   onChange={handleDOBChange}
+                  inputFormat="yyyy-MM-dd"
+                  disableFuture
+                  openTo="year"
+                  views={["year", "month", "day"]}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       required
                       fullWidth
                       InputLabelProps={{ required: false }}
+                      inputProps={{ ...params.inputProps, readOnly: true }}
                     />
                   )}
                 />
@@ -247,6 +327,12 @@ export default function SignUp() {
                 required
                 fullWidth
                 InputLabelProps={{ required: false }}
+                error={values.phone !== "" && !isValidPhone(values.phone)}
+                helperText={
+                  values.phone !== "" && !isValidPhone(values.phone)
+                    ? "전화번호 형식이 올바르지 않습니다."
+                    : ""
+                }
               />
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -273,7 +359,8 @@ export default function SignUp() {
                 </FormControl>
               </Box>
 
-              <Box sx={{ display: "flex", gap: 1 }}>
+              {/* 아이디 + 중복확인 버튼 */}
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                 <TextField
                   label="아이디"
                   value={values.id}
@@ -281,14 +368,26 @@ export default function SignUp() {
                   required
                   fullWidth
                   InputLabelProps={{ required: false }}
+                  disabled={idChecked}
                 />
                 <Button
                   variant="outlined"
-                  onClick={() => alert("아이디 중복확인")}
+                  onClick={checkIdAvailability}
+                  disabled={!values.id || idChecked}
                   sx={{ whiteSpace: "nowrap" }}
                 >
                   중복확인
                 </Button>
+                {idAvailable === true && (
+                  <Typography variant="caption" color="success.main" sx={{ ml: 1 }}>
+                    사용 가능한 아이디입니다.
+                  </Typography>
+                )}
+                {idAvailable === false && (
+                  <Typography variant="caption" color="error.main" sx={{ ml: 1 }}>
+                    이미 존재하는 아이디입니다.
+                  </Typography>
+                )}
               </Box>
 
               <TextField
@@ -333,58 +432,76 @@ export default function SignUp() {
                 }}
               />
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={values.agree}
-                    onChange={handleAgree}
-                    disabled={!hasViewedTOS}
-                  />
-                }
-                label={
-                  <>
-                    약관에 동의합니다.&nbsp;
-                    <Link
-                      component="button"
-                      variant="body2"
-                      onClick={() => {
-                        setOpenTOS(true);
-                        setHasViewedTOS(true);
-                      }}
-                    >
-                      전체보기
-                    </Link>
-                  </>
-                }
-              />
+              {/* 약관 동의 체크박스 및 전체보기 */}
+              <Box>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={values.agree}
+                      onChange={handleAgree}
+                      disabled={!hasAgreedTOS}
+                    />
+                  }
+                  label={
+                    <>
+                      약관에 동의합니다.&nbsp;
+                      <Link
+                        component="button"
+                        variant="body2"
+                        onClick={handleOpenTOS}
+                        type="button"
+                      >
+                        전체보기
+                      </Link>
+                    </>
+                  }
+                  sx={{ alignItems: "flex-start", m: 0 }}
+                />
+                {!hasAgreedTOS && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      pl: "32px",
+                      lineHeight: 1.8,
+                      mt: "-6px",
+                      mb: 1,
+                      display: "block",
+                      wordBreak: "keep-all",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    약관을 확인하신 후 모달에서 “동의” 버튼을 눌러주세요.
+                  </Typography>
+                )}
+              </Box>
 
               <Button type="submit" variant="contained" color="primary" fullWidth>
                 회원가입
               </Button>
 
-              <Box textAlign="center">
+              <Box textAlign="center" sx={{ mt: 1 }}>
                 이미 계정이 있으신가요? <Link href="/authentication/sign-in">로그인</Link>
               </Box>
             </Box>
           </Box>
         </Box>
 
-        {/* 약관 전문 모달 */}
-        <Dialog open={openTOS} onClose={() => setOpenTOS(false)} maxWidth="sm" fullWidth>
+        {/* 약관 모달 */}
+        <Dialog open={openTOS} onClose={handleCloseTOS} maxWidth="sm" fullWidth>
           <DialogTitle>서비스 이용 약관</DialogTitle>
           <DialogContent dividers>
             <Typography paragraph>제1조 (목적) 본 약관은 OOO 서비스 이용과 관련하여...</Typography>
             <Typography paragraph>제2조 (정의) “서비스”란...</Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenTOS(false)}>닫기</Button>
+            <Button onClick={handleCloseTOS}>취소</Button>
+            <Button variant="contained" onClick={handleAgreeInModal} autoFocus>
+              동의
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>
     </ThemeProvider>
   );
 }
-
-SignUp.propTypes = {
-  // 필요 시 props 타입 정의
-};

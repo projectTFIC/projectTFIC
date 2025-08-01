@@ -14,18 +14,14 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import PropTypes from "prop-types";
-// react-router-dom Link
-import { Link as RouterLink } from "react-router-dom";
-
-// 👉 프로젝트에 맞게 이미지 경로 교체
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import CCTV_IMG from "assets/images/login.png";
-// 로그인 화면에서 사이드바가 나오지 않도록 레이아웃 상태 제어
 import { useMaterialUIController, setLayout } from "context";
 
 const theme = createTheme({
   palette: {
-    primary: { main: "#193C56" }, // 네이비 버튼/텍스트
-    secondary: { main: "#6DBE8D" }, // 그린 버튼
+    primary: { main: "#193C56" },
+    secondary: { main: "#6DBE8D" },
     text: { primary: "#1A2A36", secondary: "#5E6A75" },
     grey: { 100: "#E2EFF8", 300: "#D3DEE8" },
   },
@@ -62,31 +58,59 @@ const theme = createTheme({
 });
 
 function SignIn() {
-  // 로그인 화면에서 사이드바 숨김 (layout !== "dashboard")
   const [, dispatch] = useMaterialUIController();
   React.useEffect(() => {
     setLayout(dispatch, "page");
   }, [dispatch]);
 
+  const navigate = useNavigate();
+
   const [values, setValues] = React.useState({
-    id: "",
+    user_id: "",
     password: "",
     showPassword: false,
   });
 
   const handleChange = (prop) => (e) => setValues({ ...values, [prop]: e.target.value });
+
   const toggleShowPassword = () =>
     setValues((prev) => ({ ...prev, showPassword: !prev.showPassword }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 실제 로그인 로직 연결
-    console.log("login with", values);
+    try {
+      const res = await fetch("http://localhost:8090/web/GoLogin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 세션 유지용 쿠키 포함
+        body: JSON.stringify({
+          user_id: values.user_id,
+          password: values.password,
+        }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
+        } else {
+          alert("로그인 중 오류가 발생했습니다.");
+        }
+        return;
+      }
+
+      const user = await res.json();
+      console.log("로그인 성공 사용자 정보:", user);
+
+      // 로그인 성공 시 대시보드 페이지로 이동
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("로그인 요청 중 오류:", error);
+      alert("서버와 통신 중 문제가 발생했습니다.");
+    }
   };
 
   return (
     <ThemeProvider theme={theme}>
-      {/* 화면 정중앙 정렬 */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -97,7 +121,6 @@ function SignIn() {
           px: { xs: 2, md: 4 },
         }}
       >
-        {/* 가운데 래퍼: 폭 축소 + 간격 축소 */}
         <Box
           sx={{
             display: "flex",
@@ -108,7 +131,6 @@ function SignIn() {
             width: "100%",
           }}
         >
-          {/* LEFT: 이미지 (md 이상에서 보이기) */}
           <Box
             sx={{
               display: { xs: "none", md: "flex" },
@@ -148,16 +170,10 @@ function SignIn() {
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
                   공사현장 cctv 감지 알림 시스템
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ lineHeight: 1.6 }}
-                ></Typography>
               </Box>
             </Box>
           </Box>
 
-          {/* RIGHT: 로그인 폼 */}
           <Box
             sx={{
               width: { xs: "100%", md: 360 },
@@ -180,8 +196,8 @@ function SignIn() {
                 size="small"
                 label="ID"
                 variant="outlined"
-                value={values.id}
-                onChange={handleChange("id")}
+                value={values.user_id}
+                onChange={handleChange("user_id")}
                 sx={{ mb: 1.5 }}
                 inputProps={{ inputMode: "text", autoComplete: "username" }}
               />
@@ -230,7 +246,6 @@ function SignIn() {
                 로그인
               </Button>
 
-              {/* 회원가입 버튼에 라우팅 추가 */}
               <Button
                 component={RouterLink}
                 to="/authentication/sign-up"
@@ -258,7 +273,6 @@ function SignIn() {
   );
 }
 
-/** 작은 도트 컴포넌트 */
 function PageDot({ filled = false }) {
   return (
     <Box
