@@ -8,16 +8,17 @@ import {
   InputAdornment,
   IconButton,
   Button,
-  Link,
+  Link as MuiLink,
   Divider,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import PropTypes from "prop-types";
+// react-router-dom Link
+import { Link as RouterLink } from "react-router-dom";
 
 // 👉 프로젝트에 맞게 이미지 경로 교체
-import CCTV_IMG from "layouts/img/로그인.png";
-
+import CCTV_IMG from "assets/images/login.png";
 // 로그인 화면에서 사이드바가 나오지 않도록 레이아웃 상태 제어
 import { useMaterialUIController, setLayout } from "context";
 
@@ -54,13 +55,13 @@ const theme = createTheme({
           "&:hover fieldset": { border: "1px solid #D3DEE8" },
           "&.Mui-focused fieldset": { border: "1px solid #193C56" },
         },
-        input: { paddingTop: 12, paddingBottom: 12 }, // 살짝 컴팩트
+        input: { paddingTop: 12, paddingBottom: 12 },
       },
     },
   },
 });
 
-function Basic() {
+function SignIn() {
   // 로그인 화면에서 사이드바 숨김 (layout !== "dashboard")
   const [, dispatch] = useMaterialUIController();
   React.useEffect(() => {
@@ -103,7 +104,7 @@ function Basic() {
             alignItems: "center",
             justifyContent: "center",
             gap: { xs: 0, md: 30 },
-            maxWidth: 960, // 전체 폭
+            maxWidth: 960,
             width: "100%",
           }}
         >
@@ -113,19 +114,17 @@ function Basic() {
               display: { xs: "none", md: "flex" },
               alignItems: "center",
               justifyContent: "center",
-              width: 440, // 왼쪽 영역 폭 (로그인 박스에 영향 X)
+              width: 440,
             }}
           >
             <Box sx={{ maxWidth: 420, width: "100%", textAlign: "left" }}>
-              {/* 이미지 래퍼 */}
               <Box
                 sx={{
                   mx: "auto",
                   mb: 3,
                   width: "100%",
-                  maxWidth: 420, // 부모(440) 내에서 이미지 최대 너비
-                  borderRadius: 0,
-                  overflow: "visible", // 내부 이미지 확대 시 잘림 방지
+                  maxWidth: 420,
+                  overflow: "visible",
                 }}
               >
                 <Box
@@ -136,47 +135,24 @@ function Basic() {
                     display: "block",
                     width: "100%",
                     height: "auto",
-                    aspectRatio: "16 / 10",
-                    objectFit: "contain", // 원형 배경 안 잘리게
-                    transform: "scale(1.12)", // 시각적 확대 (레이아웃 영향 없음)
-                    transformOrigin: "center",
-                    objectPosition: "center",
-                    background: "transparent",
-                    borderRadius: 0,
-                    boxShadow: "none",
+                    objectFit: "contain",
                   }}
                 />
               </Box>
-
-              {/* 문구박스 래퍼: 문구만 살짝 왼쪽으로 이동 */}
-              <Box
-                sx={{
-                  textAlign: "center",
-                  ml: { md: -10 }, // md 이상에서 약 -8px 이동 (원하는 값으로 조정)
-                  // 픽셀 단위로 조절하고 싶다면 아래 한 줄로 대체하세요:
-                  // transform: "translateX(-6px)",
-                }}
-              >
-                {/* 페이지 인디케이터(작은 점) */}
+              <Box sx={{ textAlign: "center", ml: { md: -10 } }}>
                 <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 1.5 }}>
                   <PageDot filled />
                   <PageDot />
                   <PageDot />
                 </Box>
-
-                {/* 아래 문구: 가운데 정렬 유지 */}
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }} align="center">
-                  Always monitoring your day
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+                  공사현장 cctv 감지 알림 시스템
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ lineHeight: 1.6 }}
-                  align="center"
-                >
-                  On the shot, you see the main screen with all the rooms, and users can control
-                  each camera with the help of remote control
-                </Typography>
+                ></Typography>
               </Box>
             </Box>
           </Box>
@@ -222,11 +198,7 @@ function Basic() {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        edge="end"
-                        onClick={toggleShowPassword}
-                        aria-label="비밀번호 보기"
-                      >
+                      <IconButton edge="end" onClick={toggleShowPassword}>
                         {values.showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
@@ -235,9 +207,11 @@ function Basic() {
               />
 
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 0.5, mb: 2 }}>
-                <Link href="#" underline="none" sx={{ color: "text.secondary", fontSize: 13 }}>
-                  Recovery Password
-                </Link>
+                <MuiLink
+                  href="#"
+                  underline="none"
+                  sx={{ color: "text.secondary", fontSize: 13 }}
+                ></MuiLink>
               </Box>
 
               <Button
@@ -256,7 +230,10 @@ function Basic() {
                 로그인
               </Button>
 
+              {/* 회원가입 버튼에 라우팅 추가 */}
               <Button
+                component={RouterLink}
+                to="/authentication/sign-up"
                 fullWidth
                 variant="contained"
                 size="medium"
@@ -281,7 +258,7 @@ function Basic() {
   );
 }
 
-/** 작은 도트 컴포넌트 (페이지 인디케이터 느낌) */
+/** 작은 도트 컴포넌트 */
 function PageDot({ filled = false }) {
   return (
     <Box
@@ -300,4 +277,4 @@ PageDot.propTypes = {
   filled: PropTypes.bool,
 };
 
-export default Basic;
+export default SignIn;

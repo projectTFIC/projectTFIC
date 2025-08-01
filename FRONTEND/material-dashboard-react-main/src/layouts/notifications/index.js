@@ -47,8 +47,16 @@ ChartJS.register(
 );
 
 export default function Notifications() {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  // ─────────────────────────────────────────────────────────────
+  // 기본 필터: 오늘 날짜와 2주 전 날짜
+  const today = new Date();
+  const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const defaultStart = twoWeeksAgo.toISOString().slice(0, 10);
+  const defaultEnd = today.toISOString().slice(0, 10);
+
+  const [startDate, setStartDate] = useState(defaultStart);
+  const [endDate, setEndDate] = useState(defaultEnd);
+  // ─────────────────────────────────────────────────────────────
 
   // 1) 랜덤 레코드 생성 (2025년 전체)
   const records = useMemo(() => {
