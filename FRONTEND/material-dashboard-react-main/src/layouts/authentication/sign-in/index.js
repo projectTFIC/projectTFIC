@@ -1,180 +1,303 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
+import * as React from "react";
+import {
+  ThemeProvider,
+  createTheme,
+  Box,
+  Typography,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Button,
+  Link,
+  Divider,
+} from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import PropTypes from "prop-types";
 
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+// 👉 프로젝트에 맞게 이미지 경로 교체
+import CCTV_IMG from "layouts/img/로그인.png";
 
-Coded by www.creative-tim.com
+// 로그인 화면에서 사이드바가 나오지 않도록 레이아웃 상태 제어
+import { useMaterialUIController, setLayout } from "context";
 
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom"; // import 추가
-
-// react-router-dom components
-import { Link } from "react-router-dom";
-
-// @mui material components
-import Card from "@mui/material/Card";
-import Switch from "@mui/material/Switch";
-import Grid from "@mui/material/Grid";
-import MuiLink from "@mui/material/Link";
-
-// @mui icons
-import FacebookIcon from "@mui/icons-material/Facebook";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import GoogleIcon from "@mui/icons-material/Google";
-
-// Material Dashboard 2 React components
-import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-import MDInput from "components/MDInput";
-import MDButton from "components/MDButton";
-
-// Authentication layout components
-import BasicLayout from "layouts/authentication/components/BasicLayout";
-
-// Images
-import bgImage from "assets/images/bg-sign-in-basic.jpeg";
-
-// 백엔드 연결
-import axios from "axios";
+const theme = createTheme({
+  palette: {
+    primary: { main: "#193C56" }, // 네이비 버튼/텍스트
+    secondary: { main: "#6DBE8D" }, // 그린 버튼
+    text: { primary: "#1A2A36", secondary: "#5E6A75" },
+    grey: { 100: "#E2EFF8", 300: "#D3DEE8" },
+  },
+  shape: { borderRadius: 10 },
+  typography: {
+    fontFamily: [
+      "Pretendard",
+      "Noto Sans KR",
+      "Apple SD Gothic Neo",
+      "Roboto",
+      "Helvetica",
+      "Arial",
+      "sans-serif",
+    ].join(","),
+    h4: { fontWeight: 700 },
+    h5: { fontWeight: 700 },
+    button: { textTransform: "none", fontWeight: 700 },
+  },
+  components: {
+    MuiTextField: {
+      styleOverrides: { root: { backgroundColor: "#E2EFF8", borderRadius: 10 } },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          "& fieldset": { border: "1px solid transparent" },
+          "&:hover fieldset": { border: "1px solid #D3DEE8" },
+          "&.Mui-focused fieldset": { border: "1px solid #193C56" },
+        },
+        input: { paddingTop: 12, paddingBottom: 12 }, // 살짝 컴팩트
+      },
+    },
+  },
+});
 
 function Basic() {
-  const navigate = useNavigate(); // 함수 내부에 선언되어 있어야 함
+  // 로그인 화면에서 사이드바 숨김 (layout !== "dashboard")
+  const [, dispatch] = useMaterialUIController();
+  React.useEffect(() => {
+    setLayout(dispatch, "page");
+  }, [dispatch]);
 
-  const [rememberMe, setRememberMe] = useState(false);
-  const [user_id, setUserid] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [values, setValues] = React.useState({
+    id: "",
+    password: "",
+    showPassword: false,
+  });
 
-  const handleLogin = async (e) => {
-    e.preventDefault(); // 새로고침 막기
+  const handleChange = (prop) => (e) => setValues({ ...values, [prop]: e.target.value });
+  const toggleShowPassword = () =>
+    setValues((prev) => ({ ...prev, showPassword: !prev.showPassword }));
 
-    try {
-      const response = await axios.post("http://localhost:8090/web/GoLogin", {
-        user_id,
-        password,
-      });
-      console.log("로그인 성공:", response.data);
-      // 성공 후 처리 (토큰 저장, 페이지 이동 등)
-      // (2) 로그인 성공 시 대시보드 페이지로 이동
-      navigate("/dashboard");
-    } catch (error) {
-      let msg = "아이디와 비밀번호를 확인해주세요";
-      if (error.response) {
-        if (typeof error.response.data === "string") {
-          msg = error.response.data;
-        } else if (error.response.data.message) {
-          msg = error.response.data.message;
-        } else {
-          msg = JSON.stringify(error.response.data);
-        }
-      }
-      alert(msg); // 여기서 alert로 바로 팝업 표시
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TODO: 실제 로그인 로직 연결
+    console.log("login with", values);
   };
 
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
-
   return (
-    <BasicLayout image={bgImage}>
-      <Card>
-        <MDBox
-          variant="gradient"
-          bgColor="info"
-          borderRadius="lg"
-          coloredShadow="info"
-          mx={2}
-          mt={-3}
-          p={2}
-          mb={1}
-          textAlign="center"
+    <ThemeProvider theme={theme}>
+      {/* 화면 정중앙 정렬 */}
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "#FFFFFF",
+          px: { xs: 2, md: 4 },
+        }}
+      >
+        {/* 가운데 래퍼: 폭 축소 + 간격 축소 */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: { xs: 0, md: 30 },
+            maxWidth: 960, // 전체 폭
+            width: "100%",
+          }}
         >
-          <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
-            로그인
-          </MDTypography>
-          <Grid container spacing={3} justifyContent="center" sx={{ mt: 1, mb: 2 }}>
-            <Grid item xs={2}>
-              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
-                <FacebookIcon color="inherit" />
-              </MDTypography>
-            </Grid>
-            <Grid item xs={2}>
-              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
-                <GitHubIcon color="inherit" />
-              </MDTypography>
-            </Grid>
-            <Grid item xs={2}>
-              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
-                <GoogleIcon color="inherit" />
-              </MDTypography>
-            </Grid>
-          </Grid>
-        </MDBox>
-        <MDBox pt={4} pb={3} px={3}>
-          <MDBox component="form" role="form" onSubmit={handleLogin}>
-            <MDBox mb={2}>
-              <MDInput
-                type="email"
-                label="아이디"
-                fullWidth
-                value={user_id}
-                onChange={(e) => setUserid(e.target.value)}
-              />
-            </MDBox>
-            <MDBox mb={2}>
-              <MDInput
-                type="password"
-                label="비밀번호"
-                fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </MDBox>
-            <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} />
-              <MDTypography
-                variant="button"
-                fontWeight="regular"
-                color="text"
-                onClick={handleSetRememberMe}
-                sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
+          {/* LEFT: 이미지 (md 이상에서 보이기) */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              justifyContent: "center",
+              width: 440, // 왼쪽 영역 폭 (로그인 박스에 영향 X)
+            }}
+          >
+            <Box sx={{ maxWidth: 420, width: "100%", textAlign: "left" }}>
+              {/* 이미지 래퍼 */}
+              <Box
+                sx={{
+                  mx: "auto",
+                  mb: 3,
+                  width: "100%",
+                  maxWidth: 420, // 부모(440) 내에서 이미지 최대 너비
+                  borderRadius: 0,
+                  overflow: "visible", // 내부 이미지 확대 시 잘림 방지
+                }}
               >
-                &nbsp;&nbsp;로그인 상태 유지
-              </MDTypography>
-            </MDBox>
-            <MDBox mt={4} mb={1}>
-              <MDButton variant="gradient" color="info" fullWidth type="submit">
-                로그인
-              </MDButton>
-            </MDBox>
-            <MDBox mt={3} mb={1} textAlign="center">
-              <MDTypography variant="button" color="text">
-                계정이 없으신가요?{" "}
-                <MDTypography
-                  component={Link}
-                  to="/authentication/sign-up"
-                  variant="button"
-                  color="info"
-                  fontWeight="medium"
-                  textGradient
+                <Box
+                  component="img"
+                  src={CCTV_IMG}
+                  alt="CCTV"
+                  sx={{
+                    display: "block",
+                    width: "100%",
+                    height: "auto",
+                    aspectRatio: "16 / 10",
+                    objectFit: "contain", // 원형 배경 안 잘리게
+                    transform: "scale(1.12)", // 시각적 확대 (레이아웃 영향 없음)
+                    transformOrigin: "center",
+                    objectPosition: "center",
+                    background: "transparent",
+                    borderRadius: 0,
+                    boxShadow: "none",
+                  }}
+                />
+              </Box>
+
+              {/* 문구박스 래퍼: 문구만 살짝 왼쪽으로 이동 */}
+              <Box
+                sx={{
+                  textAlign: "center",
+                  ml: { md: -10 }, // md 이상에서 약 -8px 이동 (원하는 값으로 조정)
+                  // 픽셀 단위로 조절하고 싶다면 아래 한 줄로 대체하세요:
+                  // transform: "translateX(-6px)",
+                }}
+              >
+                {/* 페이지 인디케이터(작은 점) */}
+                <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 1.5 }}>
+                  <PageDot filled />
+                  <PageDot />
+                  <PageDot />
+                </Box>
+
+                {/* 아래 문구: 가운데 정렬 유지 */}
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }} align="center">
+                  Always monitoring your day
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ lineHeight: 1.6 }}
+                  align="center"
                 >
-                  회원가입
-                </MDTypography>
-              </MDTypography>
-            </MDBox>
-          </MDBox>
-        </MDBox>
-      </Card>
-    </BasicLayout>
+                  On the shot, you see the main screen with all the rooms, and users can control
+                  each camera with the help of remote control
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* RIGHT: 로그인 폼 */}
+          <Box
+            sx={{
+              width: { xs: "100%", md: 360 },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
+              <Typography
+                variant="h5"
+                align="center"
+                sx={{ fontWeight: 800, mb: 3, color: "#152635" }}
+              >
+                로그인
+              </Typography>
+
+              <TextField
+                fullWidth
+                size="small"
+                label="ID"
+                variant="outlined"
+                value={values.id}
+                onChange={handleChange("id")}
+                sx={{ mb: 1.5 }}
+                inputProps={{ inputMode: "text", autoComplete: "username" }}
+              />
+
+              <TextField
+                fullWidth
+                size="small"
+                label="Password"
+                variant="outlined"
+                type={values.showPassword ? "text" : "password"}
+                value={values.password}
+                onChange={handleChange("password")}
+                inputProps={{ autoComplete: "current-password" }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        onClick={toggleShowPassword}
+                        aria-label="비밀번호 보기"
+                      >
+                        {values.showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 0.5, mb: 2 }}>
+                <Link href="#" underline="none" sx={{ color: "text.secondary", fontSize: 13 }}>
+                  Recovery Password
+                </Link>
+              </Box>
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="medium"
+                sx={{
+                  bgcolor: "primary.main",
+                  py: 1.25,
+                  borderRadius: 10,
+                  fontSize: 15,
+                  "&:hover": { bgcolor: "#112C40" },
+                }}
+              >
+                로그인
+              </Button>
+
+              <Button
+                fullWidth
+                variant="contained"
+                size="medium"
+                sx={{
+                  bgcolor: "secondary.main",
+                  py: 1.25,
+                  borderRadius: 10,
+                  mt: 1,
+                  fontSize: 15,
+                  "&:hover": { bgcolor: "#5FB381" },
+                }}
+              >
+                회원가입
+              </Button>
+
+              <Divider sx={{ mt: 3, opacity: 0 }} />
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 }
+
+/** 작은 도트 컴포넌트 (페이지 인디케이터 느낌) */
+function PageDot({ filled = false }) {
+  return (
+    <Box
+      sx={{
+        width: 6,
+        height: 6,
+        borderRadius: "50%",
+        bgcolor: filled ? "#193C56" : "#D6DFE7",
+        transition: "all .2s",
+      }}
+    />
+  );
+}
+
+PageDot.propTypes = {
+  filled: PropTypes.bool,
+};
 
 export default Basic;
