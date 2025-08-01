@@ -25,14 +25,14 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpSession;
 import kr.cloud.web.ProjectTFICApplication;
 import kr.cloud.web.entity.Devices;
-import kr.cloud.web.entity.ImageUploadRequest;
+
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.entity.TypeInfo;
-import kr.cloud.web.entity.UsernameCheckRequestDto;
+
 import kr.cloud.web.entity.Users;
 import kr.cloud.web.mapper.BoardMapper;
 import kr.cloud.web.service.ReportApiService;
-import lombok.RequiredArgsConstructor;
+
 
 @Controller
 public class MyController {
@@ -178,50 +178,51 @@ public class MyController {
 			return result;
 		}
 
-		// [알람 페이지 - 전체 알람 조회 기능]
-		// 전체 알람에 관한 리스트를 최신순 기준으로 받아음
-		@GetMapping("/Golist")
-		public String home(Model model, HttpSession session) {
-			// 로그인 정보가 있는지 확인하는 과정
-			Users loginUser = (Users) session.getAttribute("loginUser");
-			if (loginUser == null) {
-				// 로그인 정보가 없으면 로그인 페이지로 리다이렉트
-				return "redirect:/GoLogin"; // 로그인 화면의 엔드포인트를 실제 경로에 맞게 수정
-			}
-			// List 값으로 type_info 테이블에 있는 값 전부 가지고 오기
-			List<TypeInfo> TypeInfoList = mapper.selectAll();
-			model.addAttribute("TypeInfoList", TypeInfoList);
+	}
 
-			return "list";
+	// [알람 페이지 - 전체 알람 조회 기능]
+	// 전체 알람에 관한 리스트를 최신순 기준으로 받아음
+	@GetMapping("/Golist")
+	public String home(Model model, HttpSession session) {
+		// 로그인 정보가 있는지 확인하는 과정
+		Users loginUser = (Users) session.getAttribute("loginUser");
+		if (loginUser == null) {
+			// 로그인 정보가 없으면 로그인 페이지로 리다이렉트
+			return "redirect:/GoLogin"; // 로그인 화면의 엔드포인트를 실제 경로에 맞게 수정
+		}
+		// List 값으로 type_info 테이블에 있는 값 전부 가지고 오기
+		List<TypeInfo> TypeInfoList = mapper.selectAll();
+		model.addAttribute("TypeInfoList", TypeInfoList);
+
+		return "list";
+	}
+
+	@RestController
+	@RequestMapping("/reports")
+	@CrossOrigin(origins = "http://localhost:3000")
+	public class ReportController {
+
+		@Autowired
+		private ReportApiService reportApiService;
+
+		// 전체 조회
+		@GetMapping
+		public List<Report> getAllReports() {
+			return reportApiService.getAllReports();
 		}
 
-		@RestController
-		@RequestMapping("/reports")
-		@CrossOrigin(origins = "http://localhost:3000")
-		public class ReportController {
+		// ID로 조회
+		@GetMapping("/{id}")
+		public Report getReportById(@PathVariable("id") int id) {
+			return reportApiService.getReportById(id);
+		}
 
-			@Autowired
-			private ReportApiService reportApiService;
-
-			// 전체 조회
-			@GetMapping
-			public List<Report> getAllReports() {
-				return reportApiService.getAllReports();
-			}
-
-			// ID로 조회
-			@GetMapping("/{id}")
-			public Report getReportById(@PathVariable("id") int id) {
-				return reportApiService.getReportById(id);
-			}
-
-			// 날짜 조건 조회
-			@GetMapping("/search")
-			public List<Report> getReportsByPeriod(
-					@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-					@RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
-				return reportApiService.getReportsByPeriod(start, end);
-			}
+		// 날짜 조건 조회
+		@GetMapping("/search")
+		public List<Report> getReportsByPeriod(
+				@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+				@RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+			return reportApiService.getReportsByPeriod(start, end);
 		}
 	}
 }

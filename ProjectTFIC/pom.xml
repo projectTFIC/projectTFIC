@@ -149,7 +149,12 @@
 		    <artifactId>spring-boot-devtools</artifactId>
 		    <optional>true</optional>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>kr.cloud</groupId>
+			<artifactId>SpringBoot1</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
