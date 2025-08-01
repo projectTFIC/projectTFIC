@@ -3,7 +3,6 @@ import Dashboard from "layouts/대시보드";
 import Tables from "layouts/tables";
 import Monitoring from "layouts/모니터링";
 import Billing from "layouts/billing";
-import RTL from "layouts/rtl";
 import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
