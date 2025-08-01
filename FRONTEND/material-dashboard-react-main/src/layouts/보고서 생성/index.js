@@ -25,6 +25,7 @@ import axios from "axios";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 
 function ReportPage() {
+  const [loading, setLoading] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
   const [promptType, setPromptType] = useState("default");
   const [promptText, setPromptText] = useState(
@@ -43,28 +44,36 @@ function ReportPage() {
   const [endTime, setEndTime] = useState("18:00");
 
   const handleGenerateReport = async () => {
+    setLoading(true); // 로딩 시작
+    setReportGenerated(false); // 이전 결과 숨김
+
     const period_start = `${startDate} ${startTime}`;
     const period_end = `${endDate} ${endTime}`;
     const report_type = ["accident", "entry", "total"][tabIndex];
     const use_custom_prompt = promptType === "custom";
 
     try {
-      const res = await axios.post("http://localhost:5000/api/report/generate", {
-        period_start,
-        period_end,
-        user_id: "user123",
-        report_type,
-        use_custom_prompt,
-        custom_prompt: promptText,
-        extra_note: "",
-      });
-
+      const res = await axios.post(
+        "http://localhost:8090/web/api/reports/generate",
+        {
+          period_start,
+          period_end,
+          user_id: "user123",
+          report_type,
+          use_custom_prompt,
+          custom_prompt: promptText,
+          extra_note: "",
+        },
+        { timeout: 60000 }
+      );
       setReportHtml(res.data.report_html || "응답이 없습니다.");
       setReportGenerated(true);
     } catch (err) {
       console.error("보고서 생성 오류:", err);
       setReportHtml("🚨 보고서 생성 중 오류가 발생했습니다.");
       setReportGenerated(true);
+    } finally {
+      setLoading(false); // 로딩 끝
     }
   };
 

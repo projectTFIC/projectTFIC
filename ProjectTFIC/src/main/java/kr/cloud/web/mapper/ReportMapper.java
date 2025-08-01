@@ -16,4 +16,6 @@ public interface  ReportMapper {
     // 필요하다면 단건/전체 조회 등도 추가 가능
     Report selectReportById(@Param("reportId") int reportId);
     List<Report> selectAllReports();
+    String getSummaryByTypeAndPeriod(@Param("start") Date start, @Param("end") Date end, @Param("type") String reportType);
+
 }

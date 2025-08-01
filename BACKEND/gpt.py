@@ -118,8 +118,10 @@ def generate_report():
             prompt = make_total_prompt(he_summary, acc_summary, ppe_summary, period_start, period_end, user_id, extra_note)
         else:
             return jsonify({"error": "Invalid report_type"}), 400
+        
 
     report_html = call_gpt_report(prompt)
+    print(f"리턴되는 report_html 값: {report_html}")
     return jsonify({'report_html': report_html})
 
 # 6. 앱 실행

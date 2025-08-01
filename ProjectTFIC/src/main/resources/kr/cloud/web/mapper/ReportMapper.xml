@@ -41,4 +41,13 @@
             reg_date AS regDate
         FROM report
     </select>
+    <!-- 보고서 내역 요약 -->
+<select id="getSummaryByTypeAndPeriod" resultType="String">
+    SELECT CONCAT('• ', GROUP_CONCAT(report_title SEPARATOR '\n• '))
+    FROM report
+    WHERE type_id = #{type}
+    AND reg_date BETWEEN #{start} AND #{end}
+</select>
+
+    
 </mapper>
