@@ -9,7 +9,12 @@ import org.apache.ibatis.annotations.Select;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import kr.cloud.web.entity.Devices;
+<<<<<<< Updated upstream
 import kr.cloud.web.entity.Report;
+=======
+import kr.cloud.web.entity.HeRecord;
+import kr.cloud.web.entity.HeRecordViewDto;
+>>>>>>> Stashed changes
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 
@@ -32,6 +37,7 @@ public interface BoardMapper {
 	@Select("SELECT COUNT(*) FROM users WHERE user_id = #{user_id}")
 	Integer countByUserId(String user_id);
 	
+<<<<<<< Updated upstream
 	@Select("""
 	        SELECT
 	          r.report_id as reportId,
@@ -62,6 +68,31 @@ public interface BoardMapper {
 	        ORDER BY r.reg_date DESC
 	    """)
 	    List<Report> getReportsByPeriod(java.sql.Date start, java.sql.Date end);
+=======
+	
+    // [ 장비 ID로 장소 이름을 조회하기 ]
+	// 기록에서 탐지장소 정보를 가져오기 위해 장비 아이디에서 조회
+	@Select("SELECT location FROM devices WHERE device_id = #{deviceId}")
+    public String selectLocationByDeviceId(int deviceId);
+
+	
+    // [ type_info 테이블에 데이터를 삽입하기 ]
+    // 탐지 기록과 관련된 핵심 정보를 type_info 테이블에 저장한 후, 
+    // 일부 정보를 다시 typeInfo 객체에 다시 담아 반환
+    public void insertTypeInfo(TypeInfo typeInfo);
+
+    
+    // [ he_record 테이블에 데이터를 삽입하기 ]
+    public void insertHeRecord(HeRecord heRecord);
+    
+    
+    // [ 기록 관리 : 중장비 출입 게시판의 게시글 전체 가져오기 ]
+    public List<HeRecordViewDto> selectAllHeRecords();
+    
+    
+    // [ 기록 관리 : 중장비 출입 게시판의 특정 게시글 내용 조회하기 ]
+    public HeRecordViewDto selectHeRecordById(int recordId);
+>>>>>>> Stashed changes
 
 }
 	
