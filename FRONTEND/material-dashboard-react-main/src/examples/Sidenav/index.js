@@ -14,6 +14,7 @@ import SidenavRoot from "examples/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 import {
   useMaterialUIController,
+  useAuthController,
   setMiniSidenav,
   setTransparentSidenav,
   setWhiteSidenav,
@@ -46,6 +47,8 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     return () => window.removeEventListener("resize", handleMiniSidenav);
   }, [dispatch, location, transparentSidenav, whiteSidenav]);
 
+  const { logout } = useAuthController();
+
   const handleLogout = async () => {
     try {
       // 실제 백엔드 로그아웃 API 필요 시 사용
@@ -53,7 +56,8 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         method: "GET",
         credentials: "include",
       });
-      // 클라이언트 상태 초기화 등이 필요하다면 여기에 코드 작성
+      // 클라이언트 상태 초기화
+      logout();
 
       // 로그인 페이지 이동
       navigate("/authentication/sign-in");

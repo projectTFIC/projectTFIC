@@ -20,7 +20,11 @@ const routes = [
     key: "dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
-    component: <PrivateRoute><Dashboard /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
@@ -28,7 +32,11 @@ const routes = [
     key: "monitoring",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
     route: "/monitoring",
-    component: <PrivateRoute><모니터링 /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <모니터링 />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
@@ -36,7 +44,11 @@ const routes = [
     key: "tables",
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/tables",
-    component: <PrivateRoute><기록관리 /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <기록관리 />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
@@ -44,7 +56,11 @@ const routes = [
     key: "billing",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/billing",
-    component: <PrivateRoute><Billing /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <Billing />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
@@ -52,7 +68,11 @@ const routes = [
     key: "report",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/report",
-    component: <PrivateRoute><Report /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <Report />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
@@ -60,7 +80,11 @@ const routes = [
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
-    component: <PrivateRoute><Notifications /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <Notifications />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
@@ -68,7 +92,11 @@ const routes = [
     key: "profile",
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",
-    component: <PrivateRoute><Profile /></PrivateRoute>,
+    component: (
+      <PrivateRoute>
+        <Profile />
+      </PrivateRoute>
+    ),
   },
   {
     type: "collapse",
