@@ -43,7 +43,7 @@ public class AiApiController {
         
     	try {
         	// 1. 안전장비 기능 처리 객체를 사용하여 기록저장
-            ppeRecordService.saveRecord(ppeRecordDto);
+            ppeRecordService.savePpeRecord(ppeRecordDto);
             
             // 2. 성공적으로 완료된 경우, python 에게 성공 신호와 메시지 전송
             return ResponseEntity.status(HttpStatus.CREATED).body("기록이 성공적으로 생성되었습니다.");
@@ -54,6 +54,7 @@ public class AiApiController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("기록 생성 중 오류 발생: "+ e.getMessage());
             
         }
+    	
     }
 	
     
@@ -62,7 +63,7 @@ public class AiApiController {
     public ResponseEntity<List<PpeRecordViewDto>> getAllPpeRecords() {
     	
         // 1. 안전장비 착용여부와 관련된 모든 기록 가져오기
-        List<PpeRecordViewDto> records = PpeRecordService.selectAllHeRecords();
+        List<PpeRecordViewDto> records = ppeRecordService.selectAllPpeRecords();
         
         // 2. 기록 리스트를 성공적으로 가져온 경우, 성공 신호 전달
         return ResponseEntity.ok(records);
@@ -75,7 +76,7 @@ public class AiApiController {
     public ResponseEntity<PpeRecordViewDto> getPpeRecordById(@PathVariable int recordId) {
 
     	// 1. 안전장비 착용여부와 관련된 특정 기록 가져오기
-    	PpeRecordViewDto record = ppeRecordService.selectHeRecordById(recordId);
+    	PpeRecordViewDto record = ppeRecordService.selectPpeRecordById(recordId);
         
         // 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
         return ResponseEntity.ok(record);

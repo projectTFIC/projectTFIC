@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import kr.cloud.web.entity.HeRecordDto;
 import kr.cloud.web.entity.HeRecordViewDto;
+import kr.cloud.web.service.HeRecordService;
 import kr.cloud.web.service.PpeRecordService;
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,7 @@ public class AiProxyController {
 	// AI 와 API 를 활용한 기능과 관련된 컨트롤러
 	
 	// ㅇ AI / API 중장비 기능 처리 객체
-	private final PpeRecordService heRecordService;
+	private final HeRecordService heRecordService;
 	
 	
 	// [ 중장비 출입 : 객체 탐지 기능 요청 ]

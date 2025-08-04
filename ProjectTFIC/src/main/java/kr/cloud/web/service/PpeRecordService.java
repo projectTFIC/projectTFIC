@@ -28,7 +28,7 @@ public class PpeRecordService {
     // [ 안전장비 착용여부 : 객체 탐지 정보 DB 저장 ]
     // Controller 로부터 안전장비 착용여부 탐지정보 (DTO) 를 받아 데이터베이스에 저장하는 로직을 처리하는 메서드
     @Transactional
-    public void saveHeRecord(PpeRecordDto dto) {
+    public void savePpeRecord(PpeRecordDto dto) {
     	
         // 1. 탐지정보에서 받은 deviceId로 탐지장소 정보 조회
         String location = boardMapper.selectLocationByDeviceId(dto.getDeviceId());
