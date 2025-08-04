@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.cloud.web.mapper.ReportMapper">
+
+    <!-- 📄 1. 게시판 용 report 리스트 조회 -->
+    
     <!-- 기간별 보고서 조회 -->
     <select id="selectReportsByPeriod" resultType="kr.cloud.web.entity.Report">
         SELECT
@@ -41,13 +44,53 @@
             reg_date AS regDate
         FROM report
     </select>
-    <!-- 보고서 내역 요약 -->
-<select id="getSummaryByTypeAndPeriod" resultType="String">
-    SELECT CONCAT('• ', GROUP_CONCAT(report_title SEPARATOR '\n• '))
-    FROM report
-    WHERE type_id = #{type}
-    AND reg_date BETWEEN #{start} AND #{end}
-</select>
 
-    
+
+    <!-- 📑 2. 요약용: accident (사고 기록 요약용 DTO) -->
+    <select id="selectAccidentSummaryByPeriod" resultType="kr.cloud.web.entity.AccidentSummaryDto">
+        SELECT
+            ar.record_title AS recordTitle,
+            ac.content AS content,
+            ti.location AS location,
+            ti.reg_date AS regDate,
+            ti.device_id AS deviceId,
+            ar.original_img AS originalImg,
+            ar.detect_img AS detectImg
+        FROM acc_record ar
+        LEFT JOIN acc_content ac ON ar.record_id = ac.record_id
+        LEFT JOIN type_info ti ON ar.type_id = ti.type_id
+        WHERE ti.reg_date BETWEEN #{start} AND #{end}
+    </select>
+
+    <!-- 📑 3. 요약용: entry (출입 기록 조회용 DTO: HeRecordDto) -->
+    <select id="selectHeRecordsByPeriod" resultType="kr.cloud.web.entity.HeRecordDto">
+        SELECT
+            ti.device_id AS deviceId,
+            hr.he_type AS heType,
+            hr.he_number AS heNumber,
+            hr.access AS access,
+            ti.reg_date AS regDate,
+            hr.original_img AS originalImg,
+            hr.detect_img AS detectImg
+        FROM he_record hr
+        JOIN type_info ti ON hr.type_id = ti.type_id
+        WHERE ti.reg_date BETWEEN #{start} AND #{end}
+    </select>
+
+    <!-- 📑 4. 요약용: total (사고 + 출입 간단 요약 문자열로 통합) -->
+    <select id="getTotalSummaryByPeriod" resultType="String">
+        SELECT CONCAT('• ', GROUP_CONCAT(content SEPARATOR '\n• '))
+        FROM (
+            SELECT ar.record_title AS content
+            FROM acc_record ar
+            JOIN type_info ti ON ar.type_id = ti.type_id
+            WHERE ti.reg_date BETWEEN #{start} AND #{end}
+            UNION ALL
+            SELECT CONCAT(hr.he_type, ' ', hr.he_number, ' ', hr.access, ' ', DATE_FORMAT(ti.reg_date, '%Y-%m-%d %H:%i:%s')) AS content
+            FROM he_record hr
+            JOIN type_info ti ON hr.type_id = ti.type_id
+            WHERE ti.reg_date BETWEEN #{start} AND #{end}
+        ) AS combined
+    </select>
+
 </mapper>

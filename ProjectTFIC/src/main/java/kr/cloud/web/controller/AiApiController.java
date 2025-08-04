@@ -30,8 +30,8 @@ public class AiApiController {
 	// AI 와 API 를 활용한 기능과 관련된 컨트롤러
 	
 	// ㅇ AI / API 중장비 기능 처리 객체
-	private final PpeRecordService heRecordService;
-	private final HeRecordService ppeRecordService;
+	private final PpeRecordService ppeRecordService;
+	private final HeRecordService heRecordService;
 	
 	// =================================================================
 	// 안전장비 출입 (Personal Protect Equipment)

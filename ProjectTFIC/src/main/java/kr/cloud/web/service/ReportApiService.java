@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import kr.cloud.web.entity.AccidentSummaryDto;
+import kr.cloud.web.entity.HeRecordDto;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.mapper.ReportMapper;
 
@@ -44,9 +46,43 @@ public class ReportApiService {
             throw new RuntimeException("날짜 형식 오류: " + dateStr + " → yyyy-MM-dd 형식이어야 합니다", e);
         }
     }
-    // 🔹 요약 텍스트 조회
-    public String getSummaryTextByType(Date start, Date end, String reportType) {
-        return reportMapper.getSummaryByTypeAndPeriod(start, end, reportType);
+    // 🔹 보고서 유형별 요약 생성 로직
+    private String buildAccidentSummary(List<AccidentSummaryDto> records) {
+        if (records == null || records.isEmpty()) {
+            return "해당 기간 동안 등록된 사고 기록이 없습니다.";
+        }
+
+        StringBuilder sb = new StringBuilder("해당 기간 동안 사고 기록 요약:\n");
+        for (AccidentSummaryDto r : records) {
+            sb.append("- 시간: ").append(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(r.getRegDate()))
+              .append(", 위치: ").append(r.getLocation())
+              .append(", 내용: ").append(r.getRecordTitle())
+              .append("\n");
+        }
+        return sb.toString();
+    }
+
+    private String buildEntrySummary(List<HeRecordDto> records) {
+        if (records == null || records.isEmpty()) {
+            return "해당 기간 동안 차량/중장비 출입 기록이 없습니다.";
+        }
+
+        StringBuilder sb = new StringBuilder("출입 기록 요약:\n");
+        for (HeRecordDto r : records) {
+            sb.append("- 장비번호: ").append(r.getHeNumber())
+              .append(", 타입: ").append(r.getHeType())
+              .append(", 출입: ").append(r.getAccess())
+              .append(", 시간: ").append(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(r.getRegDate()))
+              .append("\n");
+        }
+        return sb.toString();
+    }
+
+    private String buildTotalSummary(String summary) {
+        if (summary == null || summary.isBlank()) {
+            return "해당 기간 동안 사고 및 출입 요약 내역이 없습니다.";
+        }
+        return "통합 요약:\n" + summary;
     }
 
     public String generateReport(String periodStart, String periodEnd, String userId, String reportType,
@@ -57,8 +93,21 @@ public class ReportApiService {
     	 Date startDate = parseDate(periodStart);
     	 Date endDate = parseDate(periodEnd);
 
-    	 // 유형별 요약 데이터 조회
-    	 String summaryText = getSummaryTextByType(startDate, endDate, reportType);
+    	  // 2. 요약 텍스트 생성
+         String summaryText;
+         switch (reportType) {
+             case "accident":
+                 summaryText = buildAccidentSummary(reportMapper.selectAccidentSummaryByPeriod(startDate, endDate));
+                 break;
+             case "entry":
+                 summaryText = buildEntrySummary(reportMapper.selectHeRecordsByPeriod(startDate, endDate));
+                 break;
+             case "total":
+                 summaryText = buildTotalSummary(reportMapper.getTotalSummaryByPeriod(startDate, endDate));
+                 break;
+             default:
+                 summaryText = "지원하지 않는 보고서 유형입니다.";
+         }
 
     	 // Flask API 주소
     	 String flaskUrl = "http://192.168.219.176:5000/api/report/generate";
