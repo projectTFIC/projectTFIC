@@ -146,7 +146,16 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             width={!brandName && "100%"}
             sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
           >
-            <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
+            <MDTypography
+              component="h6"
+              variant="button"
+              fontWeight="medium"
+              color={textColor}
+              sx={{
+                fontSize: "1.25rem", // ← 글자 크기 조절
+                ml: 1, // ← 로고와 간격 조절 (8px * 2 = 16px)
+              }}
+            >
               {brandName}
             </MDTypography>
           </MDBox>

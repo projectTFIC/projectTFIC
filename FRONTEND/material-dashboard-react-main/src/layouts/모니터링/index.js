@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { callApi } from "api/api"; // < Spring Boot - React 연동 : callApi 사용 >
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -14,7 +13,6 @@ import {
   Divider,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
-import MDBadge from "components/MDBadge"; // 없으면 Chip으로 대체
 import axios from "axios";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 
@@ -25,26 +23,31 @@ const MonitoringPage = () => {
   const [isAIOn, setIsAIOn] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isAIView, setIsAIView] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("ko-KR"));
+  const videoRef = useRef(null);
 
   const selectedCamera = cameraList.find((cam) => cam.device_id === selectedCam);
-  const currentTime = new Date().toLocaleTimeString("ko-KR");
 
-  // ✅ API로 장비 리스트 불러오기
+  // 실시간 시계
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString("ko-KR"));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // DB에서 장비 리스트 불러오기
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-        // < Spring Boot - React 연동 : callApi 사용 >
-        const devices = await callApi("/api/devices"); // GET은 method 생략 가능
-
-        // 상태 기본값 설정
-        const deviceList = devices.map((d) => ({
+        const res = await axios.get("http://localhost:5050/api/devices");
+        const devices = res.data.map((d) => ({
           ...d,
-          status: d.status || "online", // status 없을 경우 기본값
+          status: d.status || "online",
         }));
-
-        setCameraList(deviceList);
-        if (deviceList.length > 0) {
-          setSelectedCam(deviceList[0].device_id);
+        setCameraList(devices);
+        if (devices.length > 0) {
+          setSelectedCam(devices[0].device_id);
         }
       } catch (err) {
         console.error("장비 리스트 불러오기 실패", err);
@@ -53,6 +56,34 @@ const MonitoringPage = () => {
     };
 
     fetchDevices();
+  }, []);
+
+  // 웹캠 연결
+  useEffect(() => {
+    let stream;
+
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+        const waitForRef = setInterval(() => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            clearInterval(waitForRef);
+          }
+        }, 100);
+      } catch (err) {
+        console.error("웹캠 접근 실패:", err);
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   const handleAction = (type) => {
@@ -76,17 +107,25 @@ const MonitoringPage = () => {
 
   return (
     <DashboardLayout>
-      <Box display="flex" height="calc(100vh - 100px)">
+      <Box display="flex" sx={{ minHeight: "calc(100vh - 100px)" }}>
         {/* 캠 화면 + 버튼 */}
         <Box flex={1} display="flex" flexDirection="column" minWidth={0} pr={2}>
           {/* 캠 화면 */}
           <Box
-            flex={1}
+            height={900}
             position="relative"
             borderRadius={2}
             overflow="hidden"
             sx={{ backgroundColor: "#000" }}
           >
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+
             {selectedCamera && (
               <>
                 <Box
@@ -125,24 +164,34 @@ const MonitoringPage = () => {
                 </Box>
               </>
             )}
+          </Box>
 
-            <Box
-              width="100%"
-              height="100%"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              flexDirection="column"
-              color="#888"
-            >
-              <FolderIcon fontSize="large" />
-              <Typography variant="body1">
-                {selectedCamera ? selectedCamera.device_name : "장비 없음"}
-              </Typography>
-              <Typography variant="caption">
-                {selectedCamera ? selectedCamera.location : ""}
-              </Typography>
-            </Box>
+          {/* 서브 모니터 2행 3열 */}
+          <Box mt={2}>
+            <Grid container spacing={2}>
+              {[...Array(3)].map((_, idx) => {
+                const cam = cameraList[idx];
+                const isSelected = cam?.device_id === selectedCam;
+
+                return (
+                  <Grid item xs={4} key={idx}>
+                    <Box
+                      height={220}
+                      bgcolor="#000"
+                      border={isSelected ? "2px solid #1976d2" : "1px solid #111"}
+                      sx={{
+                        cursor: cam ? "pointer" : "default",
+                        borderRadius: 0,
+                        position: "relative",
+                      }}
+                      onClick={() => {
+                        if (cam) setSelectedCam(cam.device_id);
+                      }}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Box>
 
           {/* 버튼 박스 */}
@@ -202,41 +251,55 @@ const MonitoringPage = () => {
                 </Grid>
               </Grid>
 
-              <Box display="flex" flexDirection="column" gap={1}>
-                {cameraList.map((cam) => {
+              <Box display="flex" flexDirection="column" gap={0}>
+                {cameraList.map((cam, index) => {
                   const isActive = cam.device_id === selectedCam;
+                  const isLast = index === cameraList.length - 1;
+
                   return (
-                    <Button
-                      key={cam.device_id}
-                      fullWidth
-                      variant={isActive ? "contained" : "outlined"}
-                      color={isActive ? "primary" : "inherit"}
-                      sx={{
-                        justifyContent: "flex-start",
-                        textAlign: "left",
-                        padding: 1.5,
-                        borderRadius: 2,
-                        boxShadow: isActive ? 3 : 0,
-                        color: "#000",
-                      }}
-                      onClick={() => setSelectedCam(cam.device_id)}
-                    >
-                      <Grid container alignItems="center">
-                        <Grid item xs={3}>
-                          <Typography variant="body2" fontWeight="bold">
-                            {cam.device_id}
-                          </Typography>
+                    <React.Fragment key={cam.device_id}>
+                      <Box
+                        onClick={() => setSelectedCam(cam.device_id)}
+                        sx={{
+                          width: "100%",
+                          px: 2,
+                          py: 1.5,
+                          borderRadius: 2,
+                          minHeight: 140,
+                          display: "flex",
+                          alignItems: "center",
+                          backgroundImage: isActive
+                            ? "linear-gradient(to right, transparent 5%, rgba(74, 150, 238, 0.7) 50%, transparent 95%)"
+                            : "none", // ✅ 선택된 항목만 그라디언트
+                          cursor: "pointer",
+                          transition: "background 0.3s",
+                          "&:hover": {
+                            backgroundImage: isActive
+                              ? "linear-gradient(to right, transparent, rgba(46, 117, 209, 0.35), transparent)"
+                              : "linear-gradient(to right, transparent, rgba(0,0,0,0.04), transparent)",
+                          },
+                        }}
+                      >
+                        <Grid container alignItems="center" height="100%">
+                          <Grid item xs={3}>
+                            <Typography variant="body2" fontWeight="bold" noWrap>
+                              {cam.device_id}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={5}>
+                            <Typography variant="body2" noWrap>
+                              {cam.device_name}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={4} textAlign="right">
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              {cam.location}
+                            </Typography>
+                          </Grid>
                         </Grid>
-                        <Grid item xs={5}>
-                          <Typography variant="body2">{cam.device_name}</Typography>
-                        </Grid>
-                        <Grid item xs={4} textAlign="right">
-                          <Typography variant="body2" color="text.secondary">
-                            {cam.location}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Button>
+                      </Box>
+                      {!isLast && <Divider sx={{ my: 0.5, borderColor: "#e0e0e0" }} />}
+                    </React.Fragment>
                   );
                 })}
               </Box>
@@ -259,11 +322,11 @@ const MonitoringPage = () => {
       <Snackbar
         open={toastInfo.open}
         autoHideDuration={3000}
-        onClose={() => setToastInfo({ ...toastInfo, open: false })}
+        onClose={() => setToastInfo((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
-          onClose={() => setToastInfo({ ...toastInfo, open: false })}
+          onClose={() => setToastInfo((prev) => ({ ...prev, open: false }))}
           severity="info"
           variant="filled"
           sx={{ width: "100%" }}
