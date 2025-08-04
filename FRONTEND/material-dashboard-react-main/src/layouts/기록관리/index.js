@@ -46,8 +46,8 @@ function Tables() {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.title,
-          type: <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />,
+          title: row.type,
+          type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
@@ -57,8 +57,8 @@ function Tables() {
       setPpe(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.title,
-          type: <MDBadge badgeContent="안전장비" color="warning" variant="gradient" size="lg" />,
+          title: row.location,
+          type: <MDBadge badgeContent={row.title} color="warning" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
@@ -69,7 +69,7 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.title,
-          type: <MDBadge badgeContent="입출입" color="info" variant="gradient" size="lg" />,
+          type: <MDBadge badgeContent={row.location} color="info" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
