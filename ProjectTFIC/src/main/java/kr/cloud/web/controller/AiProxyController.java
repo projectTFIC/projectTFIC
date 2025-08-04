@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/aiapi")
+@RequestMapping("/proxy")
 @RequiredArgsConstructor
 public class AiProxyController {
 	
