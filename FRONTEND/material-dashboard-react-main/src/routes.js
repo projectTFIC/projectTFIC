@@ -8,6 +8,7 @@ import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import Report from "layouts/보고서 생성";
+import PrivateRoute from "components/PrivateRoute";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -19,7 +20,7 @@ const routes = [
     key: "dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
-    component: <Dashboard />,
+    component: <PrivateRoute><Dashboard /></PrivateRoute>,
   },
   {
     type: "collapse",
@@ -27,7 +28,7 @@ const routes = [
     key: "monitoring",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
     route: "/monitoring",
-    component: <모니터링 />,
+    component: <PrivateRoute><모니터링 /></PrivateRoute>,
   },
   {
     type: "collapse",
@@ -35,7 +36,7 @@ const routes = [
     key: "tables",
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/tables",
-    component: <기록관리 />,
+    component: <PrivateRoute><기록관리 /></PrivateRoute>,
   },
   {
     type: "collapse",
@@ -43,7 +44,7 @@ const routes = [
     key: "billing",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/billing",
-    component: <Billing />,
+    component: <PrivateRoute><Billing /></PrivateRoute>,
   },
   {
     type: "collapse",
@@ -51,7 +52,7 @@ const routes = [
     key: "report",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/report",
-    component: <Report />,
+    component: <PrivateRoute><Report /></PrivateRoute>,
   },
   {
     type: "collapse",
@@ -59,7 +60,7 @@ const routes = [
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
-    component: <Notifications />,
+    component: <PrivateRoute><Notifications /></PrivateRoute>,
   },
   {
     type: "collapse",
@@ -67,7 +68,7 @@ const routes = [
     key: "profile",
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",
-    component: <Profile />,
+    component: <PrivateRoute><Profile /></PrivateRoute>,
   },
   {
     type: "collapse",

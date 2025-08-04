@@ -16,7 +16,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import PropTypes from "prop-types";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import CCTV_IMG from "assets/images/login.png";
-import { useMaterialUIController, setLayout } from "context";
+import { useMaterialUIController, setLayout, useAuthController } from "context";
 
 const theme = createTheme({
   palette: {
@@ -59,6 +59,7 @@ const theme = createTheme({
 
 function SignIn() {
   const [, dispatch] = useMaterialUIController();
+  const { login } = useAuthController();
   React.useEffect(() => {
     setLayout(dispatch, "page");
   }, [dispatch]);
@@ -99,6 +100,7 @@ function SignIn() {
       }
 
       const user = await res.json();
+      login(user);
       console.log("로그인 성공 사용자 정보:", user);
 
       // 로그인 성공 시 대시보드 페이지로 이동

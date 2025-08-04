@@ -18,7 +18,7 @@ Coded by www.creative-tim.com
   you can customize the states for the different components here.
 */
 
-import { createContext, useContext, useReducer, useMemo } from "react";
+import { createContext, useContext, useReducer, useMemo, useState } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
@@ -134,3 +134,40 @@ export {
   setLayout,
   setDarkMode,
 };
+
+const AuthContext = createContext();
+
+function AuthControllerProvider({ children }) {
+  const [user, setUser] = useState(null);
+
+  const login = (userData) => {
+    setUser(userData);
+  };
+
+  const logout = () => {
+    setUser(null);
+  };
+
+  const value = useMemo(() => ({ user, login, logout }), [user]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function useAuthController() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error(
+      "useAuthController should be used inside the AuthControllerProvider."
+    );
+  }
+
+  return context;
+}
+
+AuthControllerProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export { AuthControllerProvider, useAuthController };
+
