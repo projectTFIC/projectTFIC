@@ -57,7 +57,7 @@
     
     
     <!-- [ 기록 관리 : 안전장비 착용여부 게시판의 전체 데이터 조회하기 ] -->
-    <select id="selectAllPpeRecords" resultType="kr.cloud.web.dto.PpeRecordViewDto">
+    <select id="selectAllPpeRecords" resultType="kr.cloud.web.entitiy.PpeRecordViewDto">
         SELECT
             r.record_id		AS recordId,
             r.record_title	AS recordTitle,
@@ -80,7 +80,7 @@
     </select>
 
     <!-- [ 기록 관리 : 안전장비 착용여부 게시판의 특정 데이터 조회하기 ] -->
-    <select id="selectPpeRecordById" resultType="kr.cloud.web.dto.PpeRecordViewDto">
+    <select id="selectPpeRecordById" resultType="kr.cloud.web.entity.PpeRecordViewDto">
         SELECT
             r.record_id		AS recordId,
             r.record_title	AS recordTitle,
