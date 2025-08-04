@@ -1,22 +1,7 @@
-// @mui material components
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-
-// Material Dashboard 2 React components
-import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-
-// Material Dashboard 2 React example components
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import DataTable from "examples/Tables/DataTable";
-
-// Data
-import authorsTableData from "layouts/tables/data/authorsTableData";
-import projectsTableData from "layouts/tables/data/projectsTableData";
-
-import React, { useState } from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
@@ -25,52 +10,105 @@ import { Menu, MenuItem } from "@mui/material";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
+import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
+import MDBadge from "components/MDBadge";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+import DataTable from "examples/Tables/DataTable";
+
 function Tables() {
-  const location = useLocation(); // ✅ 이 줄 추가
-  const pathname = location.pathname; // ✅ 이 줄 추가
-  const { columns, rows } = authorsTableData();
-  const { columns: pColumns, rows: pRows } = projectsTableData();
-  const tabs = [
-    { label: "사고 감지", columns, rows },
-    { label: "안전장비 미착용", columns: pColumns, rows: pRows },
-    { label: "입출입", columns, rows },
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  // 고정 컬럼 정의
+  const columns = [
+    { Header: "No.", accessor: "listNum", align: "center" },
+    { Header: "제목", accessor: "title", align: "center" },
+    { Header: "유형", accessor: "type", align: "center" },
+    { Header: "날짜", accessor: "date", align: "center" },
   ];
 
+  // 탭별 데이터 상태
+  const [accidents, setAccidents] = useState([]);
+  const [ppe, setPpe] = useState([]);
+  const [access, setAccess] = useState([]);
+  // 탭, 필터, 검색 상태
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
   const [searchText, setSearchText] = useState("");
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleChange = (event, newValue) => {
-    setTabIndex(newValue);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  // API에서 데이터 fetch
+  useEffect(() => {
+    axios.get("/web/tablelist/accidents").then((res) => {
+      setAccidents(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.title,
+          type: <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />,
+          date: row.date,
+        }))
+      );
+    });
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    axios.get("/web/tablelist/equipment").then((res) => {
+      setPpe(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.title,
+          type: <MDBadge badgeContent="안전장비" color="warning" variant="gradient" size="lg" />,
+          date: row.date,
+        }))
+      );
+    });
 
+    axios.get("/web/tablelist/access").then((res) => {
+      setAccess(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.title,
+          type: <MDBadge badgeContent="입출입" color="info" variant="gradient" size="lg" />,
+          date: row.date,
+        }))
+      );
+    });
+  }, []);
+
+  const tabs = [
+    { label: "사고 감지", rows: accidents },
+    { label: "안전장비 미착용", rows: ppe },
+    { label: "입출입", rows: access },
+  ];
+
+  // 탭 이벤트 핸들러
+  const handleChange = (event, newValue) => setTabIndex(newValue);
+  const handleClose = () => setAnchorEl(null);
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleMenuItemClick = (type) => {
     setFilterType(type);
     handleClose();
   };
-
   const open = Boolean(anchorEl);
 
-  const { label, columns: currentColumns, rows: currentRows } = tabs[tabIndex];
+  // 검색 필터 적용 (제목 기준)
+  const filteredRows = searchText
+    ? tabs[tabIndex].rows.filter((row) => String(row.title).includes(searchText))
+    : tabs[tabIndex].rows;
+
+  const { rows: currentRows } = tabs[tabIndex];
 
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
-      <motion.div
-        key={pathname}
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -100, opacity: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
+    <motion.div
+      key={pathname}
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      transition={{ duration: 0.3 }}
+    >
+      <DashboardLayout>
+        <DashboardNavbar />
         <MDBox pt={6} pb={3}>
           <Grid container spacing={6}>
             <Grid item xs={12}>
@@ -99,13 +137,12 @@ function Tables() {
                         border: "none",
                       }}
                     >
-                      {tabs.map((tab, index) => (
-                        <Tab key={index} label={tab.label} />
+                      {tabs.map((tab, idx) => (
+                        <Tab key={idx} label={tab.label} />
                       ))}
                     </Tabs>
                   </MDTypography>
                 </MDBox>
-
                 <MDBox mx={2} mt={2} mb={1} display="flex" alignItems="center" gap={2}>
                   <Button
                     variant="outlined"
@@ -161,7 +198,7 @@ function Tables() {
                 </MDBox>
                 <MDBox pt={3}>
                   <DataTable
-                    table={{ columns: currentColumns, rows: currentRows }}
+                    table={{ columns, rows: filteredRows }}
                     isSorted={false}
                     entriesPerPage={false}
                     showTotalEntries={false}
@@ -173,8 +210,8 @@ function Tables() {
           </Grid>
         </MDBox>
         <Footer />
-      </motion.div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </motion.div>
   );
 }
 
