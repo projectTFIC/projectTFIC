@@ -11,6 +11,9 @@ import kr.cloud.web.entity.Devices;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.entity.HeRecord;
 import kr.cloud.web.entity.HeRecordViewDto;
+import kr.cloud.web.entity.PpeContent;
+import kr.cloud.web.entity.PpeRecord;
+import kr.cloud.web.entity.PpeRecordViewDto;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 
@@ -76,7 +79,31 @@ public interface BoardMapper {
     // 탐지 기록과 관련된 핵심 정보를 type_info 테이블에 저장한 후, 
     // 일부 정보를 다시 typeInfo 객체에 다시 담아 반환
     public void insertTypeInfo(TypeInfo typeInfo);
-
+    
+    
+    // =======================================================
+    // 				안전장비(PPE) 관련 메서드
+    // =======================================================
+    
+    // [ ppe_record 테이블에 데이터를 삽입하기 ]
+    public void insertPpeRecord(PpeRecord ppeRecord);
+    
+    
+    // [ ppe_content 테이블에 데이터를 삽입하기 ]
+    public void insertPpeContent(PpeContent ppeContent);
+    
+    
+    // [ 기록 관리 : 안전장비 착용여부 게시판의 게시글 전체 가져오기 ]
+    public List<PpeRecordViewDto> selectAllPpeRecords();
+    
+    
+    // [ 기록 관리 : 안전장비 착용여부 게시판의 특정 게시글 내용 조회하기 ]
+    public PpeRecordViewDto selectPpeRecordById(int recordId);
+    
+    
+    // =======================================================
+    // 				중장비(HE) 관련 메서드
+    // =======================================================
     
     // [ he_record 테이블에 데이터를 삽입하기 ]
     public void insertHeRecord(HeRecord heRecord);
