@@ -103,10 +103,10 @@ public class HeRecordService {
         String heTypeKor = ID_TO_KOREAN_NAME_MAP.getOrDefault(heTypeNum, "알 수 없는 장비");
         
         
-    	// 2. 상위 테이블 (type_info) 데이터 저징 및 준비
+    	// 2. 상위 테이블 (type_info) 데이터 준비 및 저장
         TypeInfo typeInfo = new TypeInfo();
         
-        // 3. type_info 테이블에 필요한 데이터 설정
+        // type_info 테이블에 필요한 데이터 설정
         String typeInfoTitle = "중장비 출입 " + typeInfoDateFormat.format(dto.getRegDate());
         
         typeInfo.setTypeRecord(typeInfoTitle);
@@ -114,14 +114,14 @@ public class HeRecordService {
         typeInfo.setLocation(location);
         typeInfo.setRegDate(dto.getRegDate());
         
-        // type_info 테이블에 삽입 후, 생성된 type_id 를 다시 받아오기
+        // 3. type_info 테이블에 삽입 후, 생성된 type_id 를 다시 받아오기
         boardMapper.insertTypeInfo(typeInfo);
         
         
-        // 4. 하위 테이블 (he_record) 에 데이터 저장
+        // 4. 하위 테이블 (he_record) 에 데이터 준비 및 저장
         HeRecord heRecord = new HeRecord();
         
-        // 5. 중장비 출입 기록에 필요한 데이터 설정
+        // 중장비 출입 기록에 필요한 데이터 설정
         String heRecordTitle = "[" + dto.getAccess() + "] " + heTypeKor + " " + heRecordDateFormat.format(dto.getRegDate());
         
         heRecord.setTypeId(typeInfo.getTypeId()); 

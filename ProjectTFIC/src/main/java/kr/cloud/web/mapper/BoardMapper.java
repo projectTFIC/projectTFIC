@@ -7,6 +7,10 @@ import org.apache.catalina.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import kr.cloud.web.entity.AccContent;
+import kr.cloud.web.entity.AccRecord;
+import kr.cloud.web.entity.AccRecordViewDto;
 import kr.cloud.web.entity.Devices;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.entity.HeRecord;
@@ -116,6 +120,25 @@ public interface BoardMapper {
     // [ 기록 관리 : 중장비 출입 게시판의 특정 게시글 내용 조회하기 ]
     public HeRecordViewDto selectHeRecordById(int recordId);
 
+    
+    // =======================================================
+    // 				사고(ACC) 관련 메서드
+    // =======================================================
+    
+    // [ acc_record 테이블에 데이터를 삽입하기 ]
+    public void insertAccRecord(AccRecord accRecord);
+    
+    
+    // [ acc_record 테이블에 데이터를 삽입하기 ]
+    public void insertAccContent(AccContent accContent);
+    
+    
+    // [ 기록 관리 : 사고 감지 게시판의 게시글 전체 가져오기 ]
+    public List<AccRecordViewDto> selectAllAccRecords();
+    
+    
+    // [ 기록 관리 : 사고 감지 게시판의 특정 게시글 내용 조회하기 ]
+    public AccRecordViewDto selectAccRecordById(int recordId);
 
 }
 	
