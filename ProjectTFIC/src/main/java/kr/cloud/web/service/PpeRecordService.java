@@ -40,10 +40,10 @@ public class PpeRecordService {
             
         }
         
-    	// 2. 상위 테이블 (type_info) 데이터 저징 및 준비
+    	// 2. 상위 테이블 (type_info) 데이터 준비 및 저장
         TypeInfo typeInfo = new TypeInfo();
         
-        // 3. type_info 테이블에 필요한 데이터 설정
+        // type_info 테이블에 필요한 데이터 설정
         String typeInfoTitle = "안전장비 미착용 " + new SimpleDateFormat("yyMMdd-HH:mm:ss").format(dto.getRegDate());
         
         typeInfo.setTypeRecord(typeInfoTitle);
@@ -52,7 +52,7 @@ public class PpeRecordService {
         typeInfo.setRegDate(dto.getRegDate());
         
         
-        // type_info 테이블에 삽입 후, 생성된 type_id 를 다시 받아오기
+        // 3. type_info 테이블에 삽입 후, 생성된 type_id 를 다시 받아오기
         boardMapper.insertTypeInfo(typeInfo);
         
         
@@ -60,24 +60,23 @@ public class PpeRecordService {
         PpeRecord ppeRecord = new PpeRecord(); 
         String ppeRecordTitle = "작업자 안전장비 미착용 " + new SimpleDateFormat("HH:mm:ss").format(dto.getRegDate());
         
-        ppeRecord.setTypeId(typeInfo.getTypeId()); // 3번에서 받은 type_id 설정
+        ppeRecord.setTypeId(typeInfo.getTypeId()); 			// 3번에서 받은 type_id 설정
         ppeRecord.setRecordTitle(ppeRecordTitle);
         ppeRecord.setOriginalImg(dto.getOriginalImg());
         ppeRecord.setDetectImg(dto.getDetectImg());
         
-        // ppe_Record 테이블에 삽입
+        // ppe_Record 테이블에 삽입 후, 생성된 record_id 받아오기
         boardMapper.insertPpeRecord(ppeRecord);
         
-        // 4. 하위 테이블 (ppe_content) 에 데이터 저장
+        // 5. 하위 테이블 (ppe_content) 에 데이터 저장
         PpeContent ppeContent = new PpeContent();
         
-        ppeContent.setRecordId(ppeRecord.getRecordId()); // 위에서 받은 record_id를 사용
+        ppeContent.setRecordId(ppeRecord.getRecordId()); 	// 앞서 반환받은 record_id를 사용
         ppeContent.setContent(dto.getContent());
         ppeContent.setHelmetOff(dto.getHelmetOff());
         ppeContent.setHookOff(dto.getHookOff());
         ppeContent.setBeltOff(dto.getBeltOff());
         ppeContent.setShoesOff(dto.getShoesOff());
-        
         
         // ppe_Content 테이블에 삽입
         boardMapper.insertPpeContent(ppeContent);

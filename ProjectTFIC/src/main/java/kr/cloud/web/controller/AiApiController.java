@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import kr.cloud.web.entity.AccRecordDto;
+import kr.cloud.web.entity.AccRecordViewDto;
 import kr.cloud.web.entity.HeRecordDto;
 import kr.cloud.web.entity.HeRecordViewDto;
 import kr.cloud.web.service.PpeRecordService;
 import kr.cloud.web.entity.PpeRecordDto;
 import kr.cloud.web.entity.PpeRecordViewDto;
+import kr.cloud.web.service.AccRecordService;
 import kr.cloud.web.service.HeRecordService;
 import lombok.RequiredArgsConstructor;
 
@@ -32,9 +35,10 @@ public class AiApiController {
 	// ㅇ AI / API 중장비 기능 처리 객체
 	private final PpeRecordService ppeRecordService;
 	private final HeRecordService heRecordService;
+	private final AccRecordService accRecordService;
 	
 	// =================================================================
-	// 안전장비 출입 (Personal Protect Equipment)
+	// 			안전장비 출입 (Personal Protect Equipment)
 	// =================================================================
 	
 	// [ 안전장비 착용여부 : 객체 탐지 기능 요청 ]
@@ -85,7 +89,7 @@ public class AiApiController {
 
     
 	// =================================================================
-	// 중장비 출입 (Heavy Equipment)
+	// 				중장비 출입 (Heavy Equipment)
 	// =================================================================
 	
 	// [ 중장비 출입 : 객체 탐지 기능 요청 ]
@@ -130,6 +134,52 @@ public class AiApiController {
         
         // 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
         return ResponseEntity.ok(record);
+    }
+    
+    
+	// =================================================================
+	// 				사고 감지 (Accident)
+	// =================================================================
+    
+	// [ 사고 감지 : 기능 요청 ]
+    @PostMapping("/acc-records")
+    public ResponseEntity<String> createAccRecord(@RequestBody AccRecordDto accRecordDto) {
+        try {
+        	// 1. 사고 기능 처리 객체를 사용하여 기록 저장
+            accRecordService.saveAccRecord(accRecordDto);
+            
+            // 2. 성공적으로 완료된 경우, python 에게 성공 신호와 메시지 전송
+            return ResponseEntity.status(HttpStatus.CREATED).body("기록이 성공적으로 생성되었습니다.");
+            
+        } catch (Exception e) {
+        	// 3. 에러가 발생한 경우, 에러 내용을 출력 + python 에게 에러 신호와 메시지 전송
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("기록 생성 중 오류 발생: " + e.getMessage());
+            
+        }
+    }
+	
+    // [ 사고 감지 : 자세 인식 전체 기록 조회 ]
+    @GetMapping("/acc-records")
+    public ResponseEntity<List<AccRecordViewDto>> getAllAccRecords() {
+    	
+    	// 1. 사고 감지와 관련된 전체 기록 가져오기
+        List<AccRecordViewDto> records = accRecordService.selectAllAccRecords();
+        
+        // 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
+        return ResponseEntity.ok(records);
+        
+    }
+
+    // [ 사고 감지 : 자세 인식 특정 기록 조회 ]
+    @GetMapping("/acc-records/{recordId}")
+    public ResponseEntity<AccRecordViewDto> getAccRecordById(@PathVariable int recordId) {
+    	
+    	// 1. 사고 감지와 관련된 특정 기록 가져오기
+    	AccRecordViewDto record = accRecordService.selectAccRecordById(recordId);
+    	
+    	// 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
+        return ResponseEntity.ok(record);
+        
     }
     
 

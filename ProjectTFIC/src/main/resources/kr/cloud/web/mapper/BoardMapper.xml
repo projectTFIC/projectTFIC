@@ -79,6 +79,7 @@
             r.record_id DESC
     </select>
 
+
     <!-- [ 기록 관리 : 안전장비 착용여부 게시판의 특정 데이터 조회하기 ] -->
     <select id="selectPpeRecordById" resultType="kr.cloud.web.entity.PpeRecordViewDto">
         SELECT
@@ -154,5 +155,64 @@
 	    WHERE
 	        r.record_id = #{recordId}
 	</select>
+	
+	
+	<!-- ======================================================= -->
+    <!-- 				사고(ACC) 관련 쿼리				         -->
+    <!-- ======================================================= -->
+    
+    <!-- [ 사고 감지 기록 저장 : acc_record ] -->
+    <insert id="insertAccRecord" useGeneratedKeys="true" keyProperty="recordId">
+        INSERT INTO acc_record (record_title, type_id, original_img, detect_img)
+        VALUES (#{recordTitle}, #{typeId}, #{originalImg}, #{detectImg})
+    </insert>
+
+
+    <!-- [ 사고 감지 기록 저장 : acc_content ] -->
+    <insert id="insertAccContent" useGeneratedKeys="true" keyProperty="contentId">
+        INSERT INTO acc_content (record_id, content)
+        VALUES (#{recordId}, #{content})
+    </insert>
+
+
+    <!-- [ 기록 관리 : 사고 감지 게시판의 전체 데이터 조회하기 ] -->
+    <select id="selectAllAccRecords" resultType="kr.cloud.web.entity.AccRecordViewDto">
+        SELECT
+            r.record_id     AS recordId,
+            r.record_title  AS recordTitle,
+            t.reg_date      AS regDate,
+            r.original_img  AS originalImg,
+            r.detect_img    AS detectImg,
+            c.content       AS content
+        FROM
+            acc_record r
+        JOIN
+            type_info t ON r.type_id = t.type_id
+        LEFT JOIN
+            acc_content c ON r.record_id = c.record_id
+        ORDER BY
+            r.record_id DESC
+    </select>
+
+
+    <!-- [ 기록 관리 : 사고 감지 게시판의 특정 데이터 조회하기 ] -->
+    <select id="selectAccRecordById" resultType="kr.cloud.web.entity.AccRecordViewDto">
+        SELECT
+            r.record_id     AS recordId,
+            r.record_title  AS recordTitle,
+            t.reg_date      AS regDate,
+            r.original_img  AS originalImg,
+            r.detect_img    AS detectImg,
+            c.content       AS content
+        FROM
+            acc_record r
+        JOIN
+            type_info t ON r.type_id = t.type_id
+        LEFT JOIN
+            acc_content c ON r.record_id = c.record_id
+        WHERE
+            r.record_id = #{recordId}
+    </select>
+    
 
 </mapper>
