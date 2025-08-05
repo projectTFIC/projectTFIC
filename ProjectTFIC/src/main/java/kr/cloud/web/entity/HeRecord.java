@@ -1,25 +1,42 @@
 package kr.cloud.web.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+@Entity
+@Table(name = "he_record")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class HeRecord {
-	
-	// [ he_record 테이블 ]
-	// 객체 탐지 : 중장비 출입 정보를 기록하는 테이블
-	
-	private int recordId;			// 기록 아이디
-	private String recordTitle;		// 기록 제목	
-	private int typeId;				// 기능 아이디
-	private String originalImg;		// 원본 이미지
-	private String detectImg;		// 감지 이미지
-	private int heType;				// 장비 유형
-	private String heNumber;		// 번호판
-	private String access;			// 입출입
 
+    @Id
+    @Column(name = "record_id")
+    private int recordId;
+
+    @Column(name = "record_title")
+    private String recordTitle;
+
+    @Column(name = "type_id")
+    private int typeId;
+
+    @Column(name = "original_img")
+    private String originalImg;
+
+    @Column(name = "detect_img")
+    private String detectImg;
+
+    @Column(name = "he_type")
+    private int heType;
+
+    @Column(name = "he_number")
+    private String heNumber;
+
+    @Column(name = "access")
+    private String access;
 }
