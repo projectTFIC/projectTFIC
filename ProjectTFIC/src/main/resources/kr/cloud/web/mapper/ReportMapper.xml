@@ -75,6 +75,7 @@
         FROM he_record hr
         JOIN type_info ti ON hr.type_id = ti.type_id
         WHERE ti.reg_date BETWEEN #{start} AND #{end}
+
     </select>
 
     <!-- 📑 4. 요약용: total (사고 + 출입 간단 요약 문자열로 통합) -->

@@ -155,5 +155,10 @@ public class HeRecordService {
     	
         return boardMapper.selectHeRecordById(recordId);
     }
+    //인식용 코드 
+    public String getKorTypeNameById(int typeId) {
+        return ID_TO_KOREAN_NAME_MAP.getOrDefault(typeId, "알 수 없음");
+    }
+
 
 }
