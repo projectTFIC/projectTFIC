@@ -57,8 +57,8 @@ function Tables() {
       setPpe(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.location,
-          type: <MDBadge badgeContent={row.title} color="warning" variant="gradient" size="lg" />,
+          title: row.title,
+          type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
@@ -66,20 +66,19 @@ function Tables() {
 
     axios.get("/web/tablelist/access").then((res) => {
       setAccess(
-        res.data.map((row, idx) => {
-          // [입차]나 [출차]만 추출
-          let typeText = "";
-          const match = typeof row.title === "string" && row.title.match(/^\[(.*?)\]/);
-          if (match) {
-            typeText = match[1]; // [입차] -> 입차, [출차] -> 출차
-          }
-          return {
-            listNum: idx + 1,
-            title: row.title,
-            type: <MDBadge badgeContent={typeText} color="info" variant="gradient" size="lg" />,
-            date: row.date,
-          };
-        })
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.title,
+          type: (
+            <MDBadge
+              badgeContent={row.access} // or row.accessType 등 실제 필드명 사용
+              color="info"
+              variant="gradient"
+              size="lg"
+            />
+          ),
+          date: row.date,
+        }))
       );
     });
   }, []);
