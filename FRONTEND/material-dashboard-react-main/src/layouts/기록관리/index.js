@@ -66,16 +66,25 @@ function Tables() {
 
     axios.get("/web/tablelist/access").then((res) => {
       setAccess(
-        res.data.map((row, idx) => ({
-          listNum: idx + 1,
-          title: row.title,
-          type: <MDBadge badgeContent={row.location} color="info" variant="gradient" size="lg" />,
-          date: row.date,
-        }))
+        res.data.map((row, idx) => {
+          // [입차]나 [출차]만 추출
+          let typeText = "";
+          const match = typeof row.title === "string" && row.title.match(/^\[(.*?)\]/);
+          if (match) {
+            typeText = match[1]; // [입차] -> 입차, [출차] -> 출차
+          }
+          return {
+            listNum: idx + 1,
+            title: row.title,
+            type: <MDBadge badgeContent={typeText} color="info" variant="gradient" size="lg" />,
+            date: row.date,
+          };
+        })
       );
     });
   }, []);
 
+  // 탭 트랜스폼, 검색 등은 useEffect 밖!
   const tabs = [
     { label: "사고 감지", rows: accidents },
     { label: "안전장비 미착용", rows: ppe },
@@ -97,7 +106,7 @@ function Tables() {
     ? tabs[tabIndex].rows.filter((row) => String(row.title).includes(searchText))
     : tabs[tabIndex].rows;
 
-  const { rows: currentRows } = tabs[tabIndex];
+  // const { rows: currentRows } = tabs[tabIndex]; // 사용하지 않으면 삭제
 
   return (
     <motion.div
