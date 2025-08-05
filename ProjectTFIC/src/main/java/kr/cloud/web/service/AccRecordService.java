@@ -60,12 +60,12 @@ public class AccRecordService {
         boardMapper.insertTypeInfo(typeInfo);
         
         
-        // 4. 중간 테이블 (ppe_record) 에 데이터 저장
+        // 4. 중간 테이블 (acc_record) 에 데이터 저장
         AccRecord accRecord = new AccRecord(); 
-        String ppeRecordTitle = "작업자 사고 감지 " + new SimpleDateFormat("HH:mm:ss").format(dto.getRegDate());
+        String accRecordTitle = "작업자 사고 감지 " + new SimpleDateFormat("HH:mm:ss").format(dto.getRegDate());
         
         accRecord.setTypeId(typeInfo.getTypeId()); 			// 3번에서 받은 type_id 설정
-        accRecord.setRecordTitle(ppeRecordTitle);
+        accRecord.setRecordTitle(accRecordTitle);
         accRecord.setOriginalImg(dto.getOriginalImg());
         accRecord.setDetectImg(dto.getDetectImg());
         
