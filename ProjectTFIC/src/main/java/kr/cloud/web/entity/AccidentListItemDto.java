@@ -13,4 +13,5 @@ public class AccidentListItemDto {
     private String type;
     private String location;
     private String date;
+    private String access;
 }

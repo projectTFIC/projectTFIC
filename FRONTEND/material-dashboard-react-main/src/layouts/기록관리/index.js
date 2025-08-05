@@ -46,8 +46,8 @@ function Tables() {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.title,
-          type: <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />,
+          title: row.type,
+          type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
@@ -58,7 +58,7 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.title,
-          type: <MDBadge badgeContent="안전장비" color="warning" variant="gradient" size="lg" />,
+          type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
@@ -69,13 +69,21 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.title,
-          type: <MDBadge badgeContent="입출입" color="info" variant="gradient" size="lg" />,
+          type: (
+            <MDBadge
+              badgeContent={row.access} // or row.accessType 등 실제 필드명 사용
+              color="info"
+              variant="gradient"
+              size="lg"
+            />
+          ),
           date: row.date,
         }))
       );
     });
   }, []);
 
+  // 탭 트랜스폼, 검색 등은 useEffect 밖!
   const tabs = [
     { label: "사고 감지", rows: accidents },
     { label: "안전장비 미착용", rows: ppe },
@@ -97,7 +105,7 @@ function Tables() {
     ? tabs[tabIndex].rows.filter((row) => String(row.title).includes(searchText))
     : tabs[tabIndex].rows;
 
-  const { rows: currentRows } = tabs[tabIndex];
+  // const { rows: currentRows } = tabs[tabIndex]; // 사용하지 않으면 삭제
 
   return (
     <motion.div

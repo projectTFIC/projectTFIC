@@ -1,14 +1,23 @@
 package kr.cloud.web.controller;
 
 import kr.cloud.web.entity.AccidentListItemDto;
+import kr.cloud.web.entity.StatisticsResponse;
 import kr.cloud.web.service.AccidentService;
+import kr.cloud.web.service.StatisticsService;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+
+
 import lombok.RequiredArgsConstructor;
 import java.util.List;
+
+// 기록관리 및 통계 컨트롤러
 
 @RestController
 @RequiredArgsConstructor
@@ -16,7 +25,8 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class TablesController {
     private final AccidentService accidentService;
-
+    private final StatisticsService statisticsService;
+    
     @GetMapping("/accidents")
     public List<AccidentListItemDto> getAccidents() {
         return accidentService.getAllAccidents();
@@ -28,5 +38,12 @@ public class TablesController {
     @GetMapping("/access")
     public List<AccidentListItemDto> getAccess() {
         return accidentService.getAccess();
+    }
+    @GetMapping("/statistics")
+    public ResponseEntity<StatisticsResponse> getStatistics(
+        @RequestParam("start") String start,
+        @RequestParam("end") String end
+    ) {
+        return ResponseEntity.ok(statisticsService.getStatistics(start, end));
     }
 }
