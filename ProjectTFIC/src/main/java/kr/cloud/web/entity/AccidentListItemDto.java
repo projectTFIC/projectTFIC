@@ -14,5 +14,7 @@ public class AccidentListItemDto {
     private String location;
     private String date;
     private String access;
-    private String detectImg; 
+    private String heNumber;
+    private String originalImg;
+    private String detectImg;
 }

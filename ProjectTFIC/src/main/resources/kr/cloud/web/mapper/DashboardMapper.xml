@@ -2,68 +2,115 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.cloud.web.mapper.DashboardMapper">
 
-  <!-- 금일 사고 감지 건수: acc_record + type_info.reg_date today -->
-  <select id="countTodayAccident" resultType="int">
-    SELECT COUNT(*)
-    FROM acc_record ar
-    JOIN type_info ti ON ar.type_id = ti.type_id
-    WHERE DATE(ti.reg_date) = CURDATE()
-  </select>
+	<!-- 금일 사고 감지 건수: acc_record + type_info.reg_date today -->
+	<select id="countTodayAccident" resultType="int">
+		SELECT COUNT(*)
+		FROM acc_record ar
+		JOIN type_info ti ON ar.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = CURDATE()
+	</select>
 
-  <!-- 전주 동일 요일 사고 감지 건수: acc_record + type_info.reg_date lastweek -->
-  <select id="countLastWeekAccident" resultType="int">
-    SELECT COUNT(*)
-    FROM acc_record ar
-    JOIN type_info ti ON ar.type_id = ti.type_id
-    WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-  </select>
+	<!-- 전일 동일 요일 사고 감지 건수: acc_record + type_info.reg_date Yesterday -->
+	<select id="countYesterdayAccident" resultType="int">
+		SELECT COUNT(*)
+		FROM acc_record ar
+		JOIN type_info ti ON ar.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+	</select>
 
-  <!-- 금일 중장비 출입 건수: he_record + type_info.reg_date + (type_info.type_record='중장비출입' 등 조건 가능) -->
-  <select id="countTodayEquipment" resultType="int">
-    SELECT COUNT(*)
-    FROM he_record hr
-    JOIN type_info ti ON hr.type_id = ti.type_id
-    WHERE DATE(ti.reg_date) = CURDATE()
-  </select>
+	<!-- 전주 동일 요일 사고 감지 건수: acc_record + type_info.reg_date lastweek -->
+	<select id="countLastWeekAccident" resultType="int">
+		SELECT COUNT(*)
+		FROM acc_record ar
+		JOIN type_info ti ON ar.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+	</select>
 
-  <!-- 전주 동일 요일 중장비 출입 건수: he_record + type_info.reg_date -->
-  <select id="countLastWeekEquipment" resultType="int">
-    SELECT COUNT(*)
-    FROM he_record hr
-    JOIN type_info ti ON hr.type_id = ti.type_id
-    WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-  </select>
+	<!-- 금일 중장비 출입 건수: he_record + type_info.reg_date + (type_info.type_record='중장비출입' 
+		등 조건 가능) -->
+	<select id="countTodayEquipment" resultType="int">
+		SELECT COUNT(*)
+		FROM he_record hr
+		JOIN type_info ti ON hr.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = CURDATE()
+	</select>
 
-  <!-- 금일 보호구 미착용 건수: ppe_record + type_info.reg_date + 미착용 컬럼조건 -->
-  <select id="countTodayPpe" resultType="int">
-    SELECT COUNT(*)
-    FROM ppe_record pr
-    JOIN type_info ti ON pr.type_id = ti.type_id
-    WHERE DATE(ti.reg_date) = CURDATE()
-  </select>
+	<!-- 전일 동일 요일 중장비 출입 건수: he_record + type_info.reg_date -->
+	<select id="countYesterdayEquipment" resultType="int">
+		SELECT COUNT(*)
+		FROM he_record hr
+		JOIN type_info ti ON hr.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+	</select>
 
-  <!-- 전주 동일 요일 보호구 미착용 건수 -->
-  <select id="countLastWeekPpe" resultType="int">
-    SELECT COUNT(*)
-    FROM ppe_record pr
-    JOIN type_info ti ON pr.type_id = ti.type_id
-    WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-  </select>
+	<!-- 전주 동일 요일 중장비 출입 건수: he_record + type_info.reg_date -->
+	<select id="countLastWeekEquipment" resultType="int">
+		SELECT COUNT(*)
+		FROM he_record hr
+		JOIN type_info ti ON hr.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+	</select>
 
-  <!-- 금일 이벤트 발생 건수 (예시, acc_record/ he_record/ ppe_record 등 전체 합이 필요하다면 UNION 또는 별도 집계!) -->
-  <select id="countTodayEvent" resultType="int">
-    SELECT
-      (SELECT COUNT(*) FROM acc_record ar JOIN type_info ti ON ar.type_id = ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY))
-      + (SELECT COUNT(*) FROM he_record hr JOIN type_info ti ON hr.type_id = ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY))
-      + (SELECT COUNT(*) FROM ppe_record pr JOIN type_info ti ON pr.type_id = ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY))
-  </select>
-  <!-- 이벤트 집계 기준(별도 테이블이 더 적절하면 테이블만 교체) -->
+	<!-- 금일 보호구 미착용 건수: ppe_record + type_info.reg_date + 미착용 컬럼조건 -->
+	<select id="countTodayPpe" resultType="int">
+		SELECT COUNT(*)
+		FROM ppe_record pr
+		JOIN type_info ti ON pr.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = CURDATE()
+	</select>
 
-<select id="countLastWeekEvent" resultType="int">
-    SELECT
-      (SELECT COUNT(*) FROM acc_record ar JOIN type_info ti ON ar.type_id = ti.type_id WHERE DATE(ti.reg_date) = CURDATE())
-      + (SELECT COUNT(*) FROM he_record hr JOIN type_info ti ON hr.type_id = ti.type_id WHERE DATE(ti.reg_date) = CURDATE())
-      + (SELECT COUNT(*) FROM ppe_record pr JOIN type_info ti ON pr.type_id = ti.type_id WHERE DATE(ti.reg_date) = CURDATE())
-  </select>
+	<!-- 전일 동일 요일 보호구 미착용 건수 -->
+	<select id="countYesterdayPpe" resultType="int">
+		SELECT COUNT(*)
+		FROM ppe_record pr
+		JOIN type_info ti ON pr.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+	</select>
 
+	<!-- 전주 동일 요일 보호구 미착용 건수 -->
+	<select id="countLastWeekPpe" resultType="int">
+		SELECT COUNT(*)
+		FROM ppe_record pr
+		JOIN type_info ti ON pr.type_id = ti.type_id
+		WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+	</select>
+
+	<!-- 금일 이벤트 발생 건수 (예시, acc_record/ he_record/ ppe_record 등 전체 합이 필요하다면 UNION 
+		또는 별도 집계!) -->
+	<select id="countTodayEvent" resultType="int">
+		SELECT
+		(SELECT COUNT(*) FROM acc_record ar JOIN type_info ti ON ar.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = CURDATE())
+		+ (SELECT COUNT(*) FROM he_record hr JOIN type_info ti ON hr.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = CURDATE())
+		+ (SELECT COUNT(*) FROM ppe_record pr JOIN type_info ti ON pr.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = CURDATE())
+	</select>
+	<!-- 이벤트 집계 기준(별도 테이블이 더 적절하면 테이블만 교체) -->
+
+	<select id="countYesterdayEvent" resultType="int">
+		SELECT
+		(SELECT COUNT(*) FROM acc_record ar JOIN type_info ti ON ar.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 1
+		DAY))
+		+ (SELECT COUNT(*) FROM he_record hr JOIN type_info ti ON hr.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 1
+		DAY))
+		+ (SELECT COUNT(*) FROM ppe_record pr JOIN type_info ti ON pr.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 1
+		DAY))
+	</select>
+
+	<select id="countLastWeekEvent" resultType="int">
+		SELECT
+		(SELECT COUNT(*) FROM acc_record ar JOIN type_info ti ON ar.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7
+		DAY))
+		+ (SELECT COUNT(*) FROM he_record hr JOIN type_info ti ON hr.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7
+		DAY))
+		+ (SELECT COUNT(*) FROM ppe_record pr JOIN type_info ti ON pr.type_id =
+		ti.type_id WHERE DATE(ti.reg_date) = DATE_SUB(CURDATE(), INTERVAL 7
+		DAY))
+	</select>
 </mapper>

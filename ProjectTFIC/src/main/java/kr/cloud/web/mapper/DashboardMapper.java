@@ -12,5 +12,10 @@ public interface DashboardMapper {
     int countLastWeekPpe();
     int countTodayEvent();
 	int countLastWeekEvent();
+	int countYesterdayAccident();
+	int countYesterdayEquipment();
+	int countYesterdayPpe();
+	int countYesterdayEvent();
+
 }
 
