@@ -231,7 +231,9 @@ function WeatherContainer() {
       // 카테고리별 값 찾기 함수 (최신 후보시간 기준 탐색)
       const findValueByCategory = (category) => {
         for (let t of candidateTimes) {
-          const item = items.find((i) => i.fcstDate === base_date && i.category === category && i.fcstTime === t);
+          const item = items.find(
+            (i) => i.fcstDate === base_date && i.category === category && i.fcstTime === t
+          );
           if (item) return item.fcstValue;
         }
         return null;
