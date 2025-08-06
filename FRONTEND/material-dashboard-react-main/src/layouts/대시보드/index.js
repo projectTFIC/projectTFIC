@@ -1,6 +1,6 @@
 // src/layouts/대시보드/index.js
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -12,9 +12,6 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
-
-// Charts Data
-import reportsLineChartData from "layouts/rtl/data/reportsLineChartData";
 
 // Custom sections
 import LogHistory from "layouts/대시보드/logHistory";
@@ -30,7 +27,42 @@ import 중장비 from "layouts/img/중장비3.png";
 import 보호장구 from "layouts/img/보호장구3.png";
 
 function DashBoard() {
-  const { sales, tasks } = reportsLineChartData;
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch("/web/tablelist/summary")
+      .then((res) => {
+        if (!res.ok) throw new Error("대시보드 요약 데이터를 불러오는데 실패했습니다.");
+        return res.json();
+      })
+      .then((data) => {
+        setSummary(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>대시보드 정보를 불러오는 중입니다...</div>;
+  if (error) return <div>오류가 발생했습니다: {error}</div>;
+
+  /*
+    summary 예시 예상 데이터 구조:
+    {
+      todayAccident: 7,
+      accidentDiff: 15,
+      todayEquipment: 12,
+      equipmentDiff: -3,
+      todayPpe: 21,
+      ppeDiff: 7,
+      todayEvent: 91,
+    }
+  */
 
   return (
     <DashboardLayout>
@@ -50,10 +82,10 @@ function DashBoard() {
                   color="primary"
                   icon={<img src={사고} alt="사고 아이콘" style={{ width: 110, height: 80 }} />}
                   title="금일 사고 감지"
-                  count={7}
+                  count={summary.todayAccident}
                   percentage={{
-                    color: "success",
-                    amount: "+15%",
+                    color: summary.accidentDiff >= 0 ? "success" : "error",
+                    amount: `${summary.accidentDiff > 0 ? "+" : ""}${summary.accidentDiff}%`,
                     label: "지난주 대비",
                   }}
                 />
@@ -65,10 +97,10 @@ function DashBoard() {
                   color="success"
                   icon={<img src={중장비} alt="중장비 아이콘" style={{ width: 75, height: 75 }} />}
                   title="중장비 출입"
-                  count="12"
+                  count={summary.todayEquipment}
                   percentage={{
-                    color: "success",
-                    amount: "-3%",
+                    color: summary.equipmentDiff >= 0 ? "success" : "error",
+                    amount: `${summary.equipmentDiff > 0 ? "+" : ""}${summary.equipmentDiff}%`,
                     label: "지난주 대비",
                   }}
                 />
@@ -82,11 +114,11 @@ function DashBoard() {
                     <img src={보호장구} alt="보호장구 아이콘" style={{ width: 75, height: 75 }} />
                   }
                   title="보호구 미착용"
-                  count="21"
+                  count={summary.todayPpe}
                   percentage={{
-                    color: "success",
-                    amount: "+7%",
-                    label: "지난달 대비",
+                    color: summary.ppeDiff >= 0 ? "success" : "error",
+                    amount: `${summary.ppeDiff > 0 ? "+" : ""}${summary.ppeDiff}%`,
+                    label: "지난주 대비",
                   }}
                 />
               </MDBox>
@@ -95,13 +127,13 @@ function DashBoard() {
               <MDBox mb={1.5}>
                 <ComplexStatisticsCard
                   color="warning"
-                  icon="person_add"
-                  title="판매량"
-                  count="+91"
+                  icon="person_add" // 기존처럼 아이콘 문자열이면 유지
+                  title="이벤트 발생"
+                  count={summary.todayEvent}
                   percentage={{
-                    color: "success",
-                    amount: "",
-                    label: "어제와 비교",
+                    color: summary.eventDiff >= 0 ? "success" : "error",
+                    amount: `${summary.eventDiff > 0 ? "+" : ""}${summary.eventDiff}%`, // 필요하면 값 채우기
+                    label: "지난주 대비",
                   }}
                 />
               </MDBox>
@@ -118,7 +150,7 @@ function DashBoard() {
                 </Box>
               </Grid>
 
-              {/* 날씨 + 식단 - 우측 6칸을 3:3 분할 */}
+              {/* 날씨 + 식단 - 우측 6칸 3:3 */}
               <Grid item xs={12} md={6}>
                 <Grid container spacing={2} sx={{ height: "100%" }}>
                   <Grid item xs={12} md={6}>
