@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import kr.cloud.web.entity.DashboardSummaryDto;
-import kr.cloud.web.entity.LogHistoryItemDto;
+import kr.cloud.web.dto.DashboardSummaryDto;
+import kr.cloud.web.dto.LogHistoryItemDto;
 import kr.cloud.web.mapper.DashboardMapper;
 
 @Service

@@ -1,10 +1,10 @@
 package kr.cloud.web.controller;
 
 import kr.cloud.web.dto.AccRecordViewDto;
+import kr.cloud.web.dto.DashboardSummaryDto;
 import kr.cloud.web.dto.HeRecordViewDto;
+import kr.cloud.web.dto.LogHistoryItemDto;
 import kr.cloud.web.dto.PpeRecordViewDto;
-import kr.cloud.web.entity.DashboardSummaryDto;
-import kr.cloud.web.entity.LogHistoryItemDto;
 import kr.cloud.web.entity.StatisticsResponse;
 import kr.cloud.web.service.AccRecordService;
 import kr.cloud.web.service.DashboardService;

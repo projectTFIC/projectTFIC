@@ -47,7 +47,7 @@
 
 
     <!-- 📑 2. 요약용: accident (사고 기록 요약용 DTO) -->
-    <select id="selectAccidentSummaryByPeriod" resultType="kr.cloud.web.entity.AccidentSummaryDto">
+    <select id="selectAccidentSummaryByPeriod" resultType="kr.cloud.web.dto.AccidentSummaryDto">
         SELECT
             ar.record_title AS recordTitle,
             ac.content AS content,

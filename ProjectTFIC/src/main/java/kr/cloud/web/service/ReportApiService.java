@@ -12,8 +12,8 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import kr.cloud.web.dto.AccidentSummaryDto;
 import kr.cloud.web.dto.HeRecordDto;
-import kr.cloud.web.entity.AccidentSummaryDto;
 import kr.cloud.web.service.HeRecordService;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.mapper.ReportMapper;

@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
-import kr.cloud.web.entity.LogHistoryItemDto;
+import kr.cloud.web.dto.LogHistoryItemDto;
 
 @Mapper
 public interface DashboardMapper {

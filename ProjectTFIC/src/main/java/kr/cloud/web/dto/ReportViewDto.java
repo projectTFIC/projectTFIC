@@ -1,4 +1,4 @@
-package kr.cloud.web.entity;
+package kr.cloud.web.dto;
 
 import lombok.Data;
 
