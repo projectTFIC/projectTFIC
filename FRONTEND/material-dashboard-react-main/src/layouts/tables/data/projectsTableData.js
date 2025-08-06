@@ -1,48 +1,19 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable react/function-component-definition */
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import MDAvatar from "components/MDAvatar";
 import MDBadge from "components/MDBadge";
 
-// Images
-import team2 from "assets/images/team-2.jpg";
-import team3 from "assets/images/team-3.jpg";
-import team4 from "assets/images/team-4.jpg";
-
 export default function data() {
-  const ListNum = ({ num, description }) => (
-    <MDBox lineHeight={1} textAlign="left">
-      <MDTypography display="block" variant="caption" fontWeight="medium" fontSize="17px">
-        {num}
-      </MDTypography>
-      <MDTypography variant="caption">{description}</MDTypography>
-    </MDBox>
+  const ListNum = ({ num }) => (
+    <MDTypography variant="caption" fontWeight="medium" fontSize="17px">
+      {num}
+    </MDTypography>
   );
 
-  const Title = ({ title, description }) => (
-    <MDBox lineHeight={1} textAlign="left">
-      <MDTypography display="block" variant="caption" fontWeight="medium" fontSize="15px">
-        {title}
-      </MDTypography>
-      <MDTypography variant="caption">{description}</MDTypography>
-    </MDBox>
+  const Title = ({ title }) => (
+    <MDTypography variant="caption" fontWeight="medium" fontSize="15px" color="black">
+      {title}
+    </MDTypography>
   );
 
   return {
@@ -52,119 +23,30 @@ export default function data() {
       { Header: "유형", accessor: "type", align: "center" },
       { Header: "날짜", accessor: "date", align: "center" },
     ],
-
     rows: [
       {
         listNum: <ListNum num="1" />,
         title: <Title title="작업자 안전화 미착용" />,
+        titleText: "작업자 안전화 미착용",
+        content: "작업자가 안전화를 착용하지 않은 것이 감지되었습니다.",
         type: (
           <MDBox ml={-1}>
             <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
           </MDBox>
         ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/07/18
-          </MDTypography>
-        ),
+        date: "25/07/18",
       },
       {
         listNum: <ListNum num="2" />,
         title: <Title title="작업자 헬멧 미착용" />,
+        titleText: "작업자 헬멧 미착용",
+        content: "작업자가 헬멧을 착용하지 않은 것이 감지되었습니다.",
         type: (
           <MDBox ml={-1}>
             <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
           </MDBox>
         ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/07/15
-          </MDTypography>
-        ),
-      },
-      {
-        listNum: <ListNum num="3" />,
-        title: <Title title="작업자 헬멧 미착용" />,
-        type: (
-          <MDBox ml={-1}>
-            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
-          </MDBox>
-        ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/07/12
-          </MDTypography>
-        ),
-      },
-      {
-        listNum: <ListNum num="4" />,
-        title: <Title title="작업자 보호조끼 미착용" />,
-        type: (
-          <MDBox ml={-1}>
-            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
-          </MDBox>
-        ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/07/06
-          </MDTypography>
-        ),
-      },
-      {
-        listNum: <ListNum num="5" />,
-        title: <Title title="작업자 안전화 미착용" />,
-        type: (
-          <MDBox ml={-1}>
-            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
-          </MDBox>
-        ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/06/28
-          </MDTypography>
-        ),
-      },
-      {
-        listNum: <ListNum num="6" />,
-        title: <Title title="작업자 보호조끼 미착용" />,
-        type: (
-          <MDBox ml={-1}>
-            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
-          </MDBox>
-        ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/06/21
-          </MDTypography>
-        ),
-      },
-      {
-        listNum: <ListNum num="7" />,
-        title: <Title title="작업자 헬멧 미착용" />,
-        type: (
-          <MDBox ml={-1}>
-            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
-          </MDBox>
-        ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/06/19
-          </MDTypography>
-        ),
-      },
-      {
-        listNum: <ListNum num="8" />,
-        title: <Title title="작업자 헬멧 미착용" />,
-        type: (
-          <MDBox ml={-1}>
-            <MDBadge badgeContent="안전장비 감지" color="warning" variant="gradient" size="lg" />
-          </MDBox>
-        ),
-        date: (
-          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-            25/06/13
-          </MDTypography>
-        ),
+        date: "25/07/15",
       },
     ],
   };
