@@ -53,15 +53,20 @@ function DashBoard() {
   if (error) return <div>오류가 발생했습니다: {error}</div>;
 
   /*
-    summary 예시 예상 데이터 구조:
+    summary 예상 데이터 구조 예:
     {
       todayAccident: 7,
       accidentDiff: 15,
+      yesterdayAccidentDiff: 2,   // 어제 대비 추가
       todayEquipment: 12,
       equipmentDiff: -3,
+      yesterdayEquipmentDiff: -1, // 어제 대비 추가
       todayPpe: 21,
       ppeDiff: 7,
+      yesterdayPpeDiff: 0,        // 어제 대비 추가
       todayEvent: 91,
+      eventDiff: 5,
+      yesterdayEventDiff: 3       // 어제 대비 추가
     }
   */
 
@@ -91,11 +96,14 @@ function DashBoard() {
                   }}
                   comparison={{
                     label: "어제 대비",
-                    amount: "+5건",
+                    amount: `${summary.yesterdayAccidentDiff > 0 ? "+" : ""}${
+                      summary.yesterdayAccidentDiff
+                    }건`,
                   }}
                 />
               </MDBox>
             </Grid>
+
             <Grid item xs={12} md={6} lg={3}>
               <MDBox mb={1.5}>
                 <ComplexStatisticsCard
@@ -110,11 +118,14 @@ function DashBoard() {
                   }}
                   comparison={{
                     label: "어제 대비",
-                    amount: "-1건",
+                    amount: `${summary.yesterdayEquipmentDiff > 0 ? "+" : ""}${
+                      summary.yesterdayEquipmentDiff
+                    }건`,
                   }}
                 />
               </MDBox>
             </Grid>
+
             <Grid item xs={12} md={6} lg={3}>
               <MDBox mb={1.5}>
                 <ComplexStatisticsCard
@@ -131,22 +142,31 @@ function DashBoard() {
                   }}
                   comparison={{
                     label: "어제 대비",
-                    amount: "+2건",
+                    amount: `${summary.yesterdayPpeDiff > 0 ? "+" : ""}${
+                      summary.yesterdayPpeDiff
+                    }건`,
                   }}
                 />
               </MDBox>
             </Grid>
+
             <Grid item xs={12} md={6} lg={3}>
               <MDBox mb={1.5}>
                 <ComplexStatisticsCard
                   color="warning"
-                  icon="person_add" // 기존처럼 아이콘 문자열이면 유지
+                  icon="person_add"
                   title="이벤트 발생"
                   count={summary.todayEvent}
                   percentage={{
                     color: summary.eventDiff >= 0 ? "success" : "error",
-                    amount: `${summary.eventDiff > 0 ? "+" : ""}${summary.eventDiff}%`, // 필요하면 값 채우기
+                    amount: `${summary.eventDiff > 0 ? "+" : ""}${summary.eventDiff}%`,
                     label: "지난주 대비",
+                  }}
+                  comparison={{
+                    label: "어제 대비",
+                    amount: `${summary.yesterdayEventDiff > 0 ? "+" : ""}${
+                      summary.yesterdayEventDiff
+                    }건`,
                   }}
                 />
               </MDBox>

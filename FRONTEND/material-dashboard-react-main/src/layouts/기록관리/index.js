@@ -21,10 +21,6 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 
-// Data
-import authorsTableData from "layouts/기록관리/data/authorsTableData";
-import projectsTableData from "layouts/기록관리/data/projectsTableData";
-
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
@@ -68,8 +64,9 @@ function Tables() {
           listNum: idx + 1,
           title: row.type,
           content: row.content,
-          image: row.image,
-          detectImg: row.detectImg, // 카멜케이스 key 적용
+          location: row.location,
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
           type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
           date: row.date,
         }))
@@ -83,8 +80,10 @@ function Tables() {
           listNum: idx + 1,
           title: row.title,
           content: row.content,
-          image: row.image,
-          detectImg: row.detectImg, // 카멜케이스 key 적용
+          location: row.location,
+          heNumber: row.heNumber, // 혹시 필요하다면 유지
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
           type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
           date: row.date,
         }))
@@ -99,7 +98,9 @@ function Tables() {
           title: row.title,
           content: row.content,
           image: row.image,
-          detectImg: row.detectImg, // 카멜케이스 key 적용
+          heNumber: row.heNumber,
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
           type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
           date: row.date,
         }))
@@ -282,20 +283,25 @@ function Tables() {
                                       >
                                         <Box p={2}>
                                           <MDTypography variant="body2" color="text">
-                                            감지된 이미지
+                                            {tabIndex === 2
+                                              ? `차량번호 :  ${row.heNumber || "정보 없음"}`
+                                              : `감지위치 :  ${row.location || "정보 없음"}`}
                                           </MDTypography>
-                                          {row.image && (
+                                          {row.originalImg && (
                                             <img
-                                              src={row.image}
+                                              src={row.originalImg}
                                               alt="게시글 이미지"
                                               style={{
-                                                maxWidth: "100%",
-                                                marginTop: "10px",
-                                                borderRadius: "8px",
+                                                maxWidth: "800px",
+                                                maxHeight: "500px",
+                                                width: "100%",
+                                                height: "auto",
+                                                borderRadius: 6,
+                                                marginTop: 4,
+                                                objectFit: "contain",
                                               }}
                                             />
                                           )}
-                                          {/* detectImg 추가 출력 */}
                                           {row.detectImg && (
                                             <Box mt={2}>
                                               {row.detectImg.startsWith("http") ||
