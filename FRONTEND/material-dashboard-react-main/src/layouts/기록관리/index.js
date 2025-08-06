@@ -43,6 +43,7 @@ export default function Tables() {
     { label: "입출입", columns: accessData.columns || [], rows: accessData.rows || [] },
   ];
 
+  // 상태
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
   const [searchText, setSearchText] = useState("");
@@ -62,6 +63,7 @@ export default function Tables() {
   const currentColumns = tabs[tabIndex].columns;
   const currentRows = tabs[tabIndex].rows;
 
+  // 검색 필터링
   const filteredRows = currentRows.filter((r) => {
     const txt = searchText.trim().toLowerCase();
     if (!txt) return true;
@@ -73,7 +75,7 @@ export default function Tables() {
     return true;
   });
 
-  // rowId 기반 토글
+  // 토글
   const toggleRow = (rowId) => {
     setExpandedRows((prev) =>
       prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
@@ -103,7 +105,7 @@ export default function Tables() {
   // 각 행에 rowId 부여
   const rowsWithId = filteredRows.map((r, i) => ({
     ...r,
-    rowId: `${tabIndex}-${i}`, // 탭별 유니크 값
+    rowId: `${tabIndex}-${i}`, // ← 여기 문법 오류 수정
   }));
 
   return (

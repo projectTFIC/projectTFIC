@@ -1,26 +1,40 @@
 package kr.cloud.web.entity;
 
+import jakarta.persistence.*;
 import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity // 이 어노테이션 반드시 추가
+@Table(name = "report") // DB 테이블명과 다르면 명시할 것, 아니면 생략 가능
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class Report {
-	
-	// [ Report 테이블 ]
-	// 보고서 작성 관련 정보
-	
-	private int report_Id;			// 레포트 아이디
-	private String reportTitle;		// 레포트 제목		
-	private Long typeId;		// 사건 분류
-	private String reportFile;		// 사건 관련 자료
-	private String userId;		// 사용자 아이디
-	private String name;			// 작성자
-	private Date regDate;			// 등록일시
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto_increment일 경우
+    @Column(name = "report_id") // DB 컬럼명과 다르면 명시할 것
+    private int reportId;
+
+    @Column(name = "report_title")
+    private String reportTitle;
+
+    @Column(name = "type_id")
+    private Long typeId;
+
+    @Column(name = "report_file")
+    private String reportFile;
+
+    @Column(name = "user_id")
+    private String userId;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "reg_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date regDate;
 }

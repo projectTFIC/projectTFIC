@@ -3,6 +3,8 @@ package kr.cloud.web.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import kr.cloud.web.entity.AccidentSummaryDto;
+import kr.cloud.web.entity.HeRecordDto;
 import kr.cloud.web.entity.Report;
 
 import java.util.Date;
@@ -10,12 +12,13 @@ import java.util.List;
 
 @Mapper
 public interface  ReportMapper {
-	  // 기간(등록일) 기준으로 조회
-    List<Report> selectReportsByPeriod(@Param("start") Date start, @Param("end") Date end);
+	// 게시판 관련
+	List<Report> selectReportsByPeriod(@Param("start") Date start, @Param("end") Date end);
+	Report selectReportById(@Param("reportId") int reportId);
+	List<Report> selectAllReports();
 
-    // 필요하다면 단건/전체 조회 등도 추가 가능
-    Report selectReportById(@Param("reportId") int reportId);
-    List<Report> selectAllReports();
-    String getSummaryByTypeAndPeriod(@Param("start") Date start, @Param("end") Date end, @Param("type") String reportType);
-
+	// 보고서 요약 관련
+	List<AccidentSummaryDto> selectAccidentSummaryByPeriod(@Param("start") Date start, @Param("end") Date end);
+	List<HeRecordDto> selectHeRecordsByPeriod(@Param("start") Date start, @Param("end") Date end);
+	String getTotalSummaryByPeriod(@Param("start") Date start, @Param("end") Date end);
 }

@@ -22,6 +22,7 @@ import {
   setMiniSidenav,
   setOpenConfigurator,
   setDirection,
+  AuthControllerProvider,
 } from "context";
 
 // Routes
@@ -32,6 +33,14 @@ import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 
 export default function App() {
+  return (
+    <AuthControllerProvider>
+      <MainApp />
+    </AuthControllerProvider>
+  );
+}
+
+function MainApp() {
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,
@@ -120,7 +129,7 @@ export default function App() {
           <Sidenav
             color={sidenavColor}
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-            brandName="Material Dashboard 2"
+            brandName="TFIC"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}

@@ -9,22 +9,210 @@
 	
 	
 	<!-- [ 회원가입 정보 저장하기 ] -->
-	<insert id="goRegister" parameterType="kr.cloud.web.entity.Users">
+	<insert id="goRegister" parameterType="kr.cloud.web.entity.Users" useGeneratedKeys="true" keyProperty="idx">
 		INSERT INTO users(user_id, password, name, department, email, phone, reg_date)
 		VALUES(#{user_id} ,#{password} ,#{name}, #{department}, #{email}, #{phone}, now());
 	</insert>
 	
-	<!-- 알림 리스트 조회하기 -->
+	
+	<!-- [ 알림 리스트 조회하기 ] -->
 	<select id="selectAll" resultType="kr.cloud.web.entity.TypeInfo">
 		SELECT * FROM type_info ORDER BY type_id DESC;
 	</select>
 
-	<!-- 로그인 중복 아이디 확인 -->
+
+	<!-- [ 로그인 중복 아이디 확인 ] -->
 	<select id="checkUserIdExists" parameterType="java.lang.String" resultType="int">
         SELECT COUNT(*) 
         FROM users 
         WHERE user_id = #{user_id}
     </select>
 
+
+    <!-- [ 탐지 기록 핵심 정보 저장 ] -->
+    <insert id="insertTypeInfo" parameterType="kr.cloud.web.entity.TypeInfo" useGeneratedKeys="true" keyProperty="typeId">
+        INSERT INTO type_info 
+            (type_record, device_id, location, reg_date)
+        VALUES 
+            (#{typeRecord}, #{deviceId}, #{location}, #{regDate})
+    </insert>
+
+
+    <!-- ======================================================= -->
+    <!-- 				안전장비(PPE) 관련 쿼리				         -->
+    <!-- ======================================================= -->
+    
+    <!-- [ 안전장비 착용여부 탐지 기록 저장 : ppe_record ] -->
+    <insert id="insertPpeRecord" useGeneratedKeys="true" keyProperty="recordId">
+        INSERT INTO ppe_record (record_title, type_id, original_img, detect_img)
+        VALUES (#{recordTitle}, #{typeId}, #{originalImg}, #{detectImg})
+    </insert>
+    
+    
+    <!-- [ 안전장비 착용여부 탐지 기록 저장 : ppe_content ] -->
+    <insert id="insertPpeContent" useGeneratedKeys="true" keyProperty="contentId">
+        INSERT INTO ppe_content (record_id, content, helmet_off, hook_off, belt_off, shoes_off)
+        VALUES (#{recordId}, #{content}, #{helmetOff}, #{hookOff}, #{beltOff}, #{shoesOff})
+    </insert>
+    
+    
+    <!-- [ 기록 관리 : 안전장비 착용여부 게시판의 전체 데이터 조회하기 ] -->
+    <select id="selectAllPpeRecords" resultType="kr.cloud.web.entity.PpeRecordViewDto">
+        SELECT
+            r.record_id		AS recordId,
+            r.record_title	AS recordTitle,
+            t.reg_date		AS regDate,
+            r.original_img	AS originalImg,
+            r.detect_img	AS detectImg,
+            c.content		AS content,
+            c.helmet_off	AS helmetOff,
+            c.hook_off		AS hookOff,
+            c.belt_off		AS beltOff,
+            c.shoes_off		AS shoesOff
+        FROM
+            ppe_record r
+        JOIN
+            type_info t ON r.type_id = t.type_id
+        LEFT JOIN
+            ppe_content c ON r.record_id = c.record_id
+        ORDER BY
+            r.record_id DESC
+    </select>
+
+
+    <!-- [ 기록 관리 : 안전장비 착용여부 게시판의 특정 데이터 조회하기 ] -->
+    <select id="selectPpeRecordById" resultType="kr.cloud.web.entity.PpeRecordViewDto">
+        SELECT
+            r.record_id		AS recordId,
+            r.record_title	AS recordTitle,
+            t.reg_date		AS regDate,
+            r.original_img	AS originalImg,
+            r.detect_img	AS detectImg,
+            c.content		AS content,
+            c.helmet_off	AS helmetOff,
+            c.hook_off		AS hookOff,
+            c.belt_off		AS beltOff,
+            c.shoes_off		AS shoesOff
+        FROM
+            ppe_record r
+        JOIN
+            type_info t ON r.type_id = t.type_id
+        LEFT JOIN
+            ppe_content c ON r.record_id = c.record_id
+        WHERE
+            r.record_id = #{recordId}
+    </select>
+    
+    
+    <!-- ======================================================= -->
+    <!-- 				중장비(HE) 관련 쿼리				         -->
+    <!-- ======================================================= -->
+
+    <!-- [ 중장비 출입 탐지 기록 저장 ] -->
+    <insert id="insertHeRecord" parameterType="kr.cloud.web.entity.HeRecord" useGeneratedKeys="true" keyProperty="recordId">
+        INSERT INTO he_record 
+            (record_title, type_id, original_img, detect_img, he_type, he_number, access)
+        VALUES 
+            (#{recordTitle}, #{typeId}, #{originalImg}, #{detectImg}, #{heType}, #{heNumber}, #{access})
+    </insert>
+    
+    
+    <!-- [ 기록 관리 : 중장비 출입 게시판의 전체 데이터 조회하기 ] -->
+	<select id="selectAllHeRecords" resultType="kr.cloud.web.entity.HeRecordViewDto">
+	    SELECT
+	        r.record_id     AS recordId,
+	        r.record_title  AS recordTitle,
+	        t.reg_date      AS regDate,
+	        r.original_img  AS originalImg,
+	        r.detect_img    AS detectImg,
+	        r.he_type       AS heType,
+	        r.he_number     AS heNumber,
+	        r.access        AS access
+	    FROM
+	        type_info t
+	    JOIN
+	        he_record r ON t.type_id = r.type_id
+	    ORDER BY
+	        r.record_id DESC
+	</select>
+	
+	
+	<!-- [ 기록 관리 : 중장비 출입 게시판의 특정 데이터 조회하기 ] -->
+	<select id="selectHeRecordById" parameterType="int" resultType="kr.cloud.web.entity.HeRecordViewDto">
+	    SELECT
+	        r.record_id     AS recordId,
+	        r.record_title  AS recordTitle,
+	        t.reg_date      AS regDate,
+	        r.original_img  AS originalImg,
+	        r.detect_img    AS detectImg,
+	        r.he_type       AS heType,
+	        r.he_number     AS heNumber,
+	        r.access        AS access
+	    FROM
+	        type_info t
+	    JOIN
+	        he_record r ON t.type_id = r.type_id
+	    WHERE
+	        r.record_id = #{recordId}
+	</select>
+	
+	
+	<!-- ======================================================= -->
+    <!-- 				사고(ACC) 관련 쿼리				         -->
+    <!-- ======================================================= -->
+    
+    <!-- [ 사고 감지 기록 저장 : acc_record ] -->
+    <insert id="insertAccRecord" useGeneratedKeys="true" keyProperty="recordId">
+        INSERT INTO acc_record (record_title, type_id, original_img, detect_img)
+        VALUES (#{recordTitle}, #{typeId}, #{originalImg}, #{detectImg})
+    </insert>
+
+
+    <!-- [ 사고 감지 기록 저장 : acc_content ] -->
+    <insert id="insertAccContent" useGeneratedKeys="true" keyProperty="contentId">
+        INSERT INTO acc_content (record_id, content)
+        VALUES (#{recordId}, #{content})
+    </insert>
+
+
+    <!-- [ 기록 관리 : 사고 감지 게시판의 전체 데이터 조회하기 ] -->
+    <select id="selectAllAccRecords" resultType="kr.cloud.web.entity.AccRecordViewDto">
+        SELECT
+            r.record_id     AS recordId,
+            r.record_title  AS recordTitle,
+            t.reg_date      AS regDate,
+            r.original_img  AS originalImg,
+            r.detect_img    AS detectImg,
+            c.content       AS content
+        FROM
+            acc_record r
+        JOIN
+            type_info t ON r.type_id = t.type_id
+        LEFT JOIN
+            acc_content c ON r.record_id = c.record_id
+        ORDER BY
+            r.record_id DESC
+    </select>
+
+
+    <!-- [ 기록 관리 : 사고 감지 게시판의 특정 데이터 조회하기 ] -->
+    <select id="selectAccRecordById" resultType="kr.cloud.web.entity.AccRecordViewDto">
+        SELECT
+            r.record_id     AS recordId,
+            r.record_title  AS recordTitle,
+            t.reg_date      AS regDate,
+            r.original_img  AS originalImg,
+            r.detect_img    AS detectImg,
+            c.content       AS content
+        FROM
+            acc_record r
+        JOIN
+            type_info t ON r.type_id = t.type_id
+        LEFT JOIN
+            acc_content c ON r.record_id = c.record_id
+        WHERE
+            r.record_id = #{recordId}
+    </select>
+    
 
 </mapper>
