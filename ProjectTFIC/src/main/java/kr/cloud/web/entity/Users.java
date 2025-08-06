@@ -2,26 +2,54 @@ package kr.cloud.web.entity;
 
 import java.util.Date;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+@Entity
+@Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class Users {
 	
 	// [ users 테이블 ]
-	// 유저 정보
+	// 회원 프로필 정보
 	
-	private int idx;			// 유저 고유번호
-	private String userId;		// 유저 아이디	
-	private String password;	// 유저 비밀번호
-	private String name;		// 유저 이름
-	private String department;	// 유저 소속
-	private String email;		// 유저 이메일
-	private String phone;		// 유저 핸드폰
-	private Date regDate;		// 유저 등록일시
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY) 
+	@Column(name = "idx")
+	private int idx;				// 고유번호
+	
+	@Column(name = "user_id")
+	private String userId;			// 아이디	
+	
+	@Column(name = "password")
+	private String password;		// 비밀번호
+	
+	@Column(name = "name")
+	private String name;			// 이름
+	
+	@Column(name = "department")
+	private String department;		// 부서
+	
+	@Column(name = "rank")
+	private String rank;			// 직급
+	
+	@Column(name = "email")
+	private String email;			// 이메일
+	
+	@Column(name = "phone")
+	private String phone;			// 연락처
+	
+	@Column(name = "reg_date")
+	private Date regDate;			// 등록일시
 
 }

@@ -25,24 +25,24 @@ public class Report {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     @Column(name = "report_id")
-    private int reportId;        // 보고서 아이디
+    private int reportId;        	// 보고서 아이디
 	
 	@Column(name = "report_title")
-    private String reportTitle;  // 보고서 제목 
+    private String reportTitle;  	// 보고서 제목 
 	
 	@Column(name = "type_id")
-    private Long typeId;         // 보고서 유형
+    private Long typeId;         	// 보고서 유형
 	
 	@Column(name = "report_file")
-    private String reportFile;   // 보고서 파일
+    private String reportFile;   	// 보고서 파일
 	
 	@Column(name = "user_id")
-    private String userId;       // 작성자 아이디
+    private String userId;       	// 작성자 아이디
 	
 	@Column(name = "name")
-    private String name;         // 작성자 이름 
+    private String name;         	// 작성자 이름 
 	
     @Column(name = "reg_date")
-    private Date regDate;        // 등록일시
+    private Date regDate;        	// 등록일시
     
 }

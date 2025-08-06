@@ -63,7 +63,7 @@
     </select>
 
     <!-- 📑 3. 요약용: entry (출입 기록 조회용 DTO: HeRecordDto) -->
-    <select id="selectHeRecordsByPeriod" resultType="kr.cloud.web.entity.HeRecordDto">
+    <select id="selectHeRecordsByPeriod" resultType="kr.cloud.web.dto.HeRecordDto">
         SELECT
             ti.device_id AS deviceId,
             hr.he_type AS heType,

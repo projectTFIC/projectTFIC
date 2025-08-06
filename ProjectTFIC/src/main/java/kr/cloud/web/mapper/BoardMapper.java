@@ -35,10 +35,12 @@ public interface BoardMapper {
 	
 	public int goRegister(Users register);
 
+	
 	public List<TypeInfo> selectAll();
 	
+	
 	@Select("SELECT COUNT(*) FROM users WHERE user_id = #{userId}")
-	Integer countByUserId(String userId);
+	public Integer countByUserId(String userId);
 	
 
 	@Select("""
@@ -54,7 +56,7 @@ public interface BoardMapper {
 	        JOIN users u ON r.user_id = u.user_id
 	        ORDER BY r.reg_date DESC
 	    """)
-	    List<Report> getAllReports();
+	public List<Report> getAllReports();
 
 	    @Select("""
 	        SELECT
@@ -70,7 +72,7 @@ public interface BoardMapper {
 	        WHERE r.reg_date BETWEEN #{start} AND #{end}
 	        ORDER BY r.reg_date DESC
 	    """)
-	    List<Report> getReportsByPeriod(java.sql.Date start, java.sql.Date end);
+	public List<Report> getReportsByPeriod(java.sql.Date start, java.sql.Date end);
 
 	
     // [ 장비 ID로 장소 이름을 조회하기 ]
