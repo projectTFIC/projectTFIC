@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Grid from "@mui/material/Grid";
@@ -6,78 +7,77 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import TableCell from "@mui/material/TableCell";
+import Collapse from "@mui/material/Collapse";
+import { Box } from "@mui/material";
 
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
 import DataTable from "examples/Tables/DataTable";
 
-// projectsTableData 파일에 구현한 커스텀 훅 불러오기 (또는 API 연동 훅)
 import useProjectsTableData from "layouts/billing/data/projectsTableData";
 
-// 제목 컬럼 셀 컴포넌트 (다운로드 링크 포함)
-function TitleCell({ row }) {
+function TitleCell({ value, rowId, onToggle }) {
   return (
-    <a
-      href={`http://localhost:8090/reportlist/download?fileName=${encodeURIComponent(
-        row.original.reportFile
-      )}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
-      download
+    <span
+      style={{ cursor: "pointer", fontWeight: "bold", color: "black" }}
+      onClick={() => onToggle(rowId)}
     >
-      {row.original.title}
-    </a>
+      {value}
+    </span>
   );
 }
 TitleCell.propTypes = {
-  row: PropTypes.shape({
-    original: PropTypes.shape({
-      reportFile: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
+  value: PropTypes.string.isRequired,
+  rowId: PropTypes.string.isRequired,
+  onToggle: PropTypes.func.isRequired,
 };
+
 function Billing() {
-  // 검색어, 필터 상태
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState("title");
   const [anchorEl, setAnchorEl] = useState(null);
-
-  // 날짜 필터 상태 (중복 선언 제거)
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [expandedRows, setExpandedRows] = useState([]);
 
-  // API에서 컬럼과 행 데이터 받아오기 (날짜 필터 인자 전달)
   const { columns, rows } = useProjectsTableData(startDate, endDate);
 
-  // 제목 컬럼에 다운로드 링크 Cell 추가
-  const columnsWithDownload = columns.map((col) => {
-    if (col.accessor === "title") {
-      return {
-        ...col,
-        Cell: TitleCell,
-      };
-    }
-    return col;
-  });
+  // 각 행에 고유 ID 부여
+  const rowsWithId = rows.map((row, i) => ({
+    ...row,
+    rowId: `${i}`, // 필요시 날짜·타입 등 조합 가능
+  }));
 
-  // 필터링된 데이터 계산
-  const filteredRows = rows.filter((item) => {
+  const handleToggleRow = (rowId) => {
+    setExpandedRows((prev) =>
+      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
+    );
+  };
+
+  const columnsWithToggle = columns.map((col) =>
+    col.accessor === "title"
+      ? {
+          ...col,
+          Cell: ({ value, row }) => (
+            <TitleCell value={value} rowId={row.original.rowId} onToggle={handleToggleRow} />
+          ),
+        }
+      : col
+  );
+
+  const filteredRows = rowsWithId.filter((item) => {
     const text = searchText.toLowerCase();
-
-    // originDate가 "2025-08-01T..." 형식 문자열이라 startDate/endDate와 비교하기 위해 Date 객체로 변환
     const itemDate = new Date(item.originDate);
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
-    // 날짜 필터 (item.date 포맷 주의)
     const isDateInRange = (!start || itemDate >= start) && (!end || itemDate <= end);
     if (!isDateInRange) return false;
 
-    // 텍스트 필터링 조건
     if (filterType === "title") {
       return item.title?.toLowerCase().includes(text);
     } else if (filterType === "author") {
@@ -88,7 +88,6 @@ function Billing() {
     return true;
   });
 
-  // 필터 메뉴 열기/닫기 이벤트
   const open = Boolean(anchorEl);
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -96,6 +95,43 @@ function Billing() {
     setFilterType(type);
     handleClose();
   };
+
+  // 토글 포함 테이블 행 구성
+  const tableRowsWithContent = [];
+  filteredRows.forEach((row) => {
+    tableRowsWithContent.push(row);
+    if (expandedRows.includes(row.rowId)) {
+      tableRowsWithContent.push({
+        title: (
+          <TableCell colSpan={columns.length} style={{ padding: 0 }}>
+            <Collapse
+              in={expandedRows.includes(row.rowId)}
+              timeout={300}
+              style={{ backgroundColor: "#f9f9f9", borderTop: "1px solid #eee" }}
+            >
+              <Box p={2}>
+                <MDTypography variant="body2" color="text">
+                  {row.content || `${row.title} 보고서 내용이 없습니다.`}
+                </MDTypography>
+                {row.image && (
+                  <img
+                    src={row.image}
+                    alt="보고서 이미지"
+                    style={{
+                      maxWidth: "100%",
+                      marginTop: "10px",
+                      borderRadius: "8px",
+                    }}
+                  />
+                )}
+              </Box>
+            </Collapse>
+          </TableCell>
+        ),
+        isExpandedContent: true,
+      });
+    }
+  });
 
   return (
     <DashboardLayout>
@@ -105,7 +141,7 @@ function Billing() {
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
-              {/* 필터 바 */}
+              {/* 필터 */}
               <MDBox
                 mx={2}
                 mt={2}
@@ -116,7 +152,6 @@ function Billing() {
                 flexWrap="wrap"
                 gap={2}
               >
-                {/* 왼쪽: 필터 버튼 + 검색 입력 */}
                 <MDBox display="flex" alignItems="center" gap={2} flexGrow={1}>
                   <Button
                     variant="outlined"
@@ -137,7 +172,6 @@ function Billing() {
                       ? "작성자"
                       : "제목+작성자"}
                   </Button>
-
                   <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                     <MenuItem onClick={() => handleMenuItemClick("title")}>제목</MenuItem>
                     <MenuItem onClick={() => handleMenuItemClick("author")}>작성자</MenuItem>
@@ -154,7 +188,6 @@ function Billing() {
                   />
                 </MDBox>
 
-                {/* 오른쪽: 날짜 필터 */}
                 <MDBox display="flex" alignItems="center" gap={1}>
                   <TextField
                     type="date"
@@ -174,10 +207,13 @@ function Billing() {
                 </MDBox>
               </MDBox>
 
-              {/* 데이터 테이블 출력 */}
+              {/* 테이블 */}
               <MDBox pt={3}>
                 <DataTable
-                  table={{ columns: columnsWithDownload, rows: filteredRows }}
+                  table={{
+                    columns: columnsWithToggle,
+                    rows: tableRowsWithContent,
+                  }}
                   isSorted={false}
                   entriesPerPage={false}
                   showTotalEntries={false}

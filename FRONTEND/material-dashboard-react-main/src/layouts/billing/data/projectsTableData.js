@@ -1,3 +1,4 @@
+// src/layouts/billing/data/projectsTableData.js
 import axios from "axios";
 import { useState, useEffect } from "react";
 
@@ -25,8 +26,12 @@ export default function useProjectsTableData(startDate, endDate) {
           title: item.reportTitle,
           author: item.name,
           date: new Date(item.regDate).toLocaleDateString("ko-KR").replace(/\./g, "/").slice(2, -1),
-          reportFile: item.reportFile, // 다운로드에 필요하므로 같이 포함
-          originDate: item.regDate, // 필터링용 원본날짜
+          reportFile: item.reportFile,
+          originDate: item.regDate,
+          // 토글로 보여줄 내용 (백엔드에 내용 필드 없으면 임시 문구)
+          content: item.reportContent
+            ? item.reportContent
+            : `${item.reportTitle} 보고서 내용이 없습니다.`,
         }));
 
         setRows(data);
