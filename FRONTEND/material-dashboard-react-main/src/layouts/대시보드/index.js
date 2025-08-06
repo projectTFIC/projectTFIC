@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 import 사고 from "layouts/img/사고3.png";
 import 중장비 from "layouts/img/중장비3.png";
 import 보호장구 from "layouts/img/보호장구3.png";
+import CCTV from "layouts/img/cctv1.png";
 
 function DashBoard() {
   const [summary, setSummary] = useState(null);
@@ -88,6 +89,10 @@ function DashBoard() {
                     amount: `${summary.accidentDiff > 0 ? "+" : ""}${summary.accidentDiff}%`,
                     label: "지난주 대비",
                   }}
+                  comparison={{
+                    label: "어제 대비",
+                    amount: "+5건",
+                  }}
                 />
               </MDBox>
             </Grid>
@@ -102,6 +107,10 @@ function DashBoard() {
                     color: summary.equipmentDiff >= 0 ? "success" : "error",
                     amount: `${summary.equipmentDiff > 0 ? "+" : ""}${summary.equipmentDiff}%`,
                     label: "지난주 대비",
+                  }}
+                  comparison={{
+                    label: "어제 대비",
+                    amount: "-1건",
                   }}
                 />
               </MDBox>
@@ -119,6 +128,10 @@ function DashBoard() {
                     color: summary.ppeDiff >= 0 ? "success" : "error",
                     amount: `${summary.ppeDiff > 0 ? "+" : ""}${summary.ppeDiff}%`,
                     label: "지난주 대비",
+                  }}
+                  comparison={{
+                    label: "어제 대비",
+                    amount: "+2건",
                   }}
                 />
               </MDBox>
@@ -169,16 +182,18 @@ function DashBoard() {
           </MDBox>
 
           {/* 공지사항 + 알림사항 */}
-          <MDBox mt={3}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+          <Grid container spacing={3} alignItems="stretch">
+            <Grid item xs={12} md={6}>
+              <Box height="100%">
                 <NoticeSection />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <AlertSection />
-              </Grid>
+              </Box>
             </Grid>
-          </MDBox>
+            <Grid item xs={12} md={6}>
+              <Box height="100%">
+                <AlertSection />
+              </Box>
+            </Grid>
+          </Grid>
         </MDBox>
         <Footer />
       </motion.div>

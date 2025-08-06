@@ -1,0 +1,52 @@
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('../public/fonts/GmarketSansBold.otf') format('opentype');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('../public/fonts/GmarketSansLight.otf') format('opentype');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('../public/fonts/GmarketSansMedium.otf') format('opentype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Starbim';
+  src: url('../public/fonts/Starbim.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Airbeat';
+  src: url('../public/fonts/Airbeat.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GilaBold';
+  src: url('../public/fonts/GilaBold.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RealYoungOTF';
+  src: url('../public/fonts/RealYoung.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RealYoungTTF';
+  src: url('../public/fonts/RealYoung.ttf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}

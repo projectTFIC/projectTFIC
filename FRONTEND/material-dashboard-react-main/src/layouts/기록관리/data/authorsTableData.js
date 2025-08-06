@@ -206,6 +206,118 @@ export default function data() {
           </MDBox>
         ),
       },
+      {
+        listNum: <ListNum num="1" />,
+        title: <Title title="작업자 위험 행동 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/07/18
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="2" />,
+        title: <Title title="작업자 낙상 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/07/15
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="3" />,
+        title: <Title title="작업자 위험 행동 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/07/12
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="4" />,
+        title: <Title title="작업자 끼임 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/07/06
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="5" />,
+        title: <Title title="작업자 중장비 추돌 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/28
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="6" />,
+        title: <Title title="작업자 낙상 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/21
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="7" />,
+        title: <Title title="작업자 쓰러짐 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/19
+          </MDTypography>
+        ),
+      },
+      {
+        listNum: <ListNum num="8" />,
+        title: <Title title="작업자 쓰러짐 감지" />,
+        type: (
+          <MDBox ml={-1}>
+            <MDBadge badgeContent="사고감지" color="error" variant="gradient" size="lg" />
+          </MDBox>
+        ),
+        date: (
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            25/06/13
+          </MDTypography>
+        ),
+      },
     ],
   };
 }

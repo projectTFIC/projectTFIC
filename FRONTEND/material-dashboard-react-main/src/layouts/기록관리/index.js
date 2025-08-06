@@ -5,9 +5,26 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
+
 import TableCell from "@mui/material/TableCell";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
+
+// Material Dashboard 2 React components
+import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
+import MDBadge from "components/MDBadge";
+
+// Material Dashboard 2 React example components
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+import DataTable from "examples/Tables/DataTable";
+
+// Data
+import authorsTableData from "layouts/기록관리/data/authorsTableData";
+import projectsTableData from "layouts/기록관리/data/projectsTableData";
+
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
@@ -15,15 +32,6 @@ import Button from "@mui/material/Button";
 import { Menu, MenuItem } from "@mui/material";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
-
-import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-import MDBadge from "components/MDBadge";
-
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import DataTable from "examples/Tables/DataTable";
 
 function Tables() {
   const location = useLocation();

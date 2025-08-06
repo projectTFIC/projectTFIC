@@ -10,15 +10,15 @@ import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function ComplexStatisticsCard({ color, title, count, percentage, icon, sx }) {
-  // percentage.color 대신 amount 기준으로 계산
+function ComplexStatisticsCard({ color, title, count, percentage, icon, comparison, sx }) {
   const numericAmount = parseFloat((percentage?.amount || "").replace(/[^\d.-]/g, ""));
   const amountColor = numericAmount > 0 ? "error" : "info";
 
   return (
     <Card sx={sx}>
+      {/* 상단 */}
       <MDBox display="flex" alignItems="center" justifyContent="space-between" pt={1} px={2}>
-        {/* 아이콘 박스 */}
+        {/* 아이콘 */}
         <MDBox
           variant="gradient"
           bgColor={color}
@@ -41,28 +41,55 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon, sx }) {
           )}
         </MDBox>
 
-        {/* 제목 + 카운트 */}
-        <MDBox ml={2}>
-          <MDTypography variant="h4">{count}건</MDTypography>
-          <MDTypography variant="button" sx={{ fontWeight: 400, fontSize: "18px" }}>
-            {title}
-          </MDTypography>
-        </MDBox>
+        {/* 중앙: 제목 + 수치 + 어제대비 */}
+        <MDBox ml={2} flex={1} display="flex" alignItems="center" justifyContent="flex-start">
+          {/* 왼쪽: 수치와 제목 */}
+          <MDBox>
+            <MDTypography variant="h4">{count}건</MDTypography>
+            <MDTypography variant="button" sx={{ fontWeight: 400, fontSize: "18px" }}>
+              {title}
+            </MDTypography>
+          </MDBox>
 
-        {/* 우측 비워둠 */}
-        <MDBox ml="auto" textAlign="right" />
+          {/* 오른쪽 중앙: 비교 수치 박스 */}
+          {comparison && (
+            <MDBox display="flex" alignItems="center" ml={2}>
+              <MDTypography
+                variant="button"
+                sx={{ fontWeight: "light", color: "text.secondary", fontSize: "14px", mr: 1 }}
+              >
+                {comparison.label}
+              </MDTypography>
+              <MDBox
+                component="span"
+                sx={{
+                  bgcolor: "rgba(56, 142, 60, 0.15)",
+                  color: "#388e3c",
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  px: 1.2,
+                  py: 0.3,
+                  borderRadius: "6px",
+                  minWidth: "42px",
+                  textAlign: "center",
+                }}
+              >
+                {comparison.amount}
+              </MDBox>
+            </MDBox>
+          )}
+        </MDBox>
       </MDBox>
 
       <Divider />
 
+      {/* 하단: 지난주 대비 +10% */}
       <MDBox pb={2} px={2} display="flex" justifyContent="flex-end">
         <MDTypography component="p" variant="button" display="flex" alignItems="center" gap={1}>
-          {/* 설명 텍스트 */}
           <MDTypography component="span" variant="button" fontWeight="light" color="text">
             {percentage.label}
           </MDTypography>
 
-          {/* 수치 + 배경박스 */}
           <MDBox
             component="span"
             sx={{
@@ -74,7 +101,6 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon, sx }) {
               px: 1.2,
               py: 0.3,
               borderRadius: "6px",
-              display: "inline-block",
               minWidth: "42px",
               textAlign: "center",
             }}
@@ -96,6 +122,7 @@ ComplexStatisticsCard.defaultProps = {
     amount: "",
     label: "",
   },
+  comparison: null,
 };
 
 // prop-types
@@ -117,6 +144,10 @@ ComplexStatisticsCard.propTypes = {
     color: PropTypes.string,
     amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     label: PropTypes.string,
+  }),
+  comparison: PropTypes.shape({
+    label: PropTypes.string,
+    amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }),
   icon: PropTypes.node.isRequired,
 };
