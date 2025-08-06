@@ -8,16 +8,16 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import kr.cloud.web.dto.AccRecordViewDto;
+import kr.cloud.web.dto.HeRecordViewDto;
+import kr.cloud.web.dto.PpeRecordViewDto;
 import kr.cloud.web.entity.AccContent;
 import kr.cloud.web.entity.AccRecord;
-import kr.cloud.web.entity.AccRecordViewDto;
 import kr.cloud.web.entity.Devices;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.entity.HeRecord;
-import kr.cloud.web.entity.HeRecordViewDto;
 import kr.cloud.web.entity.PpeContent;
 import kr.cloud.web.entity.PpeRecord;
-import kr.cloud.web.entity.PpeRecordViewDto;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.entity.Users;
 
@@ -26,7 +26,7 @@ import kr.cloud.web.entity.Users;
 public interface BoardMapper {
 
 	// [ 영상 장비 리스트 전체 가져오기 ]
-	List<Devices> selectDevicesAll();
+	public List<Devices> selectDevicesAll();
 	
 	
 	@Select("SELECT * FROM users WHERE user_id = #{userId} AND password = #{password}")

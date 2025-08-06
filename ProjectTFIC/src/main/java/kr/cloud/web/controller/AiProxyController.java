@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import kr.cloud.web.entity.HeRecordDto;
-import kr.cloud.web.entity.HeRecordViewDto;
+import kr.cloud.web.dto.HeRecordDto;
+import kr.cloud.web.dto.HeRecordViewDto;
 import kr.cloud.web.service.HeRecordService;
 import kr.cloud.web.service.PpeRecordService;
 import lombok.RequiredArgsConstructor;

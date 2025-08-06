@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,57 +63,6 @@ public class MyController {
 
    }
 
-   @RestController
-   @RequestMapping("/ai")
-   @CrossOrigin(origins = "http://localhost:5001") // AI 서버 주소 허용
-   public class ViolationReportController {
-
-      // Object Storage 서비스 로직이 주입되었다고 가정
-      // private final ObjectStorageService objectStorageService;
-
-      /**
-       * AI 서버로부터 위반 보고(이미지 파일 + 메타데이터)를 받습니다.
-       * 
-       * @param imageFile     실제 이미지 파일
-       * @param violationType 위반 종류 (문자열)
-       * @param timestamp     발생 시각 (문자열)
-       * @param deviceLabel   발생 장치 (문자열)
-       * @return
-       */
-      @PostMapping("/report-violation")
-      public ResponseEntity<String> reportViolation(@RequestParam("imageFile") MultipartFile imageFile,
-            @RequestParam("violationType") String violationType, @RequestParam("timestamp") String timestamp,
-            @RequestParam("deviceLabel") String deviceLabel) {
-
-         if (imageFile.isEmpty()) {
-            return ResponseEntity.badRequest().body("이미지 파일이 비어있습니다.");
-         }
-
-         try {
-            // 여기에서 Object Storage 업로드 로직을 호출합니다.
-            // String fileUrl = objectStorageService.upload(imageFile, violationType);
-
-            // 임시로 파일 정보와 메타데이터를 출력하는 예시
-            System.out.println("===== 위반 보고 접수 =====");
-            System.out.println("파일 이름: " + imageFile.getOriginalFilename());
-            System.out.println("파일 크기: " + imageFile.getSize() + " bytes");
-            System.out.println("위반 종류: " + violationType);
-            System.out.println("발생 시각: " + timestamp);
-            System.out.println("발생 장치: " + deviceLabel);
-            System.out.println("=======================");
-
-            // DB에 위반 기록 저장 로직
-            // reportService.saveReport(fileUrl, violationType, timestamp);
-
-            // 클라이언트에게 성공 응답과 함께 Object Storage에 업로드된 URL을 반환할 수 있습니다.
-            return ResponseEntity.ok("보고서가 성공적으로 접수되었습니다. 파일: " + imageFile.getOriginalFilename());
-
-         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("보고 처리 중 오류 발생: " + e.getMessage());
-         }
-      }
-   }
 
    // [유저 페이지 - 로그인]
    // 로그인 기능
@@ -228,4 +178,16 @@ public class MyController {
          return reportApiService.getReportsByPeriod(start, end);
       }
    }
+   
+   
+   // [ 영상장비 리스트 조회하기 ]
+   @CrossOrigin(origins = "http://localhost:3000") 
+   @GetMapping("/GetDevicesList")
+   @ResponseBody // JSON 으로 값 반환
+   public List<Devices> getDevicesList() {
+	   
+       return mapper.selectDevicesAll();
+       
+   }
+   
 }

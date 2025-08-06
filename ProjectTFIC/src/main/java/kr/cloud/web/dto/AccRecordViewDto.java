@@ -1,4 +1,4 @@
-package kr.cloud.web.entity;
+package kr.cloud.web.dto;
 
 
 import java.util.Date;
@@ -31,5 +31,9 @@ public class AccRecordViewDto {
     private String originalImg; 			// 원본 이미지 URL
     private String detectImg;   			// 감지 이미지 URL
     private String content;					// 세부 정보
+    
+    // ㅇ 기타 필요한 데이터
+    private String deviceId;      			// 장치 ID (type_info.device_id)
+    private String location;      			// 설치 위치 (type_info.location)
     	
 }

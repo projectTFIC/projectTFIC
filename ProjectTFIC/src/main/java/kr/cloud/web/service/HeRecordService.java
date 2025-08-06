@@ -9,9 +9,9 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import kr.cloud.web.dto.HeRecordDto;
+import kr.cloud.web.dto.HeRecordViewDto;
 import kr.cloud.web.entity.HeRecord;
-import kr.cloud.web.entity.HeRecordDto;
-import kr.cloud.web.entity.HeRecordViewDto;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.mapper.BoardMapper;  
 import lombok.RequiredArgsConstructor;

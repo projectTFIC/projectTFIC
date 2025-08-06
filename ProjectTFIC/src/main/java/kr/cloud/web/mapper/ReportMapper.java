@@ -3,8 +3,8 @@ package kr.cloud.web.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import kr.cloud.web.dto.HeRecordDto;
 import kr.cloud.web.entity.AccidentSummaryDto;
-import kr.cloud.web.entity.HeRecordDto;
 import kr.cloud.web.entity.Report;
 
 import java.util.Date;

@@ -1,40 +1,48 @@
 package kr.cloud.web.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity // 이 어노테이션 반드시 추가
-@Table(name = "report") // DB 테이블명과 다르면 명시할 것, 아니면 생략 가능
 
+@Entity
+@Table(name = "report")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class Report {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto_increment일 경우
-    @Column(name = "report_id") // DB 컬럼명과 다르면 명시할 것
-    private int reportId;
-
-    @Column(name = "report_title")
-    private String reportTitle;
-
-    @Column(name = "type_id")
-    private Long typeId;
-
-    @Column(name = "report_file")
-    private String reportFile;
-
-    @Column(name = "user_id")
-    private String userId;
-
-    @Column(name = "name")
-    private String name;
-
+	
+	// [ reports 테이블 ]
+	// 현장 안전 관리 보고서 정보
+	
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @Column(name = "report_id")
+    private int reportId;        // 보고서 아이디
+	
+	@Column(name = "report_title")
+    private String reportTitle;  // 보고서 제목 
+	
+	@Column(name = "type_id")
+    private Long typeId;         // 보고서 유형
+	
+	@Column(name = "report_file")
+    private String reportFile;   // 보고서 파일
+	
+	@Column(name = "user_id")
+    private String userId;       // 작성자 아이디
+	
+	@Column(name = "name")
+    private String name;         // 작성자 이름 
+	
     @Column(name = "reg_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date regDate;
+    private Date regDate;        // 등록일시
+    
 }
