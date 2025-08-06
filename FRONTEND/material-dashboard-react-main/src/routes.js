@@ -1,22 +1,20 @@
 // Material Dashboard 2 React layouts
-import Dashboard from "layouts/대시보드";
-import 기록관리 from "layouts/기록관리";
-import 모니터링 from "layouts/모니터링";
-import Billing from "layouts/billing";
-import Notifications from "layouts/notifications";
-import Profile from "layouts/profile";
+import DashBoard from "layouts/대시보드";
+import LogManagement from "layouts/기록관리";
+import Monitoring from "layouts/모니터링";
+import Report from "layouts/보고서";
+import Statistics from "layouts/통계";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
-import Report from "layouts/보고서 생성";
+import CreateReport from "layouts/보고서 생성";
 import PrivateRoute from "components/PrivateRoute";
-import { IconCategory, IconCamera, IconActivity } from "@tabler/icons-react";
 
 import cctv from "layouts/img/cctv.png";
 import 보고서 from "layouts/img/보고서3.png";
 import 보고서생성 from "layouts/img/보고서생성4.png";
 import 기록 from "layouts/img/기록2.png";
 import 대시보드 from "layouts/img/대시보드2.png";
-import 통계 from "layouts/img/차트.png";
+import 차트 from "layouts/img/차트.png";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -30,7 +28,7 @@ const routes = [
     route: "/dashboard",
     component: (
       <PrivateRoute>
-        <Dashboard />
+        <DashBoard />,
       </PrivateRoute>
     ),
   },
@@ -42,59 +40,67 @@ const routes = [
     route: "/monitoring",
     component: (
       <PrivateRoute>
-        <모니터링 />
+        <Monitoring />,
       </PrivateRoute>
     ),
   },
   {
     type: "collapse",
     name: "기록관리",
-    key: "tables",
+    key: "logmanagement",
     icon: <img src={기록} alt="기록" style={{ width: 24, height: 24, marginRight: 9 }} />,
-    route: "/tables",
+    route: "/log-management",
     component: (
       <PrivateRoute>
-        <기록관리 />
+        <LogManagement />,
       </PrivateRoute>
     ),
   },
   {
     type: "collapse",
     name: "보고서 게시판",
-    key: "billing",
+    key: "report",
     icon: <img src={보고서} alt="보고서" style={{ width: 24, height: 24, marginRight: 9 }} />,
-    route: "/billing",
+    route: "/report",
     component: (
       <PrivateRoute>
-        <Billing />
+        <Report />,
       </PrivateRoute>
     ),
   },
   {
     type: "collapse",
     name: "보고서 생성",
-    key: "report",
+    key: "createreport",
     icon: (
       <img src={보고서생성} alt="보고서생성" style={{ width: 24, height: 24, marginRight: 9 }} />
     ),
-    route: "/report",
+    route: "/create-report",
     component: (
       <PrivateRoute>
-        <Report />
+        <CreateReport />,
       </PrivateRoute>
     ),
   },
   {
     type: "collapse",
     name: "통계",
-    key: "notifications",
-    icon: <img src={통계} alt="통계" style={{ width: 24, height: 24, marginRight: 9 }} />,
-    route: "/notifications",
+    key: "statistics",
+    icon: <img src={차트} alt="통계" style={{ width: 24, height: 24, marginRight: 9 }} />,
+    route: "/statistics",
     component: (
       <PrivateRoute>
-        <Notifications />
+        <Statistics />,
       </PrivateRoute>
     ),
+  },
+  {
+    type: "collapse",
+    name: "로그인",
+    key: "sign-in",
+    icon: <Icon fontSize="small">login</Icon>,
+    route: "/authentication/sign-in",
+    component: <SignIn />,
   },
 ];
 
