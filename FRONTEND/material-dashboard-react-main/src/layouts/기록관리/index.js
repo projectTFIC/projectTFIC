@@ -53,6 +53,7 @@ function Tables() {
 
   // 데이터 로드
   useEffect(() => {
+    // 사고 감지
     axios.get("/web/tablelist/accidents").then((res) => {
       setAccidents(
         res.data.map((row, idx) => ({
@@ -60,12 +61,14 @@ function Tables() {
           title: row.type,
           content: row.content,
           image: row.image,
+          detectImg: row.detectImg, // 카멜케이스 key 적용
           type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
     });
 
+    // 안전장비 미착용
     axios.get("/web/tablelist/equipment").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
@@ -73,12 +76,14 @@ function Tables() {
           title: row.title,
           content: row.content,
           image: row.image,
+          detectImg: row.detectImg, // 카멜케이스 key 적용
           type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
           date: row.date,
         }))
       );
     });
 
+    // 입출입
     axios.get("/web/tablelist/access").then((res) => {
       setAccess(
         res.data.map((row, idx) => ({
@@ -86,6 +91,7 @@ function Tables() {
           title: row.title,
           content: row.content,
           image: row.image,
+          detectImg: row.detectImg, // 카멜케이스 key 적용
           type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
           date: row.date,
         }))
@@ -268,7 +274,7 @@ function Tables() {
                                       >
                                         <Box p={2}>
                                           <MDTypography variant="body2" color="text">
-                                            {row.content || "내용 없음"}
+                                            감지된 이미지
                                           </MDTypography>
                                           {row.image && (
                                             <img
@@ -280,6 +286,31 @@ function Tables() {
                                                 borderRadius: "8px",
                                               }}
                                             />
+                                          )}
+                                          {/* detectImg 추가 출력 */}
+                                          {row.detectImg && (
+                                            <Box mt={2}>
+                                              {row.detectImg.startsWith("http") ||
+                                              row.detectImg.startsWith("data:") ? (
+                                                <img
+                                                  src={row.detectImg}
+                                                  alt="detectImg"
+                                                  style={{
+                                                    maxWidth: "800px",
+                                                    maxHeight: "500px",
+                                                    width: "100%",
+                                                    height: "auto",
+                                                    borderRadius: 6,
+                                                    marginTop: 4,
+                                                    objectFit: "contain",
+                                                  }}
+                                                />
+                                              ) : (
+                                                <MDTypography variant="caption" color="info">
+                                                  {row.detectImg}
+                                                </MDTypography>
+                                              )}
+                                            </Box>
                                           )}
                                         </Box>
                                       </Collapse>
