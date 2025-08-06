@@ -1,8 +1,11 @@
 package kr.cloud.web.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import kr.cloud.web.entity.DashboardSummaryDto;
+import kr.cloud.web.entity.LogHistoryItemDto;
 import kr.cloud.web.mapper.DashboardMapper;
 
 @Service
@@ -52,6 +55,11 @@ public class DashboardService {
     private int calculateDiff(int today, int lastWeek) {
         if (lastWeek == 0) return 0;
         return (int) Math.round((double)(today - lastWeek) / lastWeek * 100);
+    }
+    
+
+    public List<LogHistoryItemDto> getLatestLogs() {
+        return dashboardMapper.selectLatestLogs();
     }
 }
 

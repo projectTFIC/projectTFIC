@@ -29,7 +29,7 @@ public interface BoardMapper {
 	List<Devices> selectDevicesAll();
 	
 	
-	@Select("SELECT * FROM users WHERE user_id = #{user_id} AND password = #{password}")
+	@Select("SELECT * FROM users WHERE user_id = #{userId} AND password = #{password}")
 	public Users gologin(Users login);
 
 	
@@ -37,8 +37,8 @@ public interface BoardMapper {
 
 	public List<TypeInfo> selectAll();
 	
-	@Select("SELECT COUNT(*) FROM users WHERE user_id = #{user_id}")
-	Integer countByUserId(String user_id);
+	@Select("SELECT COUNT(*) FROM users WHERE user_id = #{userId}")
+	Integer countByUserId(String userId);
 	
 
 	@Select("""

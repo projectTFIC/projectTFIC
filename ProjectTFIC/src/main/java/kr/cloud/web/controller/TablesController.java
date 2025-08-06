@@ -2,6 +2,7 @@ package kr.cloud.web.controller;
 
 import kr.cloud.web.entity.AccidentListItemDto;
 import kr.cloud.web.entity.DashboardSummaryDto;
+import kr.cloud.web.entity.LogHistoryItemDto;
 import kr.cloud.web.entity.StatisticsResponse;
 import kr.cloud.web.service.AccidentService;
 import kr.cloud.web.service.DashboardService;
@@ -54,4 +55,10 @@ public class TablesController {
 		DashboardSummaryDto summary = dashboardService.getDashboardSummary();
 		return ResponseEntity.ok(summary);
 	}
+	
+	 @GetMapping("/logs")
+	    public List<LogHistoryItemDto> getLatestLogs() {
+	        return dashboardService.getLatestLogs();
+	}
+	
 }

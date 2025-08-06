@@ -16,7 +16,7 @@ public class Users {
 	// 유저 정보
 	
 	private int idx;			// 유저 고유번호
-	private String user_id;		// 유저 아이디	
+	private String userId;		// 유저 아이디	
 	private String password;	// 유저 비밀번호
 	private String name;		// 유저 이름
 	private String department;	// 유저 소속
