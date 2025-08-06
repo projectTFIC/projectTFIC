@@ -1,8 +1,6 @@
-// src/layouts/대시보드/NoticeSection.js
 import React from "react";
 import { Typography, Box, Divider, Paper, Stack } from "@mui/material";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import 메가폰 from "layouts/img/알리미.png";
+import 메가폰 from "layouts/img/메가폰2.png";
 
 const notices = [
   "[공지] 7월 5일(금) 전기설비 점검 예정",
@@ -14,23 +12,40 @@ const notices = [
 function NoticeSection() {
   return (
     <Paper
-      elevation={4}
+      elevation={0}
       sx={{
-        borderRadius: 3,
+        height: "100%",
+        borderRadius: "16px",
         p: 3,
-        background: "linear-gradient(135deg, #ffffff, #f0f4ff)",
-        boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+        background: "linear-gradient(135deg, #f9fafe, #e9ecf5)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+        border: "1px solid rgba(230,230,255,0.6)",
       }}
     >
       {/* 제목 */}
       <Box display="flex" alignItems="center" mb={2}>
-        {<img src={메가폰} alt="사고 아이콘" style={{ width: 30, height: 30, marginRight: 9 }} />}
+        <img
+          src={메가폰}
+          alt="공지 아이콘"
+          style={{
+            width: 45,
+            height: 45,
+            marginRight: 12,
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+          }}
+        />
         <Typography variant="h6" fontWeight={700} sx={{ fontSize: "1.15rem", color: "#333" }}>
           공지사항
         </Typography>
       </Box>
 
-      <Divider sx={{ mb: 2, borderBottomWidth: 2 }} />
+      <Divider
+        sx={{
+          mb: 2,
+          borderBottomWidth: 2,
+          borderColor: "rgba(0,0,0,0.1)",
+        }}
+      />
 
       {/* 항목들 */}
       <Stack spacing={1.5}>
@@ -38,14 +53,16 @@ function NoticeSection() {
           <Box
             key={index}
             sx={{
-              backgroundColor: "#fff",
+              backgroundColor: "#ffffff",
               p: 2,
-              borderRadius: 2,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              transition: "all 0.25s ease",
+              border: "1px solid rgba(230,230,230,0.5)",
               "&:hover": {
                 transform: "translateY(-2px)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
+                backgroundColor: "#f7faff",
               },
             }}
           >

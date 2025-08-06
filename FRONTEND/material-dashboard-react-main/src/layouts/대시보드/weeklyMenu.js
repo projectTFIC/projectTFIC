@@ -13,6 +13,7 @@ function WeeklyMenuCard({ items }) {
         borderRadius: 3,
         height: "100%",
         display: "flex",
+        background: "linear-gradient(135deg, #f9fafe, #e9ecf5)",
         flexDirection: "column",
         justifyContent: "flex-start",
       }}

@@ -110,7 +110,15 @@ const parseWeatherCondition = (pty, sky) => {
 
 function TodayWeatherCard({ temp, min, max, condition }) {
   return (
-    <Card sx={{ height: "100%", p: 2.5, borderRadius: 3 }}>
+    <Card
+      sx={{
+        height: "100%",
+        p: 2.5,
+        borderRadius: 3,
+        background: "linear-gradient(135deg, #f9fafe, #e9ecf5)",
+      }}
+    >
+      {/* 제목 */}
       <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
         오늘의 날씨
       </Typography>

@@ -10,6 +10,10 @@ import BuildIcon from "@mui/icons-material/Build";
 import WarningIcon from "@mui/icons-material/Warning";
 import Slide from "@mui/material/Slide";
 
+import 사고감지 from "layouts/img/비상벨.png";
+import 미착용감지 from "layouts/img/미착용감지3.png";
+import 입출입감지 from "layouts/img/체크표시(그린)2.png";
+
 function LogHistory() {
   const [logItems, setLogItems] = useState([
     { id: 1, category: "equipment-access", text: "수구역 중장비(크레인) 출입", time: "08:24" },
@@ -60,7 +64,7 @@ function LogHistory() {
       sx={{
         p: 2,
         borderRadius: "8px",
-        backgroundColor: "#fefefe",
+        background: "linear-gradient(135deg, #f9fafe, #e9ecf5)",
         height: 535,
         display: "flex",
         flexDirection: "column",
@@ -89,19 +93,37 @@ function LogHistory() {
               case "accident":
                 bgColor = "rgba(220,0,0,0.1)";
                 iconColor = "red";
-                icon = <ReportProblemIcon sx={{ fontSize: 18, color: iconColor }} />;
+                icon = (
+                  <img
+                    src={사고감지}
+                    alt="사고 감지 아이콘"
+                    style={{ width: 29, height: 26, display: "block" }}
+                  />
+                );
                 label = "사고 감지";
                 break;
               case "equipment-access":
                 bgColor = "rgba(0,180,0,0.1)";
                 iconColor = "green";
-                icon = <BuildIcon sx={{ fontSize: 18, color: iconColor }} />;
+                icon = (
+                  <img
+                    src={입출입감지}
+                    alt="입출입 감지 아이콘"
+                    style={{ width: 18, height: 18, display: "block" }}
+                  />
+                );
                 label = "입출입 감지";
                 break;
               case "safety-violation":
                 bgColor = "rgba(255,140,0,0.15)";
                 iconColor = "orange";
-                icon = <WarningIcon sx={{ fontSize: 18, color: iconColor }} />;
+                icon = (
+                  <img
+                    src={미착용감지}
+                    alt="미착용 감지 아이콘"
+                    style={{ width: 31, height: 31, display: "block" }}
+                  />
+                );
                 label = "미착용 감지";
                 break;
               default:

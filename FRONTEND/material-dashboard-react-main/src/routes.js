@@ -96,34 +96,6 @@ const routes = [
       </PrivateRoute>
     ),
   },
-  {
-    type: "collapse",
-    name: "프로필",
-    key: "profile",
-    icon: <Icon fontSize="small">person</Icon>,
-    route: "/profile",
-    component: (
-      <PrivateRoute>
-        <Profile />
-      </PrivateRoute>
-    ),
-  },
-  {
-    type: "collapse",
-    name: "로그인",
-    key: "sign-in",
-    icon: <Icon fontSize="small">login</Icon>,
-    route: "/authentication/sign-in",
-    component: <SignIn />,
-  },
-  {
-    type: "collapse",
-    name: "회원가입",
-    key: "sign-up",
-    icon: <Icon fontSize="small">assignment</Icon>,
-    route: "/authentication/sign-up",
-    component: <SignUp />,
-  },
 ];
 
 export default routes;

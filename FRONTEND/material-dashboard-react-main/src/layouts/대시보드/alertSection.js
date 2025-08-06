@@ -2,7 +2,7 @@
 import React from "react";
 import { Typography, Box, Divider, Paper, Stack } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import 메가폰 from "layouts/img/알리미.png";
+import 메가폰 from "layouts/img/벨.png";
 
 const alerts = [
   "[안내] 오늘 기준 CCTV 2번, 6번 카메라 녹화 이상 감지",
@@ -16,14 +16,16 @@ function AlertSection() {
     <Paper
       elevation={4}
       sx={{
-        borderRadius: 3,
+        height: "100%",
+        borderRadius: "16px",
         p: 3,
-        background: "linear-gradient(135deg, #ffffff, #f0f4ff)", // 은은한 그라데이션
-        boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+        background: "linear-gradient(135deg, #f9fafe, #e9ecf5)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+        border: "1px solid rgba(230,230,255,0.6)",
       }}
     >
-      <Box display="flex" alignItems="center" mb={1}>
-        {<img src={메가폰} alt="사고 아이콘" style={{ width: 30, height: 30, marginRight: 9 }} />}
+      <Box display="flex" alignItems="center" mb={2}>
+        {<img src={메가폰} alt="사고 아이콘" style={{ width: 35, height: 35, marginRight: 12 }} />}
         <Typography variant="h6" fontWeight={700} sx={{ fontSize: "1.15rem", color: "#333" }}>
           알림사항
         </Typography>

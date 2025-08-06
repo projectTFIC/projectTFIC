@@ -15,6 +15,7 @@ import Configurator from "examples/Configurator";
 // Themes
 import theme from "assets/theme";
 import themeDark from "assets/theme-dark";
+import SignUp from "layouts/authentication/sign-up";
 
 // Context
 import {
@@ -129,7 +130,7 @@ function MainApp() {
           <Sidenav
             color={sidenavColor}
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-            brandName="TFIC"
+            brandName="AIVIS"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
@@ -142,6 +143,7 @@ function MainApp() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={pathname}>
           {getRoutes(routes)}
+          <Route path="/authentication/sign-up" element={<SignUp />} />
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
       </AnimatePresence>
