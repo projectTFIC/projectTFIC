@@ -24,4 +24,5 @@ public class AccidentService {
     public List<AccidentListItemDto> getAccess() {
         return tableMapper.selectAccessList();
     }
+  
 }

@@ -15,6 +15,7 @@ public interface TableMapper {
 			     c.content AS type,         -- 제목: acc_content.content
 			     a.record_title AS title,     -- 유형: acc_record.record_title (기존 그대로)
 			     t.location AS location,
+			     a.detect_img AS detectImg,
 			     DATE_FORMAT(t.reg_date, '%y/%m/%d') AS date
 			 FROM acc_record a
 			 JOIN type_info t ON a.type_id = t.type_id
@@ -30,6 +31,7 @@ public interface TableMapper {
 			    c.content AS title,
 			    p.record_title AS type,       -- ppe_record의 record_title 컬럼 사용
 			    t.location AS location,
+			    p.detect_img AS detectImg,
 			    DATE_FORMAT(t.reg_date, '%y/%m/%d') AS date
 			FROM ppe_record p
 			JOIN type_info t ON p.type_id = t.type_id
@@ -46,6 +48,7 @@ public interface TableMapper {
 			        h.record_title AS title,
 			        t.type_record AS type,
 			        t.location AS location,
+			        h.detect_img AS detectImg,
 			        h.access AS access,
 			        DATE_FORMAT(t.reg_date, '%y/%m/%d') AS date
 			    FROM he_record h
