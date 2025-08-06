@@ -1,62 +1,78 @@
+// src/layouts/대시보드/logHistory.js
+
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
-import ReportProblemIcon from "@mui/icons-material/ReportProblem";
-import BuildIcon from "@mui/icons-material/Build";
-import WarningIcon from "@mui/icons-material/Warning";
 import Slide from "@mui/material/Slide";
 
 import 사고감지 from "layouts/img/비상벨.png";
 import 미착용감지 from "layouts/img/미착용감지3.png";
 import 입출입감지 from "layouts/img/체크표시(그린)2.png";
 
+import { io } from "socket.io-client";
+
 function LogHistory() {
-  const [logItems, setLogItems] = useState([
-    { id: 1, category: "equipment-access", text: "수구역 중장비(크레인) 출입", time: "08:24" },
-    { id: 2, category: "accident", text: "C구역 사고 위험", time: "09:12" },
-    { id: 3, category: "equipment-access", text: "C구역 중장비(덤프트럭) 출입", time: "11:57" },
-    { id: 4, category: "safety-violation", text: "D구역 작업자(황철) 헬멧 미착용", time: "13:12" },
-    { id: 5, category: "equipment-access", text: "D구역 중장비(크레인) 출입", time: "14:25" },
-  ]);
+  const [logItems, setLogItems] = useState([]);
 
-  const [lastLogId, setLastLogId] = useState(5);
-
+  // 1. 최초에 DB 로그 불러오기
   useEffect(() => {
-    const interval = setInterval(() => {
-      const categories = ["equipment-access", "accident", "safety-violation"];
-      const newCategory = categories[Math.floor(Math.random() * categories.length)];
-      const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    axios
+      .get("/web/tablelist/logs") // 서버 경로에 따라 조절하세요
+      .then((res) => {
+        if (res.data && Array.isArray(res.data)) setLogItems(res.data);
+      })
+      .catch((error) => console.error("로그 데이터 로드 실패:", error));
+  }, []);
 
-      const randomTexts = {
-        accident: ["C구역 사고 위험", "B구역 낙하물 감지", "D구역 안전사고 발생"],
-        "equipment-access": ["A구역 중장비(크레인) 출입", "C구역 덤프트럭 진입", "B구역 장비 이동"],
-        "safety-violation": [
-          "E구역 작업자 마스크 미착용",
-          "D구역 안전모 미착용",
-          "F구역 반사조끼 미착용",
-        ],
-      };
+  // 2. 실시간 알람(WebSocket) 수신
+  useEffect(() => {
+    const socket = io("http://localhost:5000"); // 플라스크 소켓 주소로 교체
+    socket.on("connect", () => {
+      console.log("Socket.io connected");
+    });
+    socket.on("realtime-log", (newLog) => {
+      setLogItems((prev) => [newLog, ...prev.slice(0, 49)]);
+    });
+    socket.on("disconnect", () => {
+      console.log("Socket.io disconnected");
+    });
+    return () => socket.disconnect();
+  }, []);
 
-      const textList = randomTexts[newCategory];
-      const randomText = textList[Math.floor(Math.random() * textList.length)];
-
-      const newLog = {
-        id: lastLogId + 1,
-        category: newCategory,
-        text: randomText,
-        time: currentTime,
-      };
-
-      setLogItems((prev) => [newLog, ...prev.slice(0, 19)]);
-      setLastLogId((id) => id + 1);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [lastLogId]);
+  // 3. 카테고리별 아이콘, 배경색, 기본 라벨 분기함수 (category 기준)
+  const getIconAndColor = (category) => {
+    switch (category) {
+      case "accident":
+        return {
+          bgColor: "rgba(220,0,0,0.1)",
+          iconSrc: 사고감지,
+          label: "사고 감지",
+        };
+      case "equipment-access":
+        return {
+          bgColor: "rgba(0,180,0,0.1)",
+          iconSrc: 입출입감지,
+          label: "입출입 감지",
+        };
+      case "safety-violation":
+        return {
+          bgColor: "rgba(255,140,0,0.15)",
+          iconSrc: 미착용감지,
+          label: "미착용 감지",
+        };
+      default:
+        return {
+          bgColor: "#f0f0f0",
+          iconSrc: null,
+          label: "감지",
+        };
+    }
+  };
 
   return (
     <Paper
@@ -70,166 +86,127 @@ function LogHistory() {
         flexDirection: "column",
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box display="flex" alignItems="center" mb={2}>
         <Typography variant="h6" sx={{ color: "black", fontWeight: 600, fontSize: "1rem" }}>
           로그 기록
         </Typography>
       </Box>
-
       <Box
         sx={{
           flex: 1,
           overflowY: "auto",
           scrollbarWidth: "none",
-          "&::-webkit-scrollbar": {
-            display: "none",
-          },
+          "&::-webkit-scrollbar": { display: "none" },
         }}
       >
         <Stack spacing={1}>
           {logItems.map((log) => {
-            let bgColor, iconColor, icon, label;
-            switch (log.category) {
-              case "accident":
-                bgColor = "rgba(220,0,0,0.1)";
-                iconColor = "red";
-                icon = (
-                  <img
-                    src={사고감지}
-                    alt="사고 감지 아이콘"
-                    style={{ width: 29, height: 26, display: "block" }}
-                  />
-                );
-                label = "사고 감지";
-                break;
-              case "equipment-access":
-                bgColor = "rgba(0,180,0,0.1)";
-                iconColor = "green";
-                icon = (
-                  <img
-                    src={입출입감지}
-                    alt="입출입 감지 아이콘"
-                    style={{ width: 18, height: 18, display: "block" }}
-                  />
-                );
-                label = "입출입 감지";
-                break;
-              case "safety-violation":
-                bgColor = "rgba(255,140,0,0.15)";
-                iconColor = "orange";
-                icon = (
-                  <img
-                    src={미착용감지}
-                    alt="미착용 감지 아이콘"
-                    style={{ width: 31, height: 31, display: "block" }}
-                  />
-                );
-                label = "미착용 감지";
-                break;
-              default:
-                bgColor = "#f0f0f0";
-                icon = null;
-                label = "감지";
-            }
+            const { bgColor, iconSrc, label: defaultLabel } = getIconAndColor(log.category);
+            const labelToDisplay = log.label || defaultLabel;
+            const isAccident = log.category === "accident";
 
-            const isRight = log.category === "accident";
-            const isNew = log.id === lastLogId;
-
-            const logBox = (
-              <Box key={log.id}>
-                <Box display="flex" justifyContent={isRight ? "flex-end" : "flex-start"}>
-                  <Box
-                    display="flex"
-                    alignItems="flex-start"
-                    justifyContent="space-between"
-                    sx={{
-                      backgroundColor: bgColor,
-                      borderRadius: "10px",
-                      p: 1.2,
-                      width: "68%",
-                      maxWidth: 460,
-                    }}
-                  >
-                    <Box mt={0.2} mr={1}>
-                      {icon}
-                    </Box>
-                    <Box flex={1}>
-                      <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: "#333" }}>
-                        {label}
-                      </Typography>
-                      <Typography sx={{ fontSize: "0.7rem", color: "#555", mt: 0.3 }}>
-                        객체 감지 시스템에서 새로운 이벤트가 감지되었습니다
-                      </Typography>
-                      <Box display="flex" gap={0.8} mt={0.8}>
-                        <Chip
-                          label="B구역"
-                          size="small"
-                          sx={{
-                            backgroundColor:
-                              log.category === "accident"
-                                ? "rgba(211, 47, 47, 0.1)"
-                                : log.category === "safety-violation"
-                                ? "rgba(245, 124, 0, 0.1)"
-                                : "rgba(56, 142, 60, 0.1)",
-                            border: `1px solid ${
-                              log.category === "accident"
-                                ? "#d32f2f"
-                                : log.category === "safety-violation"
-                                ? "#f57c00"
-                                : "#388e3c"
-                            }`,
-                            color:
-                              log.category === "accident"
-                                ? "#d32f2f"
-                                : log.category === "safety-violation"
-                                ? "#f57c00"
-                                : "#388e3c",
-                            height: 20,
-                            fontSize: "0.65rem",
-                            fontWeight: 500,
-                            borderRadius: "10px",
-                            px: 1,
-                          }}
-                        />
-                        <Chip
-                          label="CAM-5"
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255,255,255,0.4)",
-                            border: "1px solid #ccc",
-                            color: "#555",
-                            height: 20,
-                            fontSize: "0.65rem",
-                            fontWeight: 500,
-                            borderRadius: "10px",
-                            px: 1,
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                    <Typography
+            return (
+              <Slide
+                key={log.id ?? log.time}
+                direction="right"
+                in
+                mountOnEnter
+                unmountOnExit
+                timeout={600}
+              >
+                <Box>
+                  <Box display="flex" justifyContent={isAccident ? "flex-end" : "flex-start"}>
+                    <Box
+                      display="flex"
+                      alignItems="flex-start"
+                      justifyContent="space-between"
                       sx={{
-                        color: "#999",
-                        fontSize: "0.65rem",
-                        mt: 0.5,
-                        minWidth: 50,
-                        textAlign: "right",
+                        backgroundColor: bgColor,
+                        borderRadius: "10px",
+                        p: 1.2,
+                        width: "68%",
+                        maxWidth: 460,
                       }}
                     >
-                      {log.time}
-                    </Typography>
+                      <Box mt={0.2} mr={1}>
+                        {iconSrc && (
+                          <img
+                            src={iconSrc}
+                            alt={`${labelToDisplay} 아이콘`}
+                            style={{ width: 29, height: 26, display: "block" }}
+                          />
+                        )}
+                      </Box>
+                      <Box flex={1}>
+                        <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: "#333" }}>
+                          {labelToDisplay}
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.7rem", color: "#555", mt: 0.3 }}>
+                          {log.message || "객체 감지 시스템에서 새로운 이벤트가 감지되었습니다"}
+                        </Typography>
+                        <Box display="flex" gap={0.8} mt={0.8}>
+                          <Chip
+                            label={log.chipValue || "-"}
+                            size="small"
+                            sx={{
+                              backgroundColor:
+                                log.category === "accident"
+                                  ? "rgba(211, 47, 47, 0.1)"
+                                  : log.category === "safety-violation"
+                                  ? "rgba(245, 124, 0, 0.1)"
+                                  : "rgba(56, 142, 60, 0.1)",
+                              border: `1px solid ${
+                                log.category === "accident"
+                                  ? "#d32f2f"
+                                  : log.category === "safety-violation"
+                                  ? "#f57c00"
+                                  : "#388e3c"
+                              }`,
+                              color:
+                                log.category === "accident"
+                                  ? "#d32f2f"
+                                  : log.category === "safety-violation"
+                                  ? "#f57c00"
+                                  : "#388e3c",
+                              height: 20,
+                              fontSize: "0.65rem",
+                              fontWeight: 500,
+                              borderRadius: "10px",
+                              px: 1,
+                            }}
+                          />
+                          <Chip
+                            label={log.name || "-"}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(255,255,255,0.4)",
+                              border: "1px solid #ccc",
+                              color: "#555",
+                              height: 20,
+                              fontSize: "0.65rem",
+                              fontWeight: 500,
+                              borderRadius: "10px",
+                              px: 1,
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                      <Typography
+                        sx={{
+                          color: "#999",
+                          fontSize: "0.65rem",
+                          mt: 0.5,
+                          minWidth: 50,
+                          textAlign: "right",
+                        }}
+                      >
+                        {log.time || ""}
+                      </Typography>
+                    </Box>
                   </Box>
+                  <Divider sx={{ my: 1, mb: 0.5 }} />
                 </Box>
-                <Divider sx={{ my: 1, mb: 0.5 }} />
-              </Box>
-            );
-
-            return isNew ? (
-              <Slide key={log.id} direction="right" in mountOnEnter unmountOnExit timeout={600}>
-                {logBox}
               </Slide>
-            ) : (
-              logBox
             );
           })}
         </Stack>
