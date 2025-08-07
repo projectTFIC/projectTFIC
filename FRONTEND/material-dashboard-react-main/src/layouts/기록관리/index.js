@@ -39,7 +39,7 @@ function Tables() {
   const openMenu = Boolean(anchorEl);
 
   useEffect(() => {
-    axios.get("/web/tablelist/accrecords").then((res) => {
+    axios.get("/web/tablelist/accidents").then((res) => {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
@@ -58,7 +58,7 @@ function Tables() {
       );
     });
 
-    axios.get("/web/tablelist/pperecords").then((res) => {
+    axios.get("/web/tablelist/equipments").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
@@ -82,7 +82,7 @@ function Tables() {
       );
     });
 
-    axios.get("/web/tablelist/herecords").then((res) => {
+    axios.get("/web/tablelist/access").then((res) => {
       setAccess(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
