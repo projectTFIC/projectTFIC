@@ -58,7 +58,7 @@ function ReportPage() {
     const payload = {
       period_start: `${startDate} ${startTime}`,
       period_end: `${endDate} ${endTime}`,
-      user_id: "user123",
+      user_id: "123",
       report_type: reportTypes[tabIndex],
       use_custom_prompt: promptType === "custom",
       custom_prompt: promptText,
