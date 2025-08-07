@@ -40,9 +40,6 @@ public class Users {
 	@Column(name = "department")
 	private String department;		// 부서
 	
-	@Column(name = "rank")
-	private String rank;			// 직급
-	
 	@Column(name = "email")
 	private String email;			// 이메일
 	
