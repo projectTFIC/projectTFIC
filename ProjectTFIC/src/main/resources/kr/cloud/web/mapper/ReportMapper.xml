@@ -47,7 +47,7 @@
 
 
     <!-- 📑 2. 요약용: accident (사고 기록 요약용 DTO) -->
-    <select id="selectAccidentSummaryByPeriod" resultType="kr.cloud.web.entity.AccidentSummaryDto">
+    <select id="selectAccidentSummaryByPeriod" resultType="kr.cloud.web.dto.AccidentSummaryDto">
         SELECT
             ar.record_title AS recordTitle,
             ac.content AS content,
@@ -63,7 +63,7 @@
     </select>
 
     <!-- 📑 3. 요약용: entry (출입 기록 조회용 DTO: HeRecordDto) -->
-    <select id="selectHeRecordsByPeriod" resultType="kr.cloud.web.entity.HeRecordDto">
+    <select id="selectHeRecordsByPeriod" resultType="kr.cloud.web.dto.HeRecordDto">
         SELECT
             ti.device_id AS deviceId,
             hr.he_type AS heType,

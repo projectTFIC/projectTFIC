@@ -28,7 +28,7 @@ function SignIn() {
 
   // ✅ 입력값 상태
   const [values, setValues] = React.useState({
-    user_id: "",
+    userId: "",
     password: "",
     showPassword: false,
   });
@@ -47,7 +47,7 @@ function SignIn() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          user_id: values.user_id,
+          userId: values.userId,
           password: values.password,
         }),
       });
@@ -194,8 +194,8 @@ function SignIn() {
             fullWidth
             placeholder="ID"
             variant="outlined"
-            value={values.user_id}
-            onChange={handleChange("user_id")}
+            value={values.userId}
+            onChange={handleChange("userId")}
             sx={{
               mb: 2,
               backgroundColor: "#fff",

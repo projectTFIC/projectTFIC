@@ -9,14 +9,14 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import kr.cloud.web.dto.AccRecordDto;
+import kr.cloud.web.dto.AccRecordViewDto;
+import kr.cloud.web.dto.PpeRecordDto;
+import kr.cloud.web.dto.PpeRecordViewDto;
 import kr.cloud.web.entity.AccContent;
 import kr.cloud.web.entity.AccRecord;
-import kr.cloud.web.entity.AccRecordDto;
-import kr.cloud.web.entity.AccRecordViewDto;
 import kr.cloud.web.entity.PpeContent;
 import kr.cloud.web.entity.PpeRecord;
-import kr.cloud.web.entity.PpeRecordDto;
-import kr.cloud.web.entity.PpeRecordViewDto;
 import kr.cloud.web.entity.TypeInfo;
 import kr.cloud.web.mapper.BoardMapper;  
 import lombok.RequiredArgsConstructor;

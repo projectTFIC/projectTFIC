@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import kr.cloud.web.entity.AccRecordDto;
-import kr.cloud.web.entity.AccRecordViewDto;
-import kr.cloud.web.entity.HeRecordDto;
-import kr.cloud.web.entity.HeRecordViewDto;
 import kr.cloud.web.service.PpeRecordService;
-import kr.cloud.web.entity.PpeRecordDto;
-import kr.cloud.web.entity.PpeRecordViewDto;
+import kr.cloud.web.dto.AccRecordDto;
+import kr.cloud.web.dto.AccRecordViewDto;
+import kr.cloud.web.dto.HeRecordDto;
+import kr.cloud.web.dto.HeRecordViewDto;
+import kr.cloud.web.dto.PpeRecordDto;
+import kr.cloud.web.dto.PpeRecordViewDto;
 import kr.cloud.web.service.AccRecordService;
 import kr.cloud.web.service.HeRecordService;
 import lombok.RequiredArgsConstructor;
@@ -62,32 +62,6 @@ public class AiApiController {
     }
 	
     
-    // [ 안전장비 착용여부 : 객체 탐지 전체 기록 조회 ]
-    @GetMapping("/ppe-records")
-    public ResponseEntity<List<PpeRecordViewDto>> getAllPpeRecords() {
-    	
-        // 1. 안전장비 착용여부와 관련된 모든 기록 가져오기
-        List<PpeRecordViewDto> records = ppeRecordService.selectAllPpeRecords();
-        
-        // 2. 기록 리스트를 성공적으로 가져온 경우, 성공 신호 전달
-        return ResponseEntity.ok(records);
-        
-    }
-
-    
-    // [ 안전장비 착용여부 : 객체 탐지 전체 기록 조회 ]
-    @GetMapping("/ppe-records/{id}")
-    public ResponseEntity<PpeRecordViewDto> getPpeRecordById(@PathVariable int recordId) {
-
-    	// 1. 안전장비 착용여부와 관련된 특정 기록 가져오기
-    	PpeRecordViewDto record = ppeRecordService.selectPpeRecordById(recordId);
-        
-        // 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
-        return ResponseEntity.ok(record);
-        
-    }
-
-    
 	// =================================================================
 	// 				중장비 출입 (Heavy Equipment)
 	// =================================================================
@@ -112,31 +86,6 @@ public class AiApiController {
     }
     
     
-    // [ 중장비 출입 : 객체 탐지 전체 기록 조회 ]
-    @GetMapping("/he-records")
-    public ResponseEntity<List<HeRecordViewDto>> getAllHeRecords() {
-    	
-        // 1. 중장비 출입과 관련된 모든 기록 가져오기
-        List<HeRecordViewDto> records = heRecordService.selectAllHeRecords();
-        
-        // 2. 기록 리스트를 성공적으로 가져온 경우, 성공 신호 전달
-        return ResponseEntity.ok(records);
-        
-    }
-    
-    
-    // [ 중장비 출입 : 객체 탐지 특정 기록 조회 ]
-    @GetMapping("/he-records/{recordId}")
-    public ResponseEntity<HeRecordViewDto> getHeRecordById(@PathVariable int recordId) {
-    	
-    	// 1. 중장비 출입과 관련된 특정 기록 가져오기
-        HeRecordViewDto record = heRecordService.selectHeRecordById(recordId);
-        
-        // 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
-        return ResponseEntity.ok(record);
-    }
-    
-    
 	// =================================================================
 	// 				사고 감지 (Accident)
 	// =================================================================
@@ -144,6 +93,7 @@ public class AiApiController {
 	// [ 사고 감지 : 기능 요청 ]
     @PostMapping("/acc-records")
     public ResponseEntity<String> createAccRecord(@RequestBody AccRecordDto accRecordDto) {
+    	
         try {
         	// 1. 사고 기능 처리 객체를 사용하여 기록 저장
             accRecordService.saveAccRecord(accRecordDto);
@@ -156,31 +106,7 @@ public class AiApiController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("기록 생성 중 오류 발생: " + e.getMessage());
             
         }
-    }
-	
-    // [ 사고 감지 : 자세 인식 전체 기록 조회 ]
-    @GetMapping("/acc-records")
-    public ResponseEntity<List<AccRecordViewDto>> getAllAccRecords() {
-    	
-    	// 1. 사고 감지와 관련된 전체 기록 가져오기
-        List<AccRecordViewDto> records = accRecordService.selectAllAccRecords();
-        
-        // 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
-        return ResponseEntity.ok(records);
         
     }
-
-    // [ 사고 감지 : 자세 인식 특정 기록 조회 ]
-    @GetMapping("/acc-records/{recordId}")
-    public ResponseEntity<AccRecordViewDto> getAccRecordById(@PathVariable int recordId) {
-    	
-    	// 1. 사고 감지와 관련된 특정 기록 가져오기
-    	AccRecordViewDto record = accRecordService.selectAccRecordById(recordId);
-    	
-    	// 2. 해당 기록을 성공적으로 가져온 경우, 성공 신호 전달
-        return ResponseEntity.ok(record);
-        
-    }
-    
 
 }

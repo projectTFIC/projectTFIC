@@ -86,7 +86,7 @@ function ReportPage() {
     <DashboardLayout>
       <DashboardNavbar />
       <Box p={3}>
-        <Grid container spacing={3}>
+        <Grid container spacing={1}>
           <Grid item xs={12} md={reportGenerated ? 6 : 12}>
             <Card sx={{ p: 4, borderRadius: 3, maxWidth: 900, mx: "auto" }}>
               <Typography variant="h2" fontWeight="bold" align="center" gutterBottom>
@@ -201,6 +201,7 @@ function ReportPage() {
                       elevation={promptType === option.value ? 1 : 0}
                       onClick={() => setPromptType(option.value)}
                       sx={{
+                        mb: 4,
                         px: 1.5,
                         py: 1,
                         border: `1px solid ${promptType === option.value ? "#1976d2" : "#e0e0e0"}`,
@@ -221,17 +222,96 @@ function ReportPage() {
                           <Typography fontWeight="medium">{option.label}</Typography>
                           <Typography variant="body2" color="text.secondary" fontSize={13}>
                             {option.value === "default"
-                              ? "AI가 생성한 표준 프롬프트 사용"
-                              : "직접 프롬프트 내용 수정"}
+                              ? "AI가 생성한 표준 프롬프트를 사용합니다"
+                              : "프롬프트 내용을 직접 수정할 수 있습니다"}
                           </Typography>
                         </Box>
                       </Box>
                     </Paper>
                   ))}
                 </Stack>
+                <Box mt={4}>
+                  {/* 👇 조건부 안내 문구 */}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight="medium"
+                    fontSize="0.9rem"
+                    mb={1}
+                    display="block"
+                  >
+                    {promptType === "default"
+                      ? "AI 생성 프롬프트 (읽기 전용)"
+                      : "AI 생성 프롬프트 (사용자 설정)"}
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={6}
+                    value={promptText}
+                    onChange={(e) => setPromptText(e.target.value)}
+                    disabled={promptType === "default"}
+                  />
+                </Box>
+              </Paper>
+
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "#f7faff",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Box>
+                  <Box
+                    sx={{
+                      backgroundColor: "#e3f2fd",
+                      color: "#1976d2",
+                      borderRadius: "16px",
+                      px: 1.5,
+                      py: 0.5,
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      display: "inline-block",
+                      mb: 1,
+                    }}
+                  >
+                    {reportTitles[tabIndex]}
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    선택된 설정으로 AI가 CCTV 데이터를 분석하여 보고서를 생성합니다
+                  </Typography>
+                </Box>
+              </Paper>
+              {/* ✅ 안내 박스 */}
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "#f9fcff",
+                  borderColor: "#bbdefb",
+                  mb: 2,
+                }}
+              >
+                <Typography variant="subtitle2" fontWeight="bold" color="black" gutterBottom>
+                  <PsychologyIcon sx={{ verticalAlign: "middle", mr: 1 }} />
+                  AI 보고서 생성 안내
+                </Typography>
+                <Typography variant="body2" color="text.secondary" lineHeight={1.6} fontSize={14}>
+                  선택한 기간의 CCTV 영상 데이터를 AI가 분석하여 자동으로 보고서를 생성합니다. 기본
+                  설정은 지능적인 프롬프트를 사용하며, 사용자 설정을 통해 세부 내용을 조정할 수
+                  있습니다.
+                </Typography>
               </Paper>
 
               <Button
+                sx={{ color: "#fff", height: 50, fontSize: "16px" }}
                 variant="contained"
                 color="primary"
                 startIcon={<DescriptionIcon />}
@@ -245,7 +325,16 @@ function ReportPage() {
           </Grid>
           <Slide direction="left" in={reportGenerated} timeout={400} mountOnEnter unmountOnExit>
             <Grid item xs={12} md={6}>
-              <Card sx={{ p: 3, borderRadius: 3 }}>
+              <Card
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  height: "100%",
+                  maxWidth: 900, // 원하는 최대 넓이
+                  mx: "auto", // 중앙 정렬
+                  ml: "1%",
+                }}
+              >
                 {/* 1. 수정 가능한 TextField */}
                 <Typography variant="subtitle1" fontWeight="medium" mt={2}>
                   📝 보고서 HTML 코드 수정

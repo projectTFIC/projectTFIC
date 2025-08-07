@@ -1,3 +1,5 @@
+// src/components/WeatherContainer.js
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Card, Typography, Divider, Box } from "@mui/material";
@@ -7,11 +9,10 @@ import rainyDay from "../../assets/lottie/RainyDay.json";
 const SERVICE_KEY =
   "wksMHekX%2FKUih83RjZB90drNGaJP0jYxTheUXe658Z7egUvB7mpEKjxR5iDf%2Bl4lyY1hgcHInc52z%2FvbAjCEvg%3D%3D"; // 이미 인코딩된 키
 
-// 서울 기준 기상청 격자 좌표 기본값
-let DEFAULT_NX = 60;
-let DEFAULT_NY = 127;
+// 서울 격자 기본값
+const DEFAULT_NX = 60;
+const DEFAULT_NY = 127;
 
-// 위경도 → 기상청 격자좌표 변환 공식
 function convertGRID_GPS(lat, lon) {
   const RE = 6371.00877;
   const GRID = 5.0;
@@ -118,7 +119,6 @@ function TodayWeatherCard({ temp, min, max, condition }) {
         background: "linear-gradient(135deg, #f9fafe, #e9ecf5)",
       }}
     >
-      {/* 제목 */}
       <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
         오늘의 날씨
       </Typography>
@@ -186,14 +186,15 @@ function WeatherContainer() {
   const [nx, setNx] = useState(DEFAULT_NX);
   const [ny, setNy] = useState(DEFAULT_NY);
 
+  // 위치 정보 불러오고 날씨 fetch
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const grid = convertGRID_GPS(latitude, longitude);
-        setNx(grid.x);
-        setNy(grid.y);
-        fetchWeather(grid.x, grid.y);
+        const { x, y } = convertGRID_GPS(latitude, longitude);
+        setNx(x);
+        setNy(y);
+        fetchWeather(x, y);
       },
       () => {
         fetchWeather(DEFAULT_NX, DEFAULT_NY);
@@ -201,6 +202,7 @@ function WeatherContainer() {
     );
   }, []);
 
+  // 날씨 API 호출 함수
   const fetchWeather = async (nxParam, nyParam) => {
     const base_date = getToday();
     const base_time = getBaseTime();
@@ -215,10 +217,10 @@ function WeatherContainer() {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP 에러! 상태: ${response.status}`);
 
-      const text = await response.text();
-      const data = JSON.parse(text);
+      const data = await response.json();
       const items = data.response.body.items.item;
 
+      // base_time을 포함한 후보시간 리스트 (최신부터 검토)
       const candidateTimes = [
         base_time,
         (parseInt(base_time, 10) + 100).toString().padStart(4, "0"),
@@ -226,6 +228,7 @@ function WeatherContainer() {
         (parseInt(base_time, 10) + 300).toString().padStart(4, "0"),
       ].filter((t) => t <= "2300");
 
+      // 카테고리별 값 찾기 함수 (최신 후보시간 기준 탐색)
       const findValueByCategory = (category) => {
         for (let t of candidateTimes) {
           const item = items.find(
@@ -240,9 +243,7 @@ function WeatherContainer() {
       const pty = findValueByCategory("PTY");
       const sky = findValueByCategory("SKY");
 
-      const now = new Date();
-
-      // TMN, TMX 대신 TMP 데이터에서 최저, 최고 기온 계산
+      // TMP 데이터에서 오늘 최저/최고 직접 계산
       const todayTmpItems = items.filter((i) => i.category === "TMP" && i.fcstDate === base_date);
       const tmpValues = todayTmpItems.map((item) => Number(item.fcstValue));
       const minTmp = tmpValues.length > 0 ? Math.min(...tmpValues) : 0;

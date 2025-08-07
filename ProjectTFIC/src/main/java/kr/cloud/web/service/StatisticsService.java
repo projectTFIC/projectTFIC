@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import org.springframework.stereotype.Service;
 
 import kr.cloud.web.entity.DayTypeCount;
+import kr.cloud.web.entity.HeAccessDayCount;
 import kr.cloud.web.entity.StatisticsResponse;
 import kr.cloud.web.entity.TypeCount;
 import kr.cloud.web.mapper.NoticeMapper;
@@ -71,12 +72,24 @@ public class StatisticsService {
             }
             areaStats.put(location, list);
         }
+        
+     // 통계 서비스 내
+        List<Object[]> heAccessDayStats = reportRepository.getHeAccessDayStats(startDateTime, endDateTime);
+        List<HeAccessDayCount> heDayStats = new ArrayList<>();
+        for (Object[] row : heAccessDayStats) {
+            String date = row[0].toString();
+            String access = row[1].toString();
+            int count = ((Number) row[2]).intValue();
+            heDayStats.add(new HeAccessDayCount(date, access, count));
+        }
+        
 
         // 통합 결과
         StatisticsResponse response = new StatisticsResponse();
         response.setTypeStats(typeStats);
         response.setDayStats(dayStats);
         response.setAreaStats(areaStats);
+        response.setHeDayStats(heDayStats);
         return response;
     }
 }
