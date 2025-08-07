@@ -327,11 +327,10 @@ def generate_pdf():
 
     import pdfkit
     path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-    print(f"[DEBUG] wkhtmltopdf 경로: {path_wkhtmltopdf}")
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
     pdf_bytes = pdfkit.from_string(report_html, False, configuration=config)
 
-    print("[DEBUG] PDF 바이트 길이:", len(pdf_bytes))
+    
 
     response = make_response(pdf_bytes)
     response.headers["Content-Type"] = "application/pdf"
