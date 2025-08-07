@@ -37,4 +37,5 @@ public class PpeRecordViewDto {
 	private int beltOff;					// 안전밸트 미착용
 	private int shoesOff;					// 안전화 미착용
     
+	
 }
