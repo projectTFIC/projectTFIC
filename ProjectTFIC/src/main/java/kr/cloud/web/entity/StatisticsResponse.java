@@ -11,4 +11,5 @@ public class StatisticsResponse {
     private List<TypeCount> typeStats;                // 유형별 집계
     private List<DayTypeCount> dayStats;              // 일별 집계
     private Map<String, List<DayTypeCount>> areaStats; // 구역별 집계
+    private List<HeAccessDayCount> heDayStats;	//일자별 입차/출차 카운트 통계
 }
