@@ -45,15 +45,6 @@ const MonitoringPage = () => {
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-<<<<<<< HEAD
-        const res = await axios.get("http://localhost:8090/web/GetDevicesList");
-        setCameraList(res.data);
-        if (res.data.length > 0) {
-          const initialCamId = res.data[0].device_id;
-          setSelectedCam(initialCamId);
-          // [Back] 초기 카메라 선택 시, 서버에 알림
-          socket.emit("set_main_device", { deviceId: initialCamId });
-=======
         const res = await axios.get("http://localhost:5050/api/devices");
         const devices = res.data.map((d, index) => ({
           ...d,
@@ -62,8 +53,11 @@ const MonitoringPage = () => {
         }));
         setCameraList(devices);
         if (devices.length > 0) {
-          setSelectedCam(devices[0].device_id);
->>>>>>> d72ddd7 (모니터링 화면 교체 및 웹 캠 연결 / 기록관리 디자인 수정)
+          const initialCamId = devices[0].device_id;
+          setSelectedCam(initialCamId);
+
+          // ✅ 서버에 초기 선택 카메라 알림 추가
+          socket.emit("set_main_device", { deviceId: initialCamId });
         }
       } catch (err) {
         console.error("장비 리스트 불러오기 실패", err);

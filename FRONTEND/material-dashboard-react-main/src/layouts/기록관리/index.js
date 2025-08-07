@@ -26,8 +26,9 @@ import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { Menu, MenuItem } from "@mui/material";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import TableRow from "@mui/material/TableRow";
 
 function Tables() {
   const location = useLocation();
@@ -42,85 +43,67 @@ function Tables() {
   ];
 
   // 데이터 상태
-  const [acc, setAccidents] = useState([]);
+  const [accidents, setAccidents] = useState([]);
   const [ppe, setPpe] = useState([]);
-  const [he, setAccess] = useState([]);
+  const [access, setAccess] = useState([]);
 
   // UI 상태
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
   const [searchText, setSearchText] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [expandedRows, setExpandedRows] = useState([]); // rowId 기반 토글
+  const [expandedRow, setExpandedRow] = useState(null); // rowId 기반 토글
 
   const openMenu = Boolean(anchorEl);
 
   // 데이터 로드
   useEffect(() => {
-    // [Back] 안전장비 미착용
-    axios.get("/web/tablelist/pperecords").then((res) => {
-      setPpe(
-        res.data.map((row, idx) => ({
-          listNum: idx + 1,
-          title: row.recordTitle, // 게시글 제목
-          type: (
-            <MDBadge
-              badgeContent={row.detectionType}
-              color="warning"
-              variant="gradient"
-              size="lg"
-            />
-          ), // 탐지유형
-          originalImg: row.originalImg, // 원본 이미지
-          detectImg: row.detectImg, // 감지 이미지
-          content: row.content, // 보고문
-          helmetOff: row.helmetOff, // 안전모 미착용
-          hookOff: row.hookOff, // 안전모 미착용
-          beltOff: row.beltOff, // 안전모 미착용
-          shoesOff: row.shoesOff, // 안전모 미착용
-          deviceId: row.deviceId, // 장치 아이디
-          location: row.location, // 설치 위치
-          date: row.regDate, // 탐지 날짜
-        }))
-      );
-    });
-
-    // [Back] 중장비 출입
-    axios.get("/web/tablelist/herecords").then((res) => {
-      setAccess(
-        res.data.map((row, idx) => ({
-          listNum: idx + 1,
-          title: row.recordTitle, // 게시글 제목
-          type: (
-            <MDBadge badgeContent={row.detectionType} color="info" variant="gradient" size="lg" />
-          ), // 탐지 유형
-          originalImg: row.originalImg, // 원본 이미지
-          detectImg: row.detectImg, // 감지 이미지
-          heType: row.hetype, // 중장비 유형
-          heNumber: row.heNumber, // 번호판
-          access: row.access, // 입출입
-          deviceId: row.deviceId, // 장치 아이디
-          location: row.location, // 설치 위치
-          date: row.regDate, // 탐지 날짜
-        }))
-      );
-    });
-
-    // [Back] 사고 감지
-    axios.get("/web/tablelist/accrecords").then((res) => {
+    // 사고 감지
+    axios.get("/web/tablelist/accidents").then((res) => {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle, // 게시글 제목
-          type: (
-            <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
-          ), // 탐지 유형
-          originalImg: row.originalImg, // 원본 이미지
-          detectImg: row.detectImg, // 감지 이미지
-          content: row.content, // 세부정보
-          deviceId: row.deviceId, // 장치 아이디
-          location: row.location, // 설치 위치
-          date: row.regDate, // 탐지 날짜
+          title: row.type,
+          content: row.content,
+          location: row.location,
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
+          date: row.date,
+        }))
+      );
+    });
+
+    // 안전장비 미착용
+    axios.get("/web/tablelist/equipment").then((res) => {
+      setPpe(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.title,
+          content: row.content,
+          location: row.location,
+          heNumber: row.heNumber, // 혹시 필요하다면 유지
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
+          date: row.date,
+        }))
+      );
+    });
+
+    // 입출입
+    axios.get("/web/tablelist/access").then((res) => {
+      setAccess(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.title,
+          content: row.content,
+          image: row.image,
+          heNumber: row.heNumber,
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
+          date: row.date,
         }))
       );
     });
@@ -128,15 +111,9 @@ function Tables() {
 
   // 탭 데이터
   const tabs = [
-<<<<<<< HEAD
-    { label: "안전장비 미착용", rows: ppe },
-    { label: "중장비 출입", rows: he },
-    { label: "사고 감지", rows: acc },
-=======
     { label: "사고 감지", rows: accidents },
     { label: "안전장비 미착용 감지", rows: ppe },
     { label: "입출입 감지", rows: access },
->>>>>>> d72ddd7 (모니터링 화면 교체 및 웹 캠 연결 / 기록관리 디자인 수정)
   ];
 
   // 필터 핸들러
@@ -170,9 +147,7 @@ function Tables() {
 
   // 토글
   const toggleRow = (rowId) => {
-    setExpandedRows((prev) =>
-      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
-    );
+    setExpandedRow((prev) => (prev === rowId ? null : rowId));
   };
 
   // 제목 클릭 가능하도록 컬럼 수정
@@ -220,9 +195,8 @@ function Tables() {
                   borderRadius="lg"
                   coloredShadow="info"
                   sx={{
-                    height: "100%",
+                    height: 100,
                     borderRadius: "16px",
-                    p: 3,
                     background: `linear-gradient(
       135deg,
       rgba(0, 115, 255, 0.65),
@@ -317,7 +291,7 @@ function Tables() {
                     table={{
                       columns: enhancedColumns,
                       rows: rowsWithId.flatMap((row) => {
-                        const isExpanded = expandedRows.includes(row.rowId);
+                        const isExpanded = expandedRow === row.rowId;
                         return [
                           row,
                           ...(isExpanded
@@ -325,66 +299,65 @@ function Tables() {
                                 {
                                   listNum: "",
                                   title: (
-                                    <TableCell colSpan={columns.length} style={{ padding: 0 }}>
-                                      <Collapse
-                                        in={isExpanded}
-                                        timeout={300}
-                                        style={{
-                                          backgroundColor: "#f9f9f9",
-                                          borderTop: "1px solid #eee",
-                                        }}
-                                      >
-                                        <Box p={2}>
-                                          <MDTypography variant="body2" color="text">
-                                            {`감지위치 :  ${row.location || "정보 없음"}`}
-                                          </MDTypography>
-                                          {row.originalImg && (
-                                            <img
-                                              src={row.originalImg}
-                                              alt="게시글 이미지"
+                                    <AnimatePresence>
+                                      {isExpanded && (
+                                        <TableRow>
+                                          <TableCell
+                                            colSpan={columns.length}
+                                            style={{ padding: 0, borderBottom: "none" }}
+                                          >
+                                            <motion.div
+                                              initial={{ maxHeight: 0, opacity: 0 }}
+                                              animate={{ maxHeight: 1000, opacity: 1 }} // 충분한 maxHeight 값
+                                              exit={{ maxHeight: 0, opacity: 0 }}
+                                              transition={{ duration: 0.4, ease: "easeInOut" }}
                                               style={{
-                                                maxWidth: "800px",
-                                                maxHeight: "500px",
-                                                width: "100%",
-                                                height: "auto",
-                                                borderRadius: 6,
-                                                marginTop: 4,
-                                                objectFit: "contain",
+                                                overflow: "hidden",
+                                                backgroundColor: "#f9f9f9",
                                               }}
-                                            />
-                                          )}
-                                          {row.detectImg && (
-                                            <Box mt={2}>
-                                              {row.detectImg.startsWith("http") ||
-                                              row.detectImg.startsWith("data:") ? (
-                                                <img
-                                                  src={row.detectImg}
-                                                  alt="detectImg"
-                                                  style={{
-                                                    maxWidth: "800px",
-                                                    maxHeight: "500px",
-                                                    width: "100%",
-                                                    height: "auto",
-                                                    borderRadius: 6,
-                                                    marginTop: 4,
-                                                    objectFit: "contain",
-                                                  }}
-                                                />
-                                              ) : (
-                                                <MDTypography variant="caption" color="info">
-                                                  {row.detectImg}
-                                                </MDTypography>
-                                              )}
-                                              {tabIndex === 1 ? (
+                                            >
+                                              <Box p={2}>
                                                 <MDTypography variant="body2" color="text">
-                                                  {`차량번호 :  ${row.heNumber || "정보 없음"}`}
+                                                  {tabIndex === 2
+                                                    ? `차량번호 :  ${row.heNumber || "정보 없음"}`
+                                                    : `감지위치 :  ${row.location || "정보 없음"}`}
                                                 </MDTypography>
-                                              ) : null}
-                                            </Box>
-                                          )}
-                                        </Box>
-                                      </Collapse>
-                                    </TableCell>
+
+                                                {row.originalImg && (
+                                                  <Box mt={2}>
+                                                    <img
+                                                      src={row.originalImg}
+                                                      alt="게시글 이미지"
+                                                      style={{
+                                                        maxWidth: "800px",
+                                                        width: "100%",
+                                                        borderRadius: 6,
+                                                        objectFit: "contain",
+                                                      }}
+                                                    />
+                                                  </Box>
+                                                )}
+
+                                                {row.detectImg && (
+                                                  <Box mt={2}>
+                                                    <img
+                                                      src={row.detectImg}
+                                                      alt="detectImg"
+                                                      style={{
+                                                        maxWidth: "800px",
+                                                        width: "100%",
+                                                        borderRadius: 6,
+                                                        objectFit: "contain",
+                                                      }}
+                                                    />
+                                                  </Box>
+                                                )}
+                                              </Box>
+                                            </motion.div>
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
+                                    </AnimatePresence>
                                   ),
                                   type: "",
                                   date: "",
