@@ -50,19 +50,6 @@ public class MyController {
    @Autowired
    BoardMapper mapper;
 
-   // [ 모니터링 페이지 - 영상장비 리스트 ]
-   // 등록된 영상장비의 리스트를 출력하는 기능
-   @GetMapping("/GoMonitoring")
-   public String goMonitoring(Model model) {
-
-      List<Devices> devicelist = mapper.selectDevicesAll();
-
-      model.addAttribute("devicelist", devicelist);
-
-      return "Monitoring";
-
-   }
-
 
    // [유저 페이지 - 로그인]
    // 로그인 기능

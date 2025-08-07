@@ -54,10 +54,11 @@ export default function Notifications() {
 
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
-  const [barMode, setBarMode] = useState("type"); // 'type' or 'area'
+  const [barMode, setBarMode] = useState("type"); // 'type', 'area', 'type-timeline'
   const [typeStats, setTypeStats] = useState([]);
-  const [areaStats, setAreaStats] = useState([]);
+  const [areaStats, setAreaStats] = useState({});
   const [dayStats, setDayStats] = useState([]);
+  const [heDayStats, setHeDayStats] = useState([]);
 
   const getDateRangeArray = (start, end) => {
     const arr = [];
@@ -70,107 +71,132 @@ export default function Notifications() {
     return arr;
   };
 
-  // 색상 매핑
+  // 색상 매핑 (구역별 추가 필요시 추가)
   const colorMap = {
     "PPE 감지": "#4dc9f6",
     "ACC 감지": "#f67019",
     "중장비 출입": "#f53794",
+    "안전장비 미착용": "#9b59b6",
     A: "#36a2eb",
     B: "#ffcd56",
     C: "#4bc0c0",
   };
 
-  // 백엔드 데이터 로드
+  // 데이터 로드
   useEffect(() => {
     fetch(`/web/tablelist/statistics?start=${startDate}&end=${endDate}`)
       .then((res) => res.json())
       .then((data) => {
         setTypeStats(Array.isArray(data.typeStats) ? data.typeStats : []);
-        setAreaStats(Array.isArray(data.areaStats) ? data.areaStats : []);
+        setAreaStats(
+          typeof data.areaStats === "object" && data.areaStats !== null ? data.areaStats : {}
+        );
         setDayStats(Array.isArray(data.dayStats) ? data.dayStats : []);
+        setHeDayStats(Array.isArray(data.heDayStats) ? data.heDayStats : []);
       })
       .catch((err) => console.error(err));
   }, [startDate, endDate]);
 
-  // 중장비 출입 포함하여 유형 병합
+  // 도넛/파이/누적용 - 유형별
   const mergedTypeStats = {};
   typeStats.forEach((item) => {
-    let label = item.type.startsWith("중장비 출입") ? "중장비 출입" : item.type;
+    let label = item.type;
+    if (label.startsWith("안전장비 미착용")) label = "안전장비 미착용";
+    else if (label.startsWith("중장비 출입")) label = "중장비 출입";
     mergedTypeStats[label] = (mergedTypeStats[label] || 0) + item.count;
   });
-
   const typeLabels = Object.keys(mergedTypeStats);
   const typeCounts = Object.values(mergedTypeStats);
 
-  const typeData = {
-    labels: typeLabels,
-    datasets: [
-      {
-        data: typeCounts,
-        backgroundColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
-        borderColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const areaLabels = areaStats.map((d) => d.area);
-  const areaCounts = areaStats.map((d) => d.count);
-
-  const areaData = {
-    labels: areaLabels,
-    datasets: [
-      {
-        data: areaCounts,
-        backgroundColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
-        borderColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const barTypeData = {
-    labels: typeLabels,
-    datasets: [
-      {
-        label: "탐지 유형별",
-        data: typeCounts,
-        backgroundColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
-      },
-    ],
-  };
-
-  const barAreaData = {
-    labels: areaLabels,
-    datasets: [
-      {
-        label: "발생 구역별",
-        data: areaCounts,
-        backgroundColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
-      },
-    ],
-  };
-
-  // 중장비 출입 추이
-  const dateRange = useMemo(() => getDateRangeArray(startDate, endDate), [startDate, endDate]);
-  const entryDataMap = {};
-  const exitDataMap = {};
-  dayStats.forEach((d) => {
-    if (d.access === "입차") {
-      entryDataMap[d.date] = (entryDataMap[d.date] || 0) + d.count;
-    } else if (d.access === "출차") {
-      exitDataMap[d.date] = (exitDataMap[d.date] || 0) + d.count;
-    }
+  // 도넛/파이/누적용 - 구역별
+  const mergedAreaStats = {};
+  Object.entries(areaStats).forEach(([areaName, dailyStatsArray]) => {
+    let areaTotalCount = 0;
+    dailyStatsArray.forEach((dailyStat) => {
+      const typeCounts = dailyStat.typeCounts || {};
+      Object.entries(typeCounts).forEach(([typeLabel, count]) => {
+        let label = typeLabel;
+        if (label.startsWith("안전장비 미착용")) label = "안전장비 미착용";
+        else if (label.startsWith("중장비 출입")) label = "중장비 출입";
+        areaTotalCount += count;
+      });
+    });
+    mergedAreaStats[areaName] = areaTotalCount;
   });
+  const areaLabels = Object.keys(mergedAreaStats);
+  const areaCounts = Object.values(mergedAreaStats);
 
+  // 공통 x축 날짜
+  const dateRange = useMemo(() => getDateRangeArray(startDate, endDate), [startDate, endDate]);
+
+  // === [1] 유형별 x 일자별 - 시계열(line/bar)
+  const allTypeSeries = {};
+  typeLabels.forEach((label) => (allTypeSeries[label] = dateRange.map(() => 0)));
+  dayStats.forEach((dayObj) => {
+    const d = dayObj.date;
+    const idx = dateRange.indexOf(d);
+    if (idx === -1) return;
+    const typeMap = dayObj.typeCounts;
+    Object.entries(typeMap).forEach(([originLabel, count]) => {
+      let label = originLabel;
+      if (label.startsWith("안전장비 미착용")) label = "안전장비 미착용";
+      else if (label.startsWith("중장비 출입")) label = "중장비 출입";
+      else if (label === "ACC 감지") label = "ACC 감지";
+      else return;
+      if (allTypeSeries[label]) allTypeSeries[label][idx] += count;
+    });
+  });
+  const typeTimelineChartData = {
+    labels: dateRange,
+    datasets: typeLabels.map((label) => ({
+      label,
+      data: allTypeSeries[label],
+      borderColor: colorMap[label] || "#999",
+      backgroundColor: (colorMap[label] || "#999") + "55",
+      fill: false,
+      tension: 0.3,
+    })),
+  };
+
+  // === [2] 구역별 x 일자별 - 시계열(line/bar)
+  const areaSeries = {};
+  areaLabels.forEach((area) => (areaSeries[area] = dateRange.map(() => 0)));
+  Object.entries(areaStats).forEach(([area, arr]) => {
+    arr.forEach((stat) => {
+      const idx = dateRange.indexOf(stat.date);
+      if (idx !== -1) {
+        const dayTotal = Object.values(stat.typeCounts).reduce((a, b) => a + b, 0);
+        areaSeries[area][idx] += dayTotal;
+      }
+    });
+  });
+  const areaTimelineChartData = {
+    labels: dateRange,
+    datasets: areaLabels.map((area) => ({
+      label: area,
+      data: areaSeries[area],
+      borderColor: colorMap[area] || "#aaa",
+      backgroundColor: (colorMap[area] || "#aaa") + "55",
+      fill: false,
+      tension: 0.3,
+    })),
+  };
+
+  // === [3] 중장비 입차/출차 라인 차트
+  const entryDataMap = {},
+    exitDataMap = {};
+  heDayStats.forEach((d) => {
+    if (d.access === "입차") entryDataMap[d.date] = (entryDataMap[d.date] || 0) + d.count;
+    else if (d.access === "출차") exitDataMap[d.date] = (exitDataMap[d.date] || 0) + d.count;
+  });
   const heavyEquipmentData = {
     labels: dateRange,
     datasets: [
       {
         label: "입차",
         data: dateRange.map((date) => entryDataMap[date] || 0),
-        borderColor: "#4dc9f6",
-        backgroundColor: "rgba(77,201,246,0.15)",
+        borderColor: "#67d5fdff",
+        backgroundColor: "rgba(77,201,246,0.8)",
         tension: 0.4,
         fill: true,
       },
@@ -178,13 +204,14 @@ export default function Notifications() {
         label: "출차",
         data: dateRange.map((date) => exitDataMap[date] || 0),
         borderColor: "#f67019",
-        backgroundColor: "rgba(246,112,25,0.15)",
+        backgroundColor: "rgba(246,112,25,0.8)",
         tension: 0.4,
         fill: true,
       },
     ],
   };
 
+  // Chart options
   const pieOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -234,65 +261,98 @@ export default function Notifications() {
         {/* 차트 레이아웃 */}
         <MDBox pt={1} pb={3}>
           <Grid container spacing={3}>
-            {/* 왼쪽 Pie 2개 */}
+            {/* 왼쪽 Pie 2개 (누적 도넛) */}
             <Grid item xs={12} md={4}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <Card sx={{ height: 250 }}>
                     <MDBox px={2} pt={1}>
-                      <MDTypography variant="h6">탐지 유형별</MDTypography>
+                      <MDTypography variant="h6">탐지 유형별 (누적)</MDTypography>
                     </MDBox>
                     <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-                      <Pie data={typeData} options={pieOptions} />
+                      <Pie
+                        data={{
+                          labels: typeLabels,
+                          datasets: [
+                            {
+                              data: typeCounts,
+                              backgroundColor: typeLabels.map(
+                                (label) => colorMap[label] || "#9b59b6"
+                              ),
+                              borderColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
+                              borderWidth: 2,
+                            },
+                          ],
+                        }}
+                        options={pieOptions}
+                      />
                     </MDBox>
                   </Card>
                 </Grid>
                 <Grid item xs={12}>
                   <Card sx={{ height: 250 }}>
                     <MDBox px={2} pt={1}>
-                      <MDTypography variant="h6">발생 구역별</MDTypography>
+                      <MDTypography variant="h6">발생 구역별 (누적)</MDTypography>
                     </MDBox>
                     <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-                      <Pie data={areaData} options={pieOptions} />
+                      <Pie
+                        data={{
+                          labels: areaLabels,
+                          datasets: [
+                            {
+                              data: areaCounts,
+                              backgroundColor: areaLabels.map(
+                                (label) => colorMap[label] || "#95a5a6"
+                              ),
+                              borderColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
+                              borderWidth: 2,
+                            },
+                          ],
+                        }}
+                        options={pieOptions}
+                      />
                     </MDBox>
                   </Card>
                 </Grid>
               </Grid>
             </Grid>
 
-            {/* 오른쪽 Bar (탐지유형 / 구역) */}
+            {/* 오른쪽 ; 유형·구역별 일자별 추이 (Line/Bar) */}
             <Grid item xs={12} md={8}>
               <Stack direction="row" spacing={2} mb={1}>
                 <Button
                   variant={barMode === "type" ? "contained" : "outlined"}
                   onClick={() => setBarMode("type")}
                 >
-                  탐지 유형
+                  탐지유형 일자별 추이
                 </Button>
                 <Button
                   variant={barMode === "area" ? "contained" : "outlined"}
                   onClick={() => setBarMode("area")}
                 >
-                  발생 구역
+                  발생구역 일자별 추이
                 </Button>
               </Stack>
               <Card sx={{ height: 520 }}>
                 <MDBox p={2} sx={{ height: "100%" }}>
-                  <Bar data={barMode === "type" ? barTypeData : barAreaData} options={barOptions} />
+                  <Line
+                    data={barMode === "type" ? typeTimelineChartData : areaTimelineChartData}
+                    options={lineOptions}
+                  />
                 </MDBox>
               </Card>
             </Grid>
           </Grid>
         </MDBox>
 
-        {/* 하단 중장비 출입 통계 */}
+        {/* 하단 중장비 출입 추이(입차/출차) */}
         <MDBox pb={3}>
           <Card sx={{ height: 400 }}>
             <MDBox px={2} pt={1}>
-              <MDTypography variant="h6">중장비 출입 통계 (입차 / 출차)</MDTypography>
+              <MDTypography variant="h6">중장비 입차·출차 추이</MDTypography>
             </MDBox>
             <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-              <Line data={heavyEquipmentData} options={lineOptions} />
+              <Bar data={heavyEquipmentData} options={barOptions} />
             </MDBox>
           </Card>
         </MDBox>

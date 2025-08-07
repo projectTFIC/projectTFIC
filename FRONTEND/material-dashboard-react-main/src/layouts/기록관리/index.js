@@ -25,27 +25,39 @@ function Tables() {
   const location = useLocation();
   const pathname = location.pathname;
 
-  const columns = [
-    { Header: "No.", accessor: "listNum", align: "center" },
-    { Header: "제목", accessor: "title", align: "center" },
-    { Header: "유형", accessor: "type", align: "center" },
-    { Header: "날짜", accessor: "date", align: "center" },
-  ];
-
-  const [acc, setAccidents] = useState([]);
+  const [accidents, setAccidents] = useState([]);
   const [ppe, setPpe] = useState([]);
-  const [he, setAccess] = useState([]);
+  const [access, setAccess] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
   const [searchText, setSearchText] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [expandedRows, setExpandedRows] = useState([]);
+  const [expandedRow, setExpandedRow] = useState(null);
   const [open, setOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
 
   const openMenu = Boolean(anchorEl);
 
   useEffect(() => {
+    axios.get("/web/tablelist/accrecords").then((res) => {
+      setAccidents(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.recordTitle,
+          type: (
+            <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
+          ),
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          content: row.content,
+          location: row.location,
+          date: row.regDate,
+          rowId: `0-${idx}`,
+          report: row.report,
+        }))
+      );
+    });
+
     axios.get("/web/tablelist/pperecords").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
@@ -64,7 +76,7 @@ function Tables() {
           content: row.content,
           location: row.location,
           date: row.regDate,
-          rowId: `0-${idx}`,
+          rowId: `1-${idx}`,
           report: row.report,
         }))
       );
@@ -75,31 +87,9 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.recordTitle,
-          type: (
-            <MDBadge badgeContent={row.detectionType} color="info" variant="gradient" size="lg" />
-          ),
+          type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
           originalImg: row.originalImg,
           detectImg: row.detectImg,
-          content: row.content,
-          location: row.location,
-          date: row.regDate,
-          rowId: `1-${idx}`,
-          report: row.report,
-        }))
-      );
-    });
-
-    axios.get("/web/tablelist/accrecords").then((res) => {
-      setAccidents(
-        res.data.map((row, idx) => ({
-          listNum: idx + 1,
-          title: row.recordTitle,
-          type: (
-            <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
-          ),
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          content: row.content,
           location: row.location,
           date: row.regDate,
           rowId: `2-${idx}`,
@@ -110,9 +100,9 @@ function Tables() {
   }, []);
 
   const tabs = [
-    { label: "안전장비 미착용", rows: ppe },
-    { label: "중장비 출입", rows: he },
-    { label: "사고 감지", rows: acc },
+    { label: "사고 감지", rows: accidents },
+    { label: "안전장비 미착용 감지", rows: ppe },
+    { label: "입출입 감지", rows: access },
   ];
 
   const handleTabChange = (_, v) => setTabIndex(v);
@@ -135,9 +125,7 @@ function Tables() {
   });
 
   const toggleRow = (rowId) => {
-    setExpandedRows((prev) =>
-      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
-    );
+    setExpandedRow((prev) => (prev === rowId ? null : rowId));
   };
 
   const handleOpen = (src) => {
@@ -149,24 +137,25 @@ function Tables() {
     setImageSrc("");
   };
 
-  const enhancedColumns = columns.map((col) => {
-    if (col.accessor !== "title") return col;
-    return {
-      ...col,
-      Cell: ({ value, row }) => {
-        const rowId = row.original.rowId;
-        return (
-          <MDTypography
-            component="span"
-            sx={{ cursor: "pointer", color: "black", fontWeight: "bold" }}
-            onClick={() => toggleRow(rowId)}
-          >
-            {value}
-          </MDTypography>
-        );
-      },
-    };
-  });
+  const columns = [
+    { Header: "No.", accessor: "listNum", align: "center" },
+    {
+      Header: "제목",
+      accessor: "title",
+      align: "center",
+      Cell: ({ value, row }) => (
+        <MDTypography
+          component="span"
+          sx={{ cursor: "pointer", color: "black", fontWeight: "bold" }}
+          onClick={() => toggleRow(row.original.rowId)}
+        >
+          {value}
+        </MDTypography>
+      ),
+    },
+    { Header: "유형", accessor: "type", align: "center" },
+    { Header: "날짜", accessor: "date", align: "center" },
+  ];
 
   const DetailRow = ({ row }) => (
     <Box display="flex" flexDirection="column" gap={2} p={2}>
@@ -241,8 +230,8 @@ function Tables() {
                 <MDBox
                   mx={2}
                   mt={-3}
-                  py={3}
-                  px={2}
+                  py={0}
+                  px={0}
                   variant="gradient"
                   bgColor="info"
                   borderRadius="lg"
@@ -256,7 +245,16 @@ function Tables() {
                       indicatorColor="secondary"
                     >
                       {tabs.map((t, i) => (
-                        <Tab key={i} label={t.label} />
+                        <Tab
+                          key={i}
+                          label={t.label}
+                          sx={{
+                            color: "white",
+                            fontSize: "1.2rem",
+                            fontWeight: 600,
+                            textTransform: "none",
+                          }}
+                        />
                       ))}
                     </Tabs>
                   </MDTypography>
@@ -283,12 +281,7 @@ function Tables() {
                       ? "내용"
                       : "필터"}
                   </Button>
-                  <Menu
-                    id="filter-menu"
-                    anchorEl={anchorEl}
-                    open={openMenu}
-                    onClose={handleFilterClose}
-                  >
+                  <Menu anchorEl={anchorEl} open={openMenu} onClose={handleFilterClose}>
                     <MenuItem onClick={() => handleFilterSelect("titleContent")}>
                       제목+내용
                     </MenuItem>
@@ -307,9 +300,9 @@ function Tables() {
                 <MDBox pt={3}>
                   <DataTable
                     table={{
-                      columns: enhancedColumns,
+                      columns,
                       rows: filteredRows.flatMap((row) => {
-                        const isExpanded = expandedRows.includes(row.rowId);
+                        const isExpanded = expandedRow === row.rowId;
                         return [
                           row,
                           ...(isExpanded

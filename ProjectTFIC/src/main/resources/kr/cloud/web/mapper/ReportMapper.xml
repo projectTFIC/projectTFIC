@@ -93,5 +93,29 @@
             WHERE ti.reg_date BETWEEN #{start} AND #{end}
         ) AS combined
     </select>
-
+    
+    <!-- 5. 요약용: ppe (개인보호구 미착용 기록 DTO) -->
+<select id="selectPpeRecordsByPeriod" resultType="kr.cloud.web.entity.PpeRecordViewDto">
+    SELECT
+        pr.record_id AS recordId,
+        pr.record_title AS recordTitle,
+        ti.location AS location,
+        ti.reg_date AS regDate,
+        pr.original_img AS originalImg,
+        pr.detect_img AS detectImg,
+        pc.content AS content,
+        pc.helmet_off AS helmetOff,
+        pc.hook_off AS hookOff,
+        pc.belt_off AS beltOff,
+        pc.shoes_off AS shoesOff
+    FROM ppe_record pr
+    LEFT JOIN ppe_content pc ON pr.record_id = pc.record_id
+    LEFT JOIN type_info ti ON pr.type_id = ti.type_id
+    WHERE ti.reg_date BETWEEN #{start} AND #{end}
+</select>
+<!-- ReportMapper.xml -->
+<insert id="insertReport" parameterType="kr.cloud.web.entity.Report">
+    INSERT INTO report (report_title, type_id, report_file, user_id, name, reg_date)
+    VALUES (#{reportTitle}, #{typeId}, #{reportFile}, #{userId}, #{name}, #{regDate})
+</insert>
 </mapper>

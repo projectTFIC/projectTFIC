@@ -29,7 +29,7 @@ const tabs = {
   styleOverrides: {
     root: {
       position: "relative",
-      backgroundColor: grey[100],
+      // backgroundColor: grey[100],
       borderRadius: borderRadius.xl,
       minHeight: "unset",
       padding: pxToRem(4),
@@ -53,11 +53,19 @@ const tabs = {
     },
 
     indicator: {
-      height: "100%",
-      borderRadius: borderRadius.lg,
-      backgroundColor: white.main,
-      boxShadow: tabsBoxShadow.indicator,
-      transition: "all 500ms ease",
+      height: "100%", // 혹은 더 키워도 됨
+      width: "calc(100% + 16px)",
+      marginLeft: "-8px",
+      borderRadius: "150px", // 부드럽게 둥글게
+      background: `
+    radial-gradient(circle at center, 
+      rgba(255, 100, 200, 0.6), 
+      rgba(255, 105, 160, 0.3),
+      transparent 100%
+    )
+  `,
+      backdropFilter: "blur(12px)",
+      transition: "all 400ms ease",
     },
   },
 };
