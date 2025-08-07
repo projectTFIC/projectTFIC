@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 // MUI
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 
 // MD components
 import MDBox from "components/MDBox";
@@ -20,7 +22,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 
 // Charts
-import { Pie, Line, Bar } from "react-chartjs-2";
+import { Pie, Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -45,7 +47,6 @@ ChartJS.register(
 );
 
 export default function Notifications() {
-  // 기본 날짜 필터
   const today = new Date();
   const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
   const defaultStart = twoWeeksAgo.toISOString().slice(0, 10);
@@ -53,167 +54,160 @@ export default function Notifications() {
 
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
+  const [barMode, setBarMode] = useState("type"); // 'type' or 'area'
+  const [typeStats, setTypeStats] = useState([]);
+  const [areaStats, setAreaStats] = useState([]);
+  const [dayStats, setDayStats] = useState([]);
 
-  // API 기본값을 빈배열/객체로 지정
-  const [statsData, setStatsData] = useState({
-    typeStats: [],
-    dayStats: [],
-    areaStats: {
-      A: [],
-      B: [],
-      C: [],
-    },
-  });
-  const [loading, setLoading] = useState(false);
+  const getDateRangeArray = (start, end) => {
+    const arr = [];
+    const current = new Date(start);
+    const endDateObj = new Date(end);
+    while (current <= endDateObj) {
+      arr.push(current.toISOString().slice(0, 10));
+      current.setDate(current.getDate() + 1);
+    }
+    return arr;
+  };
 
-  // 날짜 변경 시 API 호출
+  // 색상 매핑
+  const colorMap = {
+    "PPE 감지": "#4dc9f6",
+    "ACC 감지": "#f67019",
+    "중장비 출입": "#f53794",
+    A: "#36a2eb",
+    B: "#ffcd56",
+    C: "#4bc0c0",
+  };
+
+  // 백엔드 데이터 로드
   useEffect(() => {
-    if (!startDate || !endDate) return;
-    setLoading(true);
     fetch(`/web/tablelist/statistics?start=${startDate}&end=${endDate}`)
       .then((res) => res.json())
       .then((data) => {
-        setStatsData({
-          typeStats: Array.isArray(data.typeStats) ? data.typeStats : [],
-          dayStats: Array.isArray(data.dayStats) ? data.dayStats : [],
-          areaStats: data.areaStats || { A: [], B: [], C: [] },
-        });
-        setLoading(false);
+        setTypeStats(Array.isArray(data.typeStats) ? data.typeStats : []);
+        setAreaStats(Array.isArray(data.areaStats) ? data.areaStats : []);
+        setDayStats(Array.isArray(data.dayStats) ? data.dayStats : []);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch((err) => console.error(err));
   }, [startDate, endDate]);
 
-  // Pie 차트 데이터(중장비 출입 묶어서 집계)
+  // 중장비 출입 포함하여 유형 병합
   const mergedTypeStats = {};
-  (statsData.typeStats || []).forEach(({ type, count }) => {
-    if (type.startsWith("중장비 출입")) {
-      mergedTypeStats["중장비 출입"] = (mergedTypeStats["중장비 출입"] || 0) + count;
-    } else {
-      mergedTypeStats[type] = (mergedTypeStats[type] || 0) + count;
-    }
+  typeStats.forEach((item) => {
+    let label = item.type.startsWith("중장비 출입") ? "중장비 출입" : item.type;
+    mergedTypeStats[label] = (mergedTypeStats[label] || 0) + item.count;
   });
-  const pieLabels = Object.keys(mergedTypeStats);
-  const pieData = Object.values(mergedTypeStats);
+
+  const typeLabels = Object.keys(mergedTypeStats);
+  const typeCounts = Object.values(mergedTypeStats);
 
   const typeData = {
-    labels: pieLabels,
+    labels: typeLabels,
     datasets: [
       {
-        data: pieData,
-        backgroundColor: ["#4dc9f6", "#f67019", "#f53794"],
-        borderColor: ["#4dc9f6", "#f67019", "#f53794"],
+        data: typeCounts,
+        backgroundColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
+        borderColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
         borderWidth: 2,
       },
     ],
   };
-  // Line 차트 데이터
-  const lineData = {
-    labels: Array.isArray(statsData.dayStats) ? statsData.dayStats.map((d) => d.date) : [],
-    datasets: Array.isArray(statsData.dayStats)
-      ? ["ACC 감지", "PPE 감지", "중장비 출입"].map((type, i) => ({
-          label: type,
-          data: statsData.dayStats.map((d) => d.typeCounts?.[type] || 0),
-          fill: true,
-          backgroundColor: [
-            "rgba(77,201,246,0.15)",
-            "rgba(246,112,25,0.15)",
-            "rgba(246,55,148,0.15)",
-          ][i],
-          borderColor: ["#4dc9f6", "#f67019", "#f53794"][i],
-          borderWidth: 2,
-          tension: 0.4,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-        }))
-      : [],
+
+  const areaLabels = areaStats.map((d) => d.area);
+  const areaCounts = areaStats.map((d) => d.count);
+
+  const areaData = {
+    labels: areaLabels,
+    datasets: [
+      {
+        data: areaCounts,
+        backgroundColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
+        borderColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
+        borderWidth: 2,
+      },
+    ],
   };
 
-  // 구역별 Bar 차트 데이터
-  const areaKeys = ["A", "B", "C"];
-  const areaBarData = areaKeys.reduce((acc, area) => {
-    const areaStats = Array.isArray(statsData.areaStats[area]) ? statsData.areaStats[area] : [];
-    acc[area] = {
-      labels: areaStats.map((d) => d.date),
-      datasets: ["ACC 감지", "PPE 감지", "중장비 출입"].map((type, i) => ({
-        label: type,
-        data: areaStats.map((d) => d.typeCounts?.[type] || 0),
-        backgroundColor: ["#4dc9f6", "#f67019", "#f53794"][i],
-        borderColor: ["#4dc9f6", "#f67019", "#f53794"][i],
-        borderWidth: 1,
-      })),
-    };
-    return acc;
-  }, {});
+  const barTypeData = {
+    labels: typeLabels,
+    datasets: [
+      {
+        label: "탐지 유형별",
+        data: typeCounts,
+        backgroundColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
+      },
+    ],
+  };
 
-  // 차트 옵션
+  const barAreaData = {
+    labels: areaLabels,
+    datasets: [
+      {
+        label: "발생 구역별",
+        data: areaCounts,
+        backgroundColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
+      },
+    ],
+  };
+
+  // 중장비 출입 추이
+  const dateRange = useMemo(() => getDateRangeArray(startDate, endDate), [startDate, endDate]);
+  const entryDataMap = {};
+  const exitDataMap = {};
+  dayStats.forEach((d) => {
+    if (d.access === "입차") {
+      entryDataMap[d.date] = (entryDataMap[d.date] || 0) + d.count;
+    } else if (d.access === "출차") {
+      exitDataMap[d.date] = (exitDataMap[d.date] || 0) + d.count;
+    }
+  });
+
+  const heavyEquipmentData = {
+    labels: dateRange,
+    datasets: [
+      {
+        label: "입차",
+        data: dateRange.map((date) => entryDataMap[date] || 0),
+        borderColor: "#4dc9f6",
+        backgroundColor: "rgba(77,201,246,0.15)",
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: "출차",
+        data: dateRange.map((date) => exitDataMap[date] || 0),
+        borderColor: "#f67019",
+        backgroundColor: "rgba(246,112,25,0.15)",
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
   const pieOptions = {
-    responsive: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}건` } },
-    },
-  };
-  const lineOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: "top", labels: { usePointStyle: true, padding: 16 } },
-      tooltip: {
-        mode: "index",
-        intersect: false,
-        callbacks: {
-          title: (items) => `날짜: ${items[0].label}`,
-          label: (ctx) => `${ctx.label}: ${ctx.parsed.y}건`,
-        },
-      },
-    },
-    interaction: { mode: "nearest", axis: "x", intersect: false },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        beginAtZero: true,
-        grid: { color: "rgba(0,0,0,0.05)" },
-        ticks: { stepSize: 1 },
+      legend: {
+        position: "bottom",
+        labels: { boxWidth: 12, font: { size: 14 } },
       },
     },
   };
+
   const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "top", labels: { usePointStyle: true } },
-      tooltip: {
-        mode: "index",
-        intersect: false,
-        callbacks: {
-          title: (items) => `날짜: ${items[0].label}`,
-          label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}건`,
-        },
-      },
-    },
-    interaction: { mode: "nearest", axis: "x", intersect: false },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: {
-          color: "#666",
-          autoSkip: true,
-          maxRotation: 0,
-          minRotation: 0,
-          callback: function (value) {
-            const label = this.getLabelForValue(value);
-            return label.length > 5 ? label.slice(5) : label;
-          },
-        },
-      },
-      y: {
-        beginAtZero: true,
-        grid: { color: "rgba(0,0,0,0.05)" },
-        ticks: { stepSize: 1, color: "#666" },
-      },
-    },
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } },
+  };
+
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: "top" } },
+    scales: { y: { beginAtZero: true } },
   };
 
   return (
@@ -237,121 +231,71 @@ export default function Notifications() {
           />
         </MDBox>
 
-        {/* 로딩 표시 */}
-        {loading && <MDTypography align="center">데이터 로딩 중...</MDTypography>}
-        {/* Top: Pie & Line */}
+        {/* 차트 레이아웃 */}
         <MDBox pt={1} pb={3}>
           <Grid container spacing={3}>
-            {/* Pie */}
-            <Grid item xs={12} md={6}>
-              <Card>
-                <MDBox px={2} pt={1}>
-                  <MDTypography variant="h6">유형별 탐지</MDTypography>
-                </MDBox>
-                <MDBox p={2}>
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={6}>
+            {/* 왼쪽 Pie 2개 */}
+            <Grid item xs={12} md={4}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Card sx={{ height: 250 }}>
+                    <MDBox px={2} pt={1}>
+                      <MDTypography variant="h6">탐지 유형별</MDTypography>
+                    </MDBox>
+                    <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
                       <Pie data={typeData} options={pieOptions} />
-                    </Grid>
-                    <Grid item xs={6}>
-                      {typeData.labels.map((label, i) => (
-                        <MDBox key={label} display="flex" alignItems="center" mb={1}>
-                          <MDBox
-                            width={12}
-                            height={12}
-                            mr={1}
-                            sx={{ backgroundColor: typeData.datasets[0].backgroundColor[i] }}
-                          />
-                          <MDTypography variant="body2">
-                            {label} ({typeData.datasets[0].data[i]}건)
-                          </MDTypography>
-                        </MDBox>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </MDBox>
-              </Card>
+                    </MDBox>
+                  </Card>
+                </Grid>
+                <Grid item xs={12}>
+                  <Card sx={{ height: 250 }}>
+                    <MDBox px={2} pt={1}>
+                      <MDTypography variant="h6">발생 구역별</MDTypography>
+                    </MDBox>
+                    <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
+                      <Pie data={areaData} options={pieOptions} />
+                    </MDBox>
+                  </Card>
+                </Grid>
+              </Grid>
             </Grid>
-            {/* Line */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: 600, position: "relative" }}>
-                <MDBox px={2} pt={1}>
-                  <MDTypography variant="h6">일별 감지 추이</MDTypography>
-                </MDBox>
-                <MDBox p={2} sx={{ height: "calc(100% - 56px)" }}>
-                  <Line data={lineData} options={lineOptions} />
+
+            {/* 오른쪽 Bar (탐지유형 / 구역) */}
+            <Grid item xs={12} md={8}>
+              <Stack direction="row" spacing={2} mb={1}>
+                <Button
+                  variant={barMode === "type" ? "contained" : "outlined"}
+                  onClick={() => setBarMode("type")}
+                >
+                  탐지 유형
+                </Button>
+                <Button
+                  variant={barMode === "area" ? "contained" : "outlined"}
+                  onClick={() => setBarMode("area")}
+                >
+                  발생 구역
+                </Button>
+              </Stack>
+              <Card sx={{ height: 520 }}>
+                <MDBox p={2} sx={{ height: "100%" }}>
+                  <Bar data={barMode === "type" ? barTypeData : barAreaData} options={barOptions} />
                 </MDBox>
               </Card>
             </Grid>
           </Grid>
         </MDBox>
 
-        {/* 전체 차트 */}
-        {!loading && statsData && (
-          <>
-            <MDBox pt={1} pb={3}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Card>
-                    <MDBox px={2} pt={1}>
-                      <MDTypography variant="h6">유형별 탐지</MDTypography>
-                    </MDBox>
-                    <MDBox p={2}>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={6}>
-                          <Pie data={typeData} options={pieOptions} />
-                        </Grid>
-                        <Grid item xs={6}>
-                          {typeData.labels.map((label, i) => (
-                            <MDBox key={label} display="flex" alignItems="center" mb={1}>
-                              <MDBox
-                                width={12}
-                                height={12}
-                                mr={1}
-                                sx={{ backgroundColor: typeData.datasets[0].backgroundColor[i] }}
-                              />
-                              <MDTypography variant="body2">
-                                {label} ({typeData.datasets[0].data[i]}건)
-                              </MDTypography>
-                            </MDBox>
-                          ))}
-                        </Grid>
-                      </Grid>
-                    </MDBox>
-                  </Card>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ height: 400, position: "relative" }}>
-                    <MDBox px={2} pt={1}>
-                      <MDTypography variant="h6">일별 감지 추이</MDTypography>
-                    </MDBox>
-                    <MDBox p={2} sx={{ height: "calc(100% - 56px)" }}>
-                      <Line data={lineData} options={lineOptions} />
-                    </MDBox>
-                  </Card>
-                </Grid>
-              </Grid>
+        {/* 하단 중장비 출입 통계 */}
+        <MDBox pb={3}>
+          <Card sx={{ height: 400 }}>
+            <MDBox px={2} pt={1}>
+              <MDTypography variant="h6">중장비 출입 통계 (입차 / 출차)</MDTypography>
             </MDBox>
-
-            <MDBox pb={3}>
-              <Grid container spacing={3}>
-                {areaKeys.map((area) => (
-                  <Grid item xs={12} md={4} key={area}>
-                    <Card sx={{ height: 350, position: "relative" }}>
-                      <MDBox px={2} pt={1}>
-                        <MDTypography variant="h6">{`구역 ${area} 탐지`}</MDTypography>
-                      </MDBox>
-                      <MDBox p={2} sx={{ height: "calc(100% - 56px)" }}>
-                        <Bar data={areaBarData[area]} options={barOptions} />
-                      </MDBox>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
+            <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
+              <Line data={heavyEquipmentData} options={lineOptions} />
             </MDBox>
-          </>
-        )}
+          </Card>
+        </MDBox>
 
         <Footer />
       </DashboardLayout>
