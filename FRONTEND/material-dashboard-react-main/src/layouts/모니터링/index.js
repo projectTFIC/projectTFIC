@@ -23,6 +23,7 @@ const MonitoringPage = () => {
   const [toastInfo, setToastInfo] = useState({ open: false, title: "", description: "" });
   const [isRecording, setIsRecording] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("ko-KR"));
+  const [webcamStream, setWebcamStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -44,12 +45,18 @@ const MonitoringPage = () => {
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-        const res = await axios.get("http://localhost:8090/web/GetDevicesList");
-        setCameraList(res.data);
-        if (res.data.length > 0) {
-          const initialCamId = res.data[0].device_id;
+        const res = await axios.get("http://localhost:5050/api/devices");
+        const devices = res.data.map((d, index) => ({
+          ...d,
+          status: d.status || "online",
+          video_url: `/videos/video${index + 1}.mp4`,
+        }));
+        setCameraList(devices);
+        if (devices.length > 0) {
+          const initialCamId = devices[0].device_id;
           setSelectedCam(initialCamId);
-          // [Back] 초기 카메라 선택 시, 서버에 알림
+
+          // ✅ 서버에 초기 선택 카메라 알림 추가
           socket.emit("set_main_device", { deviceId: initialCamId });
         }
       } catch (err) {
@@ -59,6 +66,14 @@ const MonitoringPage = () => {
     fetchDevices();
   }, []);
 
+  // 서브 모니터 영상 리스트
+  const subVideos = [
+    "/videos/video1.mp4",
+    "/videos/video2.mp4",
+    "/videos/video3.mp4",
+    "/videos/video4.mp4",
+  ];
+
   // 웹캠 연결
   useEffect(() => {
     let stream;
@@ -66,13 +81,7 @@ const MonitoringPage = () => {
     const startCamera = async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
-
-        const waitForRef = setInterval(() => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            clearInterval(waitForRef);
-          }
-        }, 100);
+        setWebcamStream(stream);
       } catch (err) {
         console.error("웹캠 접근 실패:", err);
       }
@@ -167,6 +176,25 @@ const MonitoringPage = () => {
       backgroundColor: isActive ? "#1565c0" : "rgba(25, 118, 210, 0.04)",
     },
   });
+  useEffect(() => {
+    if (
+      selectedCamera?.device_id === cameraList[4]?.device_id &&
+      webcamStream &&
+      videoRef.current
+    ) {
+      videoRef.current.srcObject = webcamStream;
+    }
+  }, [selectedCamera, webcamStream, cameraList]);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    if (selectedCamera?.device_id === cameraList[4]?.device_id && webcamStream) {
+      videoRef.current.srcObject = webcamStream;
+    } else {
+      videoRef.current.srcObject = null; // 🧹 스트림 끊기
+    }
+  }, [selectedCamera, webcamStream, cameraList]);
 
   return (
     <DashboardLayout>
@@ -181,13 +209,26 @@ const MonitoringPage = () => {
             overflow="hidden"
             sx={{ backgroundColor: "#000" }}
           >
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
+            {selectedCamera?.device_id === cameraList[4]?.device_id && webcamStream ? (
+              <video
+                ref={videoRef}
+                key="webcam" // 💡 강제 리렌더링
+                autoPlay
+                muted
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <video
+                key={selectedCamera?.device_id} // 💡 선택된 캠이 바뀔 때마다 리렌더링
+                src={selectedCamera?.video_url || "/videos/video1.mp4"}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            )}
 
             {selectedCamera && (
               <>
@@ -232,25 +273,32 @@ const MonitoringPage = () => {
           {/* 서브 모니터 2행 3열 */}
           <Box mt={2}>
             <Grid container spacing={2}>
-              {[...Array(3)].map((_, idx) => {
-                const cam = cameraList[idx];
-                const isSelected = cam?.device_id === selectedCam;
+              {cameraList.slice(1, 4).map((cam, idx) => {
+                const isSelected = cam.device_id === selectedCam;
 
                 return (
                   <Grid item xs={4} key={idx}>
                     <Box
                       height={220}
-                      bgcolor="#000"
                       border={isSelected ? "2px solid #1976d2" : "1px solid #111"}
                       sx={{
                         cursor: cam ? "pointer" : "default",
                         borderRadius: 0,
                         position: "relative",
+                        overflow: "hidden", // 영상 잘림 방지
+                        backgroundColor: "#000",
                       }}
-                      onClick={() => {
-                        if (cam) setSelectedCam(cam.device_id);
-                      }}
-                    />
+                      onClick={() => setSelectedCam(cam.device_id)}
+                    >
+                      <video
+                        src={cam.video_url}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </Box>
                   </Grid>
                 );
               })}

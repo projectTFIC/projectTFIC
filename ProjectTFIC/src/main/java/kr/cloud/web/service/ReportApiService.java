@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.cloud.web.dto.AccidentSummaryDto;
 import kr.cloud.web.dto.HeRecordDto;
 import kr.cloud.web.service.HeRecordService;
+import kr.cloud.web.entity.PpeRecordViewDto;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.mapper.ReportMapper;
 import lombok.RequiredArgsConstructor;
@@ -115,6 +116,29 @@ public class ReportApiService {
         return "통합 요약:\n" + summary;
     }
 
+    public static String summarizePpeRecords(List<PpeRecordViewDto> ppeList) {
+        if (ppeList == null || ppeList.isEmpty()) {
+            return "개인보호구 미착용 사례는 발견되지 않았습니다.";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("총 ").append(ppeList.size()).append("건 미착용 감지됨.<br>");
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        for (PpeRecordViewDto dto : ppeList) {
+            sb.append("- 시간: ").append(fmt.format(dto.getRegDate()))
+              .append(", ");
+
+            StringBuilder offItems = new StringBuilder();
+            if (dto.getHelmetOff() == 1) offItems.append("안전모 ");
+            if (dto.getHookOff() == 1) offItems.append("안전고리 ");
+            if (dto.getBeltOff() == 1) offItems.append("안전벨트 ");
+            if (dto.getShoesOff() == 1) offItems.append("안전화 ");
+            if (offItems.length() == 0) offItems.append("미착용 항목 없음");
+
+            sb.append("미착용: ").append(offItems)
+              .append("<br>");
+        }
+        return sb.toString();
+    }
     public String generateReport(String periodStart, String periodEnd, String userId, String reportType,
             boolean useCustomPrompt, String customPrompt, String extraNote) {
     	
@@ -123,6 +147,8 @@ public class ReportApiService {
     	 Date endDate = parseDate(periodEnd);
 
     	  // 2. 요약 텍스트 생성
+    	 String ppeSummary = "";
+    	 String accSummary = "";
          String summaryText;
          switch (reportType) {
              case "accident":
@@ -138,17 +164,18 @@ public class ReportApiService {
             	    summaryText = buildEntrySummary(records);
             	    break;
              case "total":
-                 summaryText = buildTotalSummary(reportMapper.getTotalSummaryByPeriod(startDate, endDate));
+            	 summaryText = buildTotalSummary(reportMapper.getTotalSummaryByPeriod(startDate, endDate));
+                 accSummary = buildAccidentSummary(reportMapper.selectAccidentSummaryByPeriod(startDate, endDate));
+                 List<PpeRecordViewDto> ppeList = reportMapper.selectPpeRecordsByPeriod(startDate, endDate);
+                 ppeSummary = summarizePpeRecords(ppeList);
+                 System.out.println(">>> PPE 리스트 건수: " + (ppeList == null ? "NULL" : ppeList.size()));
                  break;
              default:
                  summaryText = "지원하지 않는 보고서 유형입니다.";
          }
 
-         System.out.println("🕐 START: " + startDate);
-    	 System.out.println("🕐 END: " + endDate);
-    	 System.out.println("📄 요약 내용: " + summaryText);
     	 
-    	 
+
     	 // Flask API 주소
     	 String flaskUrl = "http://192.168.219.176:5000/api/report/generate";
 
@@ -162,7 +189,10 @@ public class ReportApiService {
     	 requestData.put("use_custom_prompt", useCustomPrompt);
     	 requestData.put("custom_prompt", customPrompt);
     	 requestData.put("extra_note", extraNote);
-
+    	 if (reportType.equals("total")) {
+    		 requestData.put("acc_summary", accSummary);
+    		 requestData.put("ppe_summary", ppeSummary);
+    		}
     	 // HTTP 요청 설정
     	 HttpHeaders headers = new HttpHeaders();
     	 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -173,9 +203,6 @@ public class ReportApiService {
     		 ResponseEntity<Map> response = new RestTemplate().postForEntity(flaskUrl, entity, Map.class);
     		 Map<String, Object> responseBody = response.getBody();
     		 
-
-    		    System.out.println("🔥 Flask 응답: " + responseBody); // 이거 추가
-    		    System.out.println("🔥 전송할 JSON: " + requestData);
     		    ObjectMapper mapper = new ObjectMapper();
     		    try {
     		        String jsonString = mapper.writeValueAsString(requestData);
@@ -223,4 +250,56 @@ public class ReportApiService {
         }
     
     }
+    @Autowired
+    private NcpObjectStorageService ncpObjectStorageService;
+
+    public String generatePdfReportAndUpload(String reportHtml, String reportType, String periodStart) {
+        try {
+            // 1. Flask에 PDF 변환 요청
+            String flaskUrl = "http://localhost:5000/api/report/generate/pdf";
+            Map<String, Object> requestData = new HashMap<>();
+            requestData.put("report_html", reportHtml);
+            requestData.put("report_type", reportType);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestData, headers);
+            ResponseEntity<byte[]> response = restTemplate.exchange(flaskUrl, HttpMethod.POST, entity, byte[].class);
+            byte[] pdfBytes = response.getBody();
+            
+            // 2. 임시 파일로 저장 (서버 디렉토리 지정)
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String dateStr = periodStart.replace(":", "").replace("-", "").replace(" ", "_");
+            String fileName = "report_" + reportType + "_" + dateStr + ".pdf";
+            Path filePath = Paths.get(tempDir, fileName);
+            Files.write(filePath, pdfBytes);
+
+            // 3. 오브젝트 스토리지 업로드
+            String fileUrl = ncpObjectStorageService.uploadPdfToObjectStorage(filePath.toString(), fileName);
+
+            // (선택) 임시 파일 삭제
+            Files.deleteIfExists(filePath);
+
+            return fileUrl; // 성공 시 업로드된 URL 반환
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "보고서 PDF 저장/업로드 실패: " + e.getMessage();
+        }
+    }
+    
+
+
+    // PDF 생성 예시 함수 틀
+    private String createPdfFromHtml(String html, String reportType) {
+        // (예시) 임시파일 경로 생성
+        String tempPath = System.getProperty("java.io.tmpdir") + "/report_" + reportType + ".pdf";
+        // ...itext 등으로 HTML→PDF 변환 후 tempPath에 저장...
+        return tempPath;
+    }
+    // 리포트 DB저장 함수 
+    public int saveReport(Report report) {
+        return reportMapper.insertReport(report);
+    }
+    
 }
