@@ -43,7 +43,7 @@ public class TablesController {
 	// =================================================================
 	
     // [ 사고 감지 : 자세 인식 전체 기록 조회 ]
-    @GetMapping("/accidents")
+    @GetMapping("/accrecords")
     public ResponseEntity<List<AccRecordViewDto>> getAllAccRecords() {
     	
     	// 1. 사고 감지와 관련된 전체 기록 가져오기
@@ -56,7 +56,7 @@ public class TablesController {
 
     
     // [ 사고 감지 : 자세 인식 특정 기록 조회 ]
-    @GetMapping("/accidents/{recordId}")
+    @GetMapping("/accrecords/{recordId}")
     public ResponseEntity<AccRecordViewDto> getAccRecordById(@PathVariable int recordId) {
     	
     	// 1. 사고 감지와 관련된 특정 기록 가져오기
@@ -73,7 +73,7 @@ public class TablesController {
 	// =================================================================
 	
     // [ 안전장비 착용여부 : 객체 탐지 전체 기록 조회 ]
-    @GetMapping("/equipment")
+    @GetMapping("/pperecords")
     public ResponseEntity<List<PpeRecordViewDto>> getAllPpeRecords() {
     	
         // 1. 안전장비 착용여부와 관련된 모든 기록 가져오기
@@ -86,7 +86,7 @@ public class TablesController {
     
     
     // [ 안전장비 착용여부 : 객체 탐지 특정 기록 조회 ]
-    @GetMapping("/equipment/{id}")
+    @GetMapping("/pperecords/{id}")
     public ResponseEntity<PpeRecordViewDto> getPpeRecordById(@PathVariable int recordId) {
 
     	// 1. 안전장비 착용여부와 관련된 특정 기록 가져오기
@@ -103,7 +103,7 @@ public class TablesController {
 	// =================================================================
 	
     // [ 중장비 출입 : 객체 탐지 전체 기록 조회 ]
-    @GetMapping("/access")
+    @GetMapping("/herecords")
     public ResponseEntity<List<HeRecordViewDto>> getAllHeRecords() {
     	
         // 1. 중장비 출입과 관련된 모든 기록 가져오기
@@ -116,7 +116,7 @@ public class TablesController {
     
     
     // [ 중장비 출입 : 객체 탐지 특정 기록 조회 ]
-    @GetMapping("/access/{recordId}")
+    @GetMapping("/herecords/{recordId}")
     public ResponseEntity<HeRecordViewDto> getHeRecordById(@PathVariable int recordId) {
     	
     	// 1. 중장비 출입과 관련된 특정 기록 가져오기

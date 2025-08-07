@@ -42,9 +42,9 @@ function Tables() {
   ];
 
   // 데이터 상태
-  const [accidents, setAccidents] = useState([]);
+  const [acc, setAccidents] = useState([]);
   const [ppe, setPpe] = useState([]);
-  const [access, setAccess] = useState([]);
+  const [he, setAccess] = useState([]);
 
   // UI 상태
   const [tabIndex, setTabIndex] = useState(0);
@@ -57,52 +57,70 @@ function Tables() {
 
   // 데이터 로드
   useEffect(() => {
-    // 사고 감지
-    axios.get("/web/tablelist/accidents").then((res) => {
-      setAccidents(
-        res.data.map((row, idx) => ({
-          listNum: idx + 1,
-          title: row.type,
-          content: row.content,
-          location: row.location,
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
-          date: row.date,
-        }))
-      );
-    });
-
-    // 안전장비 미착용
-    axios.get("/web/tablelist/equipment").then((res) => {
+    // [Back] 안전장비 미착용
+    axios.get("/web/tablelist/pperecords").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.title,
-          content: row.content,
-          location: row.location,
-          heNumber: row.heNumber, // 혹시 필요하다면 유지
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
-          date: row.date,
+          title: row.recordTitle, // 게시글 제목
+          type: (
+            <MDBadge
+              badgeContent={row.detectionType}
+              color="warning"
+              variant="gradient"
+              size="lg"
+            />
+          ), // 탐지유형
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          content: row.content, // 보고문
+          helmetOff: row.helmetOff, // 안전모 미착용
+          hookOff: row.hookOff, // 안전모 미착용
+          beltOff: row.beltOff, // 안전모 미착용
+          shoesOff: row.shoesOff, // 안전모 미착용
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
         }))
       );
     });
 
-    // 입출입
-    axios.get("/web/tablelist/access").then((res) => {
+    // [Back] 중장비 출입
+    axios.get("/web/tablelist/herecords").then((res) => {
       setAccess(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.title,
-          content: row.content,
-          image: row.image,
-          heNumber: row.heNumber,
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
-          date: row.date,
+          title: row.recordTitle, // 게시글 제목
+          type: (
+            <MDBadge badgeContent={row.detectionType} color="info" variant="gradient" size="lg" />
+          ), // 탐지 유형
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          heType: row.hetype, // 중장비 유형
+          heNumber: row.heNumber, // 번호판
+          access: row.access, // 입출입
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
+        }))
+      );
+    });
+
+    // [Back] 사고 감지
+    axios.get("/web/tablelist/accrecords").then((res) => {
+      setAccidents(
+        res.data.map((row, idx) => ({
+          listNum: idx + 1,
+          title: row.recordTitle, // 게시글 제목
+          type: (
+            <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
+          ), // 탐지 유형
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          content: row.content, // 세부정보
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
         }))
       );
     });
@@ -110,9 +128,9 @@ function Tables() {
 
   // 탭 데이터
   const tabs = [
-    { label: "사고 감지", rows: accidents },
     { label: "안전장비 미착용", rows: ppe },
-    { label: "입출입", rows: access },
+    { label: "중장비 출입", rows: he },
+    { label: "사고 감지", rows: acc },
   ];
 
   // 필터 핸들러
@@ -283,9 +301,7 @@ function Tables() {
                                       >
                                         <Box p={2}>
                                           <MDTypography variant="body2" color="text">
-                                            {tabIndex === 2
-                                              ? `차량번호 :  ${row.heNumber || "정보 없음"}`
-                                              : `감지위치 :  ${row.location || "정보 없음"}`}
+                                            {`감지위치 :  ${row.location || "정보 없음"}`}
                                           </MDTypography>
                                           {row.originalImg && (
                                             <img
@@ -324,6 +340,11 @@ function Tables() {
                                                   {row.detectImg}
                                                 </MDTypography>
                                               )}
+                                              {tabIndex === 1 ? (
+                                                <MDTypography variant="body2" color="text">
+                                                  {`차량번호 :  ${row.heNumber || "정보 없음"}`}
+                                                </MDTypography>
+                                              ) : null}
                                             </Box>
                                           )}
                                         </Box>

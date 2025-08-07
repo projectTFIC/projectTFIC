@@ -29,7 +29,7 @@ public class HeRecordViewDto {
     // ㅇ 상세보기에 필요한 데이터
     private String originalImg; 			// 원본 이미지 URL
     private String detectImg;   			// 감지 이미지 URL
-    private String heType;      			// 장비 유형 (문자열, 예: "Loader")
+    private String heType;      			// 중장비 유형
     private String heNumber;    			// 번호판
     private String access;      			// 입출입
     

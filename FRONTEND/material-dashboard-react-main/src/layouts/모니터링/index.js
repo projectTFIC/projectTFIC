@@ -257,7 +257,7 @@ const MonitoringPage = () => {
             </Grid>
           </Box>
 
-          {/* 버튼 박스 */}
+          {/* [Back] 버튼 박스 */}
           <Paper elevation={2} sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: "#fff" }}>
             <Stack direction="row" spacing={2}>
               <Button
