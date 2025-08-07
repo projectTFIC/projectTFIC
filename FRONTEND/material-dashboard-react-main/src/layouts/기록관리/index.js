@@ -44,7 +44,7 @@ function Tables() {
 
   // 데이터 상태
   const [accidents, setAccidents] = useState([]);
-  const [ppe, setPpe] = useState([]);
+  const [equipments, setPpe] = useState([]);
   const [access, setAccess] = useState([]);
 
   // UI 상태
@@ -63,47 +63,66 @@ function Tables() {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.type,
-          content: row.content,
-          location: row.location,
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          type: <MDBadge badgeContent={row.title} color="error" variant="gradient" size="lg" />,
-          date: row.date,
+          title: row.recordTitle, // 게시글 제목
+          type: (
+            <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
+          ), // 탐지 유형
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          content: row.content, // 세부정보
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
         }))
       );
     });
 
     // 안전장비 미착용
-    axios.get("/web/tablelist/equipment").then((res) => {
+    axios.get("/web/tablelist/equipments").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
-          listNum: idx + 1,
-          title: row.title,
-          content: row.content,
-          location: row.location,
-          heNumber: row.heNumber, // 혹시 필요하다면 유지
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          type: <MDBadge badgeContent={row.type} color="warning" variant="gradient" size="lg" />,
-          date: row.date,
+          listNum: idx + 1, // 게시글 번호
+          title: row.recordTitle, // 게시글 제목
+          type: (
+            <MDBadge
+              badgeContent={row.detectionType}
+              color="warning"
+              variant="gradient"
+              size="lg"
+            />
+          ), // 탐지유형
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          content: row.content, // 보고문
+          helmetOff: row.helmetOff, // 안전모 미착용
+          hookOff: row.hookOff, // 안전모 미착용
+          beltOff: row.beltOff, // 안전모 미착용
+          shoesOff: row.shoesOff, // 안전모 미착용
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
         }))
       );
     });
 
-    // 입출입
+    // 중장비 출입
     axios.get("/web/tablelist/access").then((res) => {
       setAccess(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.title,
-          content: row.content,
-          image: row.image,
+          title: row.recordTitle, // 게시글 제목
+          type: (
+            <MDBadge badgeContent={row.detectionType} color="info" variant="gradient" size="lg" />
+          ),
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          heType: row.heType,
           heNumber: row.heNumber,
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
+          access: row.access,
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
           type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
-          date: row.date,
+          date: row.regDate, // 탐지 날짜
         }))
       );
     });
@@ -112,7 +131,7 @@ function Tables() {
   // 탭 데이터
   const tabs = [
     { label: "사고 감지", rows: accidents },
-    { label: "안전장비 미착용 감지", rows: ppe },
+    { label: "안전장비 미착용 감지", rows: equipments },
     { label: "입출입 감지", rows: access },
   ];
 

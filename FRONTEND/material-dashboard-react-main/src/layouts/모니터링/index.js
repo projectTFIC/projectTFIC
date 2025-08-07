@@ -45,15 +45,15 @@ const MonitoringPage = () => {
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-        const res = await axios.get("http://localhost:5050/api/devices");
+        const res = await axios.get("http://localhost:8090/web/GetDevicesList");
         const devices = res.data.map((d, index) => ({
           ...d,
           status: d.status || "online",
           video_url: `/videos/video${index + 1}.mp4`,
         }));
-        setCameraList(devices);
-        if (devices.length > 0) {
-          const initialCamId = devices[0].device_id;
+        setCameraList(res.data);
+        if (res.data.length > 0) {
+          const initialCamId = res.data[0].device_id;
           setSelectedCam(initialCamId);
 
           // ✅ 서버에 초기 선택 카메라 알림 추가
