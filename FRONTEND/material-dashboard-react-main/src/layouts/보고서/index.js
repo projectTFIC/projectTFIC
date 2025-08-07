@@ -20,9 +20,7 @@ import useProjectsTableData from "layouts/보고서/data/projectsTableData";
 function TitleCell({ row }) {
   return (
     <a
-      href={`http://localhost:8090/reportlist/download?fileName=${encodeURIComponent(
-        row.original.reportFile
-      )}`}
+      href={row.original.reportFile}
       target="_blank"
       rel="noopener noreferrer"
       style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
