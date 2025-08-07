@@ -128,9 +128,15 @@ function Tables() {
 
   // 탭 데이터
   const tabs = [
+<<<<<<< HEAD
     { label: "안전장비 미착용", rows: ppe },
     { label: "중장비 출입", rows: he },
     { label: "사고 감지", rows: acc },
+=======
+    { label: "사고 감지", rows: accidents },
+    { label: "안전장비 미착용 감지", rows: ppe },
+    { label: "입출입 감지", rows: access },
+>>>>>>> d72ddd7 (모니터링 화면 교체 및 웹 캠 연결 / 기록관리 디자인 수정)
   ];
 
   // 필터 핸들러
@@ -207,12 +213,28 @@ function Tables() {
                 <MDBox
                   mx={2}
                   mt={-3}
-                  py={3}
-                  px={2}
+                  py={0}
+                  px={0}
                   variant="gradient"
                   bgColor="info"
                   borderRadius="lg"
                   coloredShadow="info"
+                  sx={{
+                    height: "100%",
+                    borderRadius: "16px",
+                    p: 3,
+                    background: `linear-gradient(
+      135deg,
+      rgba(0, 115, 255, 0.65),
+      rgba(0, 115, 255, 0.65)
+    )`, // ✅ 보라+파랑 + 더 투명하게
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+                    border: "1px solid rgba(255, 255, 255, 0.04)",
+                    color: "#f0f3ff",
+                    transition: "0.3s ease-in-out",
+                  }}
                 >
                   <MDTypography variant="h6" color="white">
                     <Tabs
@@ -220,9 +242,22 @@ function Tables() {
                       onChange={handleTabChange}
                       textColor="inherit"
                       indicatorColor="secondary"
+                      sx={{
+                        backgroundColor: "transparent", // ✅ 배경 완전 투명
+                        minHeight: "auto",
+                      }}
                     >
                       {tabs.map((t, i) => (
-                        <Tab key={i} label={t.label} />
+                        <Tab
+                          key={i}
+                          label={t.label}
+                          sx={{
+                            color: "white", // ✅ 글씨 색상
+                            fontSize: "1.2rem", // ✅ 글씨 크기
+                            fontWeight: 600, // ✅ 굵기 (선택)
+                            textTransform: "none", // ✅ 대문자 변환 방지
+                          }}
+                        />
                       ))}
                     </Tabs>
                   </MDTypography>

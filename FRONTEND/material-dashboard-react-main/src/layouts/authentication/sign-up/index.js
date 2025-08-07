@@ -28,6 +28,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LOGO_IMG from "assets/images/logo.png";
 import { useMaterialUIController, setLayout } from "context";
 import { motion } from "framer-motion";
+import HyperspeedBackground from "layouts/Hyperspeed";
 
 const theme = createTheme({
   palette: {

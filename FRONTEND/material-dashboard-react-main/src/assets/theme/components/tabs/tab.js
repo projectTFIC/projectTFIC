@@ -36,13 +36,26 @@ const tab = {
       maxWidth: "unset !important",
       minWidth: "unset !important",
       minHeight: "unset !important",
+
+      padding: "12px 20px", // 수직, 수평 패딩 키움
+      minHeight: "88px", // 높이 키움
+      borderRadius: 0,
+
+      // ✅ Tab 사이 경계선
+      borderRight: "1px solid rgba(255, 255, 255, 0.2)",
+
+      // ✅ 마지막 탭은 선 제거
+      "&:last-of-type": {
+        borderRight: "none",
+      },
+
       fontSize: size.md,
       fontWeight: fontWeightRegular,
       textTransform: "none",
       lineHeight: "inherit",
       padding: pxToRem(4),
-      borderRadius: borderRadius.lg,
-      color: `${dark.main} !important`,
+      borderRadius: "0px !important",
+      color: `White`,
       opacity: "1 !important",
 
       "& .material-icons, .material-icons-round": {
