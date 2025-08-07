@@ -1,39 +1,30 @@
 /* eslint-disable react/prop-types */
-// src/layouts/기록관리/index.js
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-
-import TableCell from "@mui/material/TableCell";
-import Collapse from "@mui/material/Collapse";
-import Box from "@mui/material/Box";
-
-// Material Dashboard 2 React components
-import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-import MDBadge from "components/MDBadge";
-
-// Material Dashboard 2 React example components
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import DataTable from "examples/Tables/DataTable";
-
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { Menu, MenuItem } from "@mui/material";
+import { Menu, MenuItem, Dialog, DialogContent } from "@mui/material";
+import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+import DataTable from "examples/Tables/DataTable";
+import MDBadge from "components/MDBadge";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import CardContent from "@mui/material/CardContent";
 
 function Tables() {
   const location = useLocation();
   const pathname = location.pathname;
 
-  // 고정 컬럼 정의
   const columns = [
     { Header: "No.", accessor: "listNum", align: "center" },
     { Header: "제목", accessor: "title", align: "center" },
@@ -41,28 +32,25 @@ function Tables() {
     { Header: "날짜", accessor: "date", align: "center" },
   ];
 
-  // 데이터 상태
   const [acc, setAccidents] = useState([]);
   const [ppe, setPpe] = useState([]);
   const [he, setAccess] = useState([]);
-
-  // UI 상태
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
   const [searchText, setSearchText] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [expandedRows, setExpandedRows] = useState([]); // rowId 기반 토글
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState("");
 
   const openMenu = Boolean(anchorEl);
 
-  // 데이터 로드
   useEffect(() => {
-    // [Back] 안전장비 미착용
     axios.get("/web/tablelist/pperecords").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle, // 게시글 제목
+          title: row.recordTitle,
           type: (
             <MDBadge
               badgeContent={row.detectionType}
@@ -70,70 +58,63 @@ function Tables() {
               variant="gradient"
               size="lg"
             />
-          ), // 탐지유형
-          originalImg: row.originalImg, // 원본 이미지
-          detectImg: row.detectImg, // 감지 이미지
-          content: row.content, // 보고문
-          helmetOff: row.helmetOff, // 안전모 미착용
-          hookOff: row.hookOff, // 안전모 미착용
-          beltOff: row.beltOff, // 안전모 미착용
-          shoesOff: row.shoesOff, // 안전모 미착용
-          deviceId: row.deviceId, // 장치 아이디
-          location: row.location, // 설치 위치
-          date: row.regDate, // 탐지 날짜
+          ),
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          content: row.content,
+          location: row.location,
+          date: row.regDate,
+          rowId: `0-${idx}`,
+          report: row.report,
         }))
       );
     });
 
-    // [Back] 중장비 출입
     axios.get("/web/tablelist/herecords").then((res) => {
       setAccess(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle, // 게시글 제목
+          title: row.recordTitle,
           type: (
             <MDBadge badgeContent={row.detectionType} color="info" variant="gradient" size="lg" />
-          ), // 탐지 유형
-          originalImg: row.originalImg, // 원본 이미지
-          detectImg: row.detectImg, // 감지 이미지
-          heType: row.hetype, // 중장비 유형
-          heNumber: row.heNumber, // 번호판
-          access: row.access, // 입출입
-          deviceId: row.deviceId, // 장치 아이디
-          location: row.location, // 설치 위치
-          date: row.regDate, // 탐지 날짜
+          ),
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          content: row.content,
+          location: row.location,
+          date: row.regDate,
+          rowId: `1-${idx}`,
+          report: row.report,
         }))
       );
     });
 
-    // [Back] 사고 감지
     axios.get("/web/tablelist/accrecords").then((res) => {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle, // 게시글 제목
+          title: row.recordTitle,
           type: (
             <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
-          ), // 탐지 유형
-          originalImg: row.originalImg, // 원본 이미지
-          detectImg: row.detectImg, // 감지 이미지
-          content: row.content, // 세부정보
-          deviceId: row.deviceId, // 장치 아이디
-          location: row.location, // 설치 위치
-          date: row.regDate, // 탐지 날짜
+          ),
+          originalImg: row.originalImg,
+          detectImg: row.detectImg,
+          content: row.content,
+          location: row.location,
+          date: row.regDate,
+          rowId: `2-${idx}`,
+          report: row.report,
         }))
       );
     });
   }, []);
 
-  // 탭 데이터
   const tabs = [
     { label: "안전장비 미착용", rows: ppe },
     { label: "중장비 출입", rows: he },
     { label: "사고 감지", rows: acc },
   ];
 
-  // 필터 핸들러
   const handleTabChange = (_, v) => setTabIndex(v);
   const handleFilterClick = (e) => setAnchorEl(e.currentTarget);
   const handleFilterClose = () => setAnchorEl(null);
@@ -142,34 +123,32 @@ function Tables() {
     handleFilterClose();
   };
 
-  // 검색 필터링
   const filteredRows = tabs[tabIndex].rows.filter((r) => {
     const txt = searchText.trim().toLowerCase();
     if (!txt) return true;
-
     const title = String(r.title || "").toLowerCase();
     const content = String(r.content || "").toLowerCase();
-
     if (filterType === "title") return title.includes(txt);
     if (filterType === "content") return content.includes(txt);
     if (filterType === "titleContent") return title.includes(txt) || content.includes(txt);
     return true;
   });
 
-  // 각 행에 rowId 부여
-  const rowsWithId = filteredRows.map((r, i) => ({
-    ...r,
-    rowId: `${tabIndex}-${i}`,
-  }));
-
-  // 토글
   const toggleRow = (rowId) => {
     setExpandedRows((prev) =>
       prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
     );
   };
 
-  // 제목 클릭 가능하도록 컬럼 수정
+  const handleOpen = (src) => {
+    setImageSrc(src);
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setImageSrc("");
+  };
+
   const enhancedColumns = columns.map((col) => {
     if (col.accessor !== "title") return col;
     return {
@@ -189,6 +168,62 @@ function Tables() {
     };
   });
 
+  const DetailRow = ({ row }) => (
+    <Box display="flex" flexDirection="column" gap={2} p={2}>
+      <Box display="flex" gap={2}>
+        {row.originalImg && (
+          <Card
+            sx={{ maxWidth: 400, cursor: "pointer" }}
+            onClick={() => handleOpen(row.originalImg)}
+          >
+            <CardContent>
+              <Typography variant="body2">원본 이미지</Typography>
+              <img
+                src={row.originalImg}
+                alt="original"
+                style={{ width: "100%", height: "auto", objectFit: "contain" }}
+              />
+            </CardContent>
+          </Card>
+        )}
+        {row.detectImg && (
+          <Card sx={{ maxWidth: 400, cursor: "pointer" }} onClick={() => handleOpen(row.detectImg)}>
+            <CardContent>
+              <Typography variant="body2">감지 이미지</Typography>
+              <img
+                src={row.detectImg}
+                alt="detected"
+                style={{ width: "100%", height: "auto", objectFit: "contain" }}
+              />
+            </CardContent>
+          </Card>
+        )}
+      </Box>
+      <Box display="flex" gap={2}>
+        <Card sx={{ flex: 1 }}>
+          <CardContent>
+            <Typography variant="body2">감지 위치</Typography>
+            <Typography variant="body1">{row.location || "정보 없음"}</Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ flex: 1 }}>
+          <CardContent>
+            <Typography variant="body2">감지 일자</Typography>
+            <Typography variant="body1">{row.date || "정보 없음"}</Typography>
+          </CardContent>
+        </Card>
+      </Box>
+      <Card>
+        <CardContent>
+          <Typography variant="body2">보고서 내용</Typography>
+          <Typography variant="body1" whiteSpace="pre-line">
+            {row.report || row.content || "정보 없음"}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+
   return (
     <motion.div
       key={pathname}
@@ -203,7 +238,6 @@ function Tables() {
           <Grid container spacing={6}>
             <Grid item xs={12}>
               <Card>
-                {/* 탭 */}
                 <MDBox
                   mx={2}
                   mt={-3}
@@ -227,16 +261,11 @@ function Tables() {
                     </Tabs>
                   </MDTypography>
                 </MDBox>
-
-                {/* 필터 + 검색 */}
                 <MDBox mx={2} mt={2} mb={1} display="flex" alignItems="center" gap={2}>
                   <Button
                     variant="outlined"
                     size="medium"
                     onClick={handleFilterClick}
-                    aria-controls={openMenu ? "filter-menu" : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={openMenu ? "true" : undefined}
                     sx={{
                       fontSize: "11px",
                       color: "black !important",
@@ -275,86 +304,16 @@ function Tables() {
                     sx={{ backgroundColor: "white", borderRadius: 1 }}
                   />
                 </MDBox>
-
-                {/* DataTable */}
                 <MDBox pt={3}>
                   <DataTable
                     table={{
                       columns: enhancedColumns,
-                      rows: rowsWithId.flatMap((row) => {
+                      rows: filteredRows.flatMap((row) => {
                         const isExpanded = expandedRows.includes(row.rowId);
                         return [
                           row,
                           ...(isExpanded
-                            ? [
-                                {
-                                  listNum: "",
-                                  title: (
-                                    <TableCell colSpan={columns.length} style={{ padding: 0 }}>
-                                      <Collapse
-                                        in={isExpanded}
-                                        timeout={300}
-                                        style={{
-                                          backgroundColor: "#f9f9f9",
-                                          borderTop: "1px solid #eee",
-                                        }}
-                                      >
-                                        <Box p={2}>
-                                          <MDTypography variant="body2" color="text">
-                                            {`감지위치 :  ${row.location || "정보 없음"}`}
-                                          </MDTypography>
-                                          {row.originalImg && (
-                                            <img
-                                              src={row.originalImg}
-                                              alt="게시글 이미지"
-                                              style={{
-                                                maxWidth: "800px",
-                                                maxHeight: "500px",
-                                                width: "100%",
-                                                height: "auto",
-                                                borderRadius: 6,
-                                                marginTop: 4,
-                                                objectFit: "contain",
-                                              }}
-                                            />
-                                          )}
-                                          {row.detectImg && (
-                                            <Box mt={2}>
-                                              {row.detectImg.startsWith("http") ||
-                                              row.detectImg.startsWith("data:") ? (
-                                                <img
-                                                  src={row.detectImg}
-                                                  alt="detectImg"
-                                                  style={{
-                                                    maxWidth: "800px",
-                                                    maxHeight: "500px",
-                                                    width: "100%",
-                                                    height: "auto",
-                                                    borderRadius: 6,
-                                                    marginTop: 4,
-                                                    objectFit: "contain",
-                                                  }}
-                                                />
-                                              ) : (
-                                                <MDTypography variant="caption" color="info">
-                                                  {row.detectImg}
-                                                </MDTypography>
-                                              )}
-                                              {tabIndex === 1 ? (
-                                                <MDTypography variant="body2" color="text">
-                                                  {`차량번호 :  ${row.heNumber || "정보 없음"}`}
-                                                </MDTypography>
-                                              ) : null}
-                                            </Box>
-                                          )}
-                                        </Box>
-                                      </Collapse>
-                                    </TableCell>
-                                  ),
-                                  type: "",
-                                  date: "",
-                                },
-                              ]
+                            ? [{ listNum: "", title: <DetailRow row={row} />, type: "", date: "" }]
                             : []),
                         ];
                       }),
@@ -371,6 +330,11 @@ function Tables() {
         </MDBox>
         <Footer />
       </DashboardLayout>
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogContent>
+          <img src={imageSrc} alt="확대 이미지" style={{ width: "100%", height: "auto" }} />
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
