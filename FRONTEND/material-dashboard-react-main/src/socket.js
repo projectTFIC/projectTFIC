@@ -1,10 +1,14 @@
 import { io } from "socket.io-client";
 
-// 파이썬 AI 서버 주소
-const SERVER_URL = "http://localhost:5000";
-
-const socket = io(SERVER_URL, {
-  transports: ["websocket"], // WebSocket을 우선적으로 사용
+const URL = process.env.REACT_APP_AI_WS || "http://localhost:5000";
+const socket = io(URL, {
+  transports: ["websocket"],
+  upgrade: false,
+  autoConnect: false,
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 500,
+  reconnectionDelayMax: 2000,
 });
 
 export default socket;

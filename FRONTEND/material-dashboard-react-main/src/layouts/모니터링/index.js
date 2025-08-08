@@ -32,6 +32,78 @@ const MonitoringPage = () => {
   const [detections, setDetections] = useState([]);
 
   const selectedCamera = cameraList.find((cam) => cam.device_id === selectedCam);
+  const canSendRef = useRef(false);
+  const inFlightRef = useRef(false);
+
+  // 소켓 리스너 등록 (마운트 1회)
+  useEffect(() => {
+    const onMainDeviceSet = (data) => {
+      if (Number(data?.deviceId) === Number(selectedCam)) {
+        canSendRef.current = true; // ✅ ACK 도착 → 전송 허용
+        inFlightRef.current = false;
+      }
+    };
+    socket.on("main_device_set", onMainDeviceSet);
+    return () => socket.off("main_device_set", onMainDeviceSet);
+  }, [selectedCam]);
+
+  // 토글/카메라가 바뀌었는데 아직 ACK 못 받았으면 '한 번만' 재요청
+  useEffect(() => {
+    const anyOn = Object.values(globalToggles).some(Boolean);
+    if (anyOn && Number.isFinite(selectedCam) && !canSendRef.current) {
+      socket.emit("set_main_device", { deviceId: selectedCam });
+    }
+  }, [globalToggles, selectedCam]);
+
+  // 프레임 전송 루프 (500ms 고정 X → in-flight/ACK 기반)
+  useEffect(() => {
+    const tick = () => {
+      const v = videoRef.current;
+      if (!v) return;
+
+      // 토글이 하나도 켜져 있지 않으면 전송 X
+      if (!Object.values(globalToggles).some(Boolean)) return;
+      if (!Number.isFinite(selectedCam)) return;
+
+      // 서버로부터 main_device_set ACK 받기 전이면 전송 X
+      if (!canSendRef.current) return;
+
+      // 직전 전송의 결과를 기다리는 중이면 전송 X
+      if (inFlightRef.current) return;
+
+      const vw = v.videoWidth || v.clientWidth;
+      const vh = v.videoHeight || v.clientHeight;
+      if (!vw || !vh) return;
+
+      // 캔버스 스냅샷 → JPEG dataURL (품질은 그대로)
+      const tmp = document.createElement("canvas");
+      tmp.width = vw;
+      tmp.height = vh;
+      const ctx = tmp.getContext("2d");
+      ctx.drawImage(v, 0, 0, vw, vh);
+      const dataUrl = tmp.toDataURL("image/jpeg");
+
+      inFlightRef.current = true;
+      socket.emit("image_analysis_request", { image: dataUrl, deviceId: selectedCam });
+
+      // 안전 타이머: 결과가 너무 늦으면 락 해제
+      const safetyTimer = setTimeout(() => {
+        inFlightRef.current = false;
+      }, 1500);
+
+      // 이번 전송의 결과만 한 번 듣고 락 해제
+      const onResult = (res) => {
+        if (Number(res?.deviceId) === Number(selectedCam)) {
+          inFlightRef.current = false;
+          clearTimeout(safetyTimer);
+        }
+      };
+      socket.once("analysis_result", onResult);
+    };
+
+    const id = setInterval(tick, 450);
+    return () => clearInterval(id);
+  }, [globalToggles, selectedCam]);
 
   // 실시간 시계
   useEffect(() => {
@@ -42,67 +114,59 @@ const MonitoringPage = () => {
   }, []);
 
   // DB에서 장비 리스트 불러오기
-  useEffect(() => {
-    const setupConnectionAndFetchDevices = () => {
-      const normalizeDevices = (arr) => {
-        return (
-          arr
-            .map((d, index) => {
-              // 다양한 케이스 흡수: device_id / deviceId / deviceid / id
-              const rawId = d.device_id ?? d.deviceId ?? d.deviceid ?? d.id ?? null;
+  const normalizeDevices = (arr) =>
+    arr
+      .map((d, index) => {
+        const rawId = d.device_id ?? d.deviceId ?? d.deviceid ?? d.id ?? null;
+        const device_id =
+          rawId !== null && rawId !== undefined && rawId !== "" ? Number(rawId) : null;
+        return {
+          device_id,
+          device_name: d.device_name ?? d.deviceName ?? d.name ?? "(이름없음)",
+          location: d.location ?? "(미지정)",
+          status: d.status ?? "online",
+          video_url: `${process.env.PUBLIC_URL || ""}/videos/video${index + 1}.mp4`,
+        };
+      })
+      .filter((x) => Number.isFinite(x.device_id));
 
-              // 숫자화. 변환 실패하면 null
-              const device_id =
-                rawId !== null && rawId !== undefined && rawId !== "" ? Number(rawId) : null;
-
-              return {
-                // 프론트 전역에서 일관되게 snake_case로 사용
-                device_id,
-                device_name: d.device_name ?? d.deviceName ?? d.name ?? "(이름없음)",
-                location: d.location ?? "(미지정)",
-                status: d.status ?? "online",
-                video_url: `${process.env.PUBLIC_URL || ""}/videos/video${index + 1}.mp4`,
-              };
-            })
-            // device_id 없는 항목 제거 (서버에 None 날리는 것 방지)
-            .filter((x) => Number.isFinite(x.device_id))
-        );
-      };
-
-      const fetchDevices = async () => {
-        try {
-          const res = await axios.get("http://localhost:8090/web/GetDevicesList");
-          const devices = normalizeDevices(res.data);
-          setCameraList(devices);
-
-          if (devices.length > 0) {
-            const initialCamId = devices[0].device_id; // 숫자 보장됨
-            setSelectedCam(initialCamId);
-
-            const payload = { deviceId: initialCamId }; // 문자열로 안 바꿔도 됨
-            console.log("[emit] set_main_device (init)", payload);
-            socket.emit("set_main_device", payload);
-          } else {
-            console.warn("장비 리스트에 유효한 device_id가 없습니다.");
-          }
-        } catch (err) {
-          console.error("장비 리스트 불러오기 실패", err);
+  const fetchDevices = async () => {
+    try {
+      const res = await axios.get("http://localhost:8090/web/GetDevicesList");
+      const devices = normalizeDevices(res.data);
+      setCameraList(devices);
+      if (devices.length > 0) {
+        // 페이지 로드 시, 아직 선택된 카메라가 없을 때만 초기값 설정
+        if (selectedCam === null) {
+          const initialCamId = devices[0].device_id;
+          setSelectedCam(initialCamId);
+          socket.emit("set_main_device", { deviceId: initialCamId });
         }
-      };
-      fetchDevices();
+      }
+    } catch (err) {
+      console.error("장비 리스트 불러오기 실패", err);
+    }
+  };
+
+  // ✅ 연결 + 리스너 등록을 한 곳에서만
+  useEffect(() => {
+    socket.connect();
+
+    const onConnect = () => {
+      console.log("Socket connected, fetching devices...");
+      const saved = Number(localStorage.getItem("lastDeviceId"));
+      if (Number.isFinite(saved)) {
+        setSelectedCam(saved);
+        socket.emit("set_main_device", { deviceId: saved }); // ✅ 복원 즉시 서버에 반영
+      }
+      fetchDevices(); // 장비 목록 로드
     };
 
-    // 소켓이 이미 연결되어 있으면 바로 실행
-    if (socket.connected) {
-      setupConnectionAndFetchDevices();
-    }
+    socket.on("connect", onConnect);
 
-    // 'connect' 이벤트를 리스닝하여, 연결이 확립되면 fetchDevices 함수를 실행
-    socket.on("connect", setupConnectionAndFetchDevices);
-
-    // 클린업 함수: 컴포넌트가 언마운트될 때 이벤트 리스너를 제거하여 메모리 누수를 방지합니다.
     return () => {
-      socket.off("connect", setupConnectionAndFetchDevices);
+      socket.off("connect", onConnect);
+      socket.disconnect();
     };
   }, []);
 
@@ -136,31 +200,6 @@ const MonitoringPage = () => {
       }
     };
   }, []);
-
-  // [Back] 주기적으로 웹캠 프레임을 서버에 전송
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const v = videoRef.current;
-      if (!v) return;
-      if (!Object.values(globalToggles).some(Boolean)) return;
-      if (!selectedCam) return;
-
-      const vw = v.videoWidth || v.clientWidth;
-      const vh = v.videoHeight || v.clientHeight;
-      if (!vw || !vh) return; // 아직 로드 전
-
-      const tmp = document.createElement("canvas");
-      tmp.width = vw;
-      tmp.height = vh;
-      const ctx = tmp.getContext("2d");
-      ctx.drawImage(v, 0, 0, vw, vh);
-      const dataUrl = tmp.toDataURL("image/jpeg");
-
-      socket.emit("image_analysis_request", { image: dataUrl, deviceId: selectedCam });
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, [globalToggles, selectedCam]);
 
   // [Back] 서버로부터 전달 받은 AI 분석 결과 가져오기
   useEffect(() => {
@@ -225,13 +264,10 @@ const MonitoringPage = () => {
   // [Back] 영상 장비 리스트에서 장비를 선택하면, 선택한 장비를 서버에 전송
   const handleSelectCamera = (deviceId) => {
     setSelectedCam(deviceId);
-    if (Number.isFinite(deviceId)) {
-      const payload = { deviceId }; // 숫자 그대로
-      console.log("[emit] set_main_device (click)", payload);
-      socket.emit("set_main_device", payload);
-    } else {
-      console.warn("[emit skipped] set_main_device (click): deviceId is", deviceId);
-    }
+    localStorage.setItem("lastDeviceId", String(deviceId)); // 재연결 복원용
+    canSendRef.current = false; // ACK 오기 전까지 전송 금지
+    inFlightRef.current = false; // 진행 중인 전송도 초기화
+    socket.emit("set_main_device", { deviceId });
   };
 
   // [Back] AI 기능 전원 핸들러
@@ -251,18 +287,6 @@ const MonitoringPage = () => {
       backgroundColor: isActive ? "#1565c0" : "rgba(25, 118, 210, 0.04)",
     },
   });
-
-  useEffect(() => {
-    const onConnect = () => {
-      if (Number.isFinite(selectedCam)) {
-        const payload = { deviceId: selectedCam };
-        console.log("[emit-after-connect] set_main_device", payload);
-        socket.emit("set_main_device", payload);
-      }
-    };
-    socket.on("connect", onConnect);
-    return () => socket.off("connect", onConnect);
-  }, [selectedCam]);
 
   // ✅ 단일 useEffect로 소스 전환 (웹캠은 srcObject, 파일은 src)
   useEffect(() => {

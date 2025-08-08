@@ -4,7 +4,7 @@
 
 	<!-- [ 전체 게시글을 조회하기 ] -->
 	<select id = "selectDevicesAll" resultType = "kr.cloud.web.entity.Devices">
-		SELECT * FROM devices ORDER BY device_id DESC
+		SELECT * FROM devices ORDER BY device_id ASC;
 	</select>
 	
 	
