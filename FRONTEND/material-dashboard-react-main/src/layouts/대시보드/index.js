@@ -10,7 +10,7 @@ import Box from "@mui/material/Box";
 import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
+// import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 
 // Custom sections
@@ -25,7 +25,6 @@ import { motion } from "framer-motion";
 import 사고 from "layouts/img/사고3.png";
 import 중장비 from "layouts/img/중장비3.png";
 import 보호장구 from "layouts/img/보호장구3.png";
-import CCTV from "layouts/img/cctv1.png";
 
 function DashBoard() {
   const [summary, setSummary] = useState(null);
@@ -215,7 +214,7 @@ function DashBoard() {
             </Grid>
           </Grid>
         </MDBox>
-        <Footer />
+        {/* <Footer /> */}
       </motion.div>
     </DashboardLayout>
   );

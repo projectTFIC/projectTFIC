@@ -449,7 +449,7 @@ export default function Notifications() {
           </Card>
         </MDBox>
 
-        <Footer />
+        {/* <Footer /> */}
       </DashboardLayout>
     </LocalizationProvider>
   );

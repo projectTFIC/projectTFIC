@@ -187,7 +187,7 @@ function Billing() {
         </Grid>
       </MDBox>
 
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

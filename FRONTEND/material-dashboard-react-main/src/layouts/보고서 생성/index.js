@@ -380,7 +380,7 @@ function ReportPage() {
           </Slide>
         </Grid>
       </Box>
-      <Footer />
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }
