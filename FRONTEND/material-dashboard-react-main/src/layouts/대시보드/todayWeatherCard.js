@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { Card, Typography, Divider, Box } from "@mui/material";
 import { Player } from "@lottiefiles/react-lottie-player";
 import rainyDay from "../../assets/lottie/RainyDay.json";
+import MagicBento from "../../layouts/authentication/components/MagicBento/MagicBento.jsx";
 
 const SERVICE_KEY =
   "wksMHekX%2FKUih83RjZB90drNGaJP0jYxTheUXe658Z7egUvB7mpEKjxR5iDf%2Bl4lyY1hgcHInc52z%2FvbAjCEvg%3D%3D"; // 이미 인코딩된 키

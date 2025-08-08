@@ -77,7 +77,7 @@ function DashboardLayout({ children }) {
     <>
       {/* ✅ 고정된 배경 이미지 */}
       <Box
-        ref={vantaRef}
+        // ref={vantaRef}
         sx={{
           position: "fixed",
           top: 0,

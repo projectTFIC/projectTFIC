@@ -7,6 +7,7 @@ import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import MagicBento from "../../layouts/authentication/components/MagicBento/MagicBento.jsx";
 
 /**
  * WeeklyMenuCard 컴포넌트
