@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
   Box,
@@ -31,7 +31,7 @@ function LogManagement() {
   const { pathname } = useLocation();
 
   const [accidents, setAccidents] = useState([]);
-  const [ppe, setPpe] = useState([]);
+  const [equipments, setPpe] = useState([]);
   const [access, setAccess] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
@@ -56,36 +56,41 @@ function LogManagement() {
     const label = type === "acc" ? "사고" : type === "ppe" ? "미착용" : "입출입";
     return <MDBadge badgeContent={label} color={color} variant="gradient" size="lg" />;
   };
-
+  // 사고 감지
   useEffect(() => {
     axios.get("/web/tablelist/accidents").then((res) => {
       setAccidents(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle,
+          title: row.recordTitle, // 게시글 제목
           type: badgeByType("acc"),
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          content: row.content,
-          location: row.location,
-          date: row.regDate,
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          content: row.content, // 세부정보
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
           rowId: `0-${idx}`,
           report: row.report,
         }))
       );
     });
-
+    // 안전장비 미착용
     axios.get("/web/tablelist/equipments").then((res) => {
       setPpe(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle,
+          title: row.recordTitle, // 게시글 제목
           type: badgeByType("ppe"),
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          content: row.content,
-          location: row.location,
-          date: row.regDate,
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          content: row.content, // 보고문
+          helmetOff: row.helmetOff, // 안전모 미착용
+          hookOff: row.hookOff, // 안전모 미착용
+          beltOff: row.beltOff, // 안전모 미착용
+          shoesOff: row.shoesOff, // 안전모 미착용
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
           rowId: `1-${idx}`,
           report: row.report,
         }))
@@ -96,12 +101,16 @@ function LogManagement() {
       setAccess(
         res.data.map((row, idx) => ({
           listNum: idx + 1,
-          title: row.recordTitle,
+          title: row.recordTitle, // 게시글 제목
           type: badgeByType("he"),
-          originalImg: row.originalImg,
-          detectImg: row.detectImg,
-          location: row.location,
-          date: row.regDate,
+          originalImg: row.originalImg, // 원본 이미지
+          detectImg: row.detectImg, // 감지 이미지
+          heType: row.heType, // 중장비 유형
+          heNumber: row.heNumber, // 번호판
+          access: row.access, // 입출입
+          deviceId: row.deviceId, // 장치 아이디
+          location: row.location, // 설치 위치
+          date: row.regDate, // 탐지 날짜
           rowId: `2-${idx}`,
           report: row.report,
         }))
@@ -111,7 +120,7 @@ function LogManagement() {
 
   const tabs = [
     { label: "사고 감지", rows: accidents },
-    { label: "안전장비 미착용 감지", rows: ppe },
+    { label: "안전장비 미착용 감지", rows: equipments },
     { label: "입출입 감지", rows: access },
   ];
 
