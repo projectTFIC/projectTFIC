@@ -6,10 +6,12 @@ import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 
 // MD components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
 
 // Date pickers
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -77,9 +79,9 @@ export default function Notifications() {
     "ACC 감지": "#f67019",
     "중장비 출입": "#f53794",
     "안전장비 미착용": "#9b59b6",
-    A: "#36a2eb",
+    "1층 일반 좌측 복도 동로": "#36a2eb",
     B: "#ffcd56",
-    C: "#4bc0c0",
+    A: "#4bc0c0",
   };
 
   // 데이터 로드
@@ -242,20 +244,128 @@ export default function Notifications() {
       <DashboardLayout>
         <DashboardNavbar />
 
-        {/* 날짜 필터 */}
-        <MDBox px={3} pt={3} pb={1} display="flex" gap={2}>
-          <DatePicker
-            label="시작일"
-            value={startDate}
-            onChange={(d) => setStartDate(d?.toISOString().slice(0, 10) || null)}
-            renderInput={(p) => <TextField {...p} size="small" />}
-          />
-          <DatePicker
-            label="종료일"
-            value={endDate}
-            onChange={(d) => setEndDate(d?.toISOString().slice(0, 10) || null)}
-            renderInput={(p) => <TextField {...p} size="small" />}
-          />
+        {/* 날짜 필터와 버튼을 하나의 flex 컨테이너에 배치합니다. */}
+        <MDBox
+          px={3}
+          pt={3}
+          pb={1}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+        >
+          {/* 날짜 필터 그룹을 flex-item으로 묶습니다. */}
+          <Box display="flex" gap={2}>
+            {/* 시작일 라벨과 DatePicker */}
+            <Box display="flex" flexDirection="column" alignItems="flex-start">
+              <MDTypography variant="caption" color="white" fontWeight="regular">
+                시작일
+              </MDTypography>
+              <DatePicker
+                value={startDate}
+                onChange={(d) => setStartDate(d?.toISOString().slice(0, 10) || null)}
+                renderInput={(p) => (
+                  <TextField
+                    {...p}
+                    size="small"
+                    sx={{
+                      "& .MuiInputBase-input": {
+                        color: "white !important",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        color: "white !important",
+                      },
+                      "& .MuiInputBase-input::placeholder": {
+                        color: "white !important",
+                        opacity: 1,
+                      },
+                      "& .MuiOutlinedInput-root.Mui-disabled": {
+                        "& .MuiInputBase-input": {
+                          color: "white !important",
+                        },
+                        "& .MuiSvgIcon-root": {
+                          color: "white !important",
+                        },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Box>
+            {/* 종료일 라벨과 DatePicker */}
+            <Box display="flex" flexDirection="column" alignItems="flex-start">
+              <MDTypography variant="caption" color="white" fontWeight="regular">
+                종료일
+              </MDTypography>
+              <DatePicker
+                value={endDate}
+                onChange={(d) => setEndDate(d?.toISOString().slice(0, 10) || null)}
+                renderInput={(p) => (
+                  <TextField
+                    {...p}
+                    size="small"
+                    sx={{
+                      "& .MuiInputBase-input": {
+                        color: "white !important",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        color: "white !important",
+                      },
+                      "& .MuiInputBase-input::placeholder": {
+                        color: "white !important",
+                        opacity: 1,
+                      },
+                      "& .MuiOutlinedInput-root.Mui-disabled": {
+                        "& .MuiInputBase-input": {
+                          color: "white !important",
+                        },
+                        "& .MuiSvgIcon-root": {
+                          color: "white !important",
+                        },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Box>
+          </Box>
+          {/* 버튼 그룹을 flex-item으로 묶습니다. */}
+          <Stack direction="row" spacing={2} sx={{ mt: { xs: 2, md: 0 } }}>
+            <MDButton
+              variant={barMode === "type" ? "contained" : "outlined"}
+              onClick={() => setBarMode("type")}
+              sx={{
+                flexGrow: 1,
+                color: "rgba(255, 255, 255, 1) !important", // 버튼 텍스트 색상을 흰색으로 강제
+                "&.MuiButton-contained": {
+                  backgroundColor: "rgba(0, 153, 255, 1) !important", // contained 상태일 때 흰색 배경에 투명도 20% 적용
+                },
+                "&.MuiButton-outlined": {
+                  color: "white !important", // outlined 상태일 때 텍스트 색상 강제
+                  borderColor: "rgba(139, 139, 139, 1) !important", // outlined 상태일 때 테두리 색상
+                },
+              }}
+            >
+              탐지유형 일자별 추이
+            </MDButton>
+            <MDButton
+              variant={barMode === "area" ? "contained" : "outlined"}
+              onClick={() => setBarMode("area")}
+              sx={{
+                flexGrow: 1,
+                color: "rgba(255, 255, 255, 1) !important", // 버튼 텍스트 색상을 흰색으로 강제
+                "&.MuiButton-contained": {
+                  backgroundColor: "rgba(0, 153, 255, 1) !important", // contained 상태일 때 흰색 배경에 투명도 20% 적용
+                },
+                "&.MuiButton-outlined": {
+                  color: "white !important", // outlined 상태일 때 텍스트 색상 강제
+                  borderColor: "rgba(139, 139, 139, 1) !important", // outlined 상태일 때 테두리 색상
+                },
+              }}
+            >
+              발생구역 일자별 추이
+            </MDButton>
+          </Stack>
         </MDBox>
 
         {/* 차트 레이아웃 */}
@@ -263,76 +373,58 @@ export default function Notifications() {
           <Grid container spacing={3}>
             {/* 왼쪽 Pie 2개 (누적 도넛) */}
             <Grid item xs={12} md={4}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Card sx={{ height: 250 }}>
-                    <MDBox px={2} pt={1}>
-                      <MDTypography variant="h6">탐지 유형별 (누적)</MDTypography>
-                    </MDBox>
-                    <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-                      <Pie
-                        data={{
-                          labels: typeLabels,
-                          datasets: [
-                            {
-                              data: typeCounts,
-                              backgroundColor: typeLabels.map(
-                                (label) => colorMap[label] || "#9b59b6"
-                              ),
-                              borderColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
-                              borderWidth: 2,
-                            },
-                          ],
-                        }}
-                        options={pieOptions}
-                      />
-                    </MDBox>
-                  </Card>
-                </Grid>
-                <Grid item xs={12}>
-                  <Card sx={{ height: 250 }}>
-                    <MDBox px={2} pt={1}>
-                      <MDTypography variant="h6">발생 구역별 (누적)</MDTypography>
-                    </MDBox>
-                    <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-                      <Pie
-                        data={{
-                          labels: areaLabels,
-                          datasets: [
-                            {
-                              data: areaCounts,
-                              backgroundColor: areaLabels.map(
-                                (label) => colorMap[label] || "#95a5a6"
-                              ),
-                              borderColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
-                              borderWidth: 2,
-                            },
-                          ],
-                        }}
-                        options={pieOptions}
-                      />
-                    </MDBox>
-                  </Card>
-                </Grid>
-              </Grid>
+              <Box display="flex" flexDirection="column" gap={3} height={520}>
+                <Card sx={{ flexGrow: 1 }}>
+                  <MDBox px={2} pt={1}>
+                    <MDTypography variant="h6">탐지 유형별 (누적)</MDTypography>
+                  </MDBox>
+                  <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
+                    <Pie
+                      data={{
+                        labels: typeLabels,
+                        datasets: [
+                          {
+                            data: typeCounts,
+                            backgroundColor: typeLabels.map(
+                              (label) => colorMap[label] || "#9b59b6"
+                            ),
+                            borderColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
+                            borderWidth: 2,
+                          },
+                        ],
+                      }}
+                      options={pieOptions}
+                    />
+                  </MDBox>
+                </Card>
+                <Card sx={{ flexGrow: 1 }}>
+                  <MDBox px={2} pt={1}>
+                    <MDTypography variant="h6">발생 구역별 (누적)</MDTypography>
+                  </MDBox>
+                  <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
+                    <Pie
+                      data={{
+                        labels: areaLabels,
+                        datasets: [
+                          {
+                            data: areaCounts,
+                            backgroundColor: areaLabels.map(
+                              (label) => colorMap[label] || "#95a5a6"
+                            ),
+                            borderColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
+                            borderWidth: 2,
+                          },
+                        ],
+                      }}
+                      options={pieOptions}
+                    />
+                  </MDBox>
+                </Card>
+              </Box>
             </Grid>
 
             {/* 오른쪽 ; 유형·구역별 일자별 추이 (Line/Bar) */}
             <Grid item xs={12} md={8}>
-              <Stack direction="row" spacing={2} mb={1}>
-                <Button
-                  variant={barMode === "type" ? "contained" : "outlined"}
-                  onClick={() => setBarMode("type")}
-                >
-                  탐지유형 일자별 추이
-                </Button>
-                <Button
-                  variant={barMode === "area" ? "contained" : "outlined"}
-                  onClick={() => setBarMode("area")}
-                >
-                  발생구역 일자별 추이
-                </Button>
-              </Stack>
               <Card sx={{ height: 520 }}>
                 <MDBox p={2} sx={{ height: "100%" }}>
                   <Line
