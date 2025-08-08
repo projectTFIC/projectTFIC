@@ -1,13 +1,22 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import { Menu, MenuItem, Dialog, DialogContent } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  Grid,
+  Typography,
+  Tabs,
+  Tab,
+  TextField,
+  Button,
+  Menu,
+  MenuItem,
+  Tooltip,
+} from "@mui/material";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -17,13 +26,9 @@ import DataTable from "examples/Tables/DataTable";
 import MDBadge from "components/MDBadge";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CardContent from "@mui/material/CardContent";
 
-function Tables() {
-  const location = useLocation();
-  const pathname = location.pathname;
+function LogManagement() {
+  const { pathname } = useLocation();
 
   const [accidents, setAccidents] = useState([]);
   const [ppe, setPpe] = useState([]);
@@ -33,10 +38,24 @@ function Tables() {
   const [searchText, setSearchText] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
+
+  // 모달 확대 기능
   const [open, setOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
+  const [scale, setScale] = useState(1);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const [showFullText, setShowFullText] = useState({});
 
   const openMenu = Boolean(anchorEl);
+
+  const badgeByType = (type) => {
+    const color = type === "acc" ? "error" : type === "ppe" ? "warning" : "info";
+    const label = type === "acc" ? "사고" : type === "ppe" ? "미착용" : "입출입";
+    return <MDBadge badgeContent={label} color={color} variant="gradient" size="lg" />;
+  };
 
   useEffect(() => {
     axios.get("/web/tablelist/accrecords").then((res) => {
@@ -44,9 +63,7 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.recordTitle,
-          type: (
-            <MDBadge badgeContent={row.detectionType} color="error" variant="gradient" size="lg" />
-          ),
+          type: badgeByType("acc"),
           originalImg: row.originalImg,
           detectImg: row.detectImg,
           content: row.content,
@@ -63,14 +80,7 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.recordTitle,
-          type: (
-            <MDBadge
-              badgeContent={row.detectionType}
-              color="warning"
-              variant="gradient"
-              size="lg"
-            />
-          ),
+          type: badgeByType("ppe"),
           originalImg: row.originalImg,
           detectImg: row.detectImg,
           content: row.content,
@@ -87,7 +97,7 @@ function Tables() {
         res.data.map((row, idx) => ({
           listNum: idx + 1,
           title: row.recordTitle,
-          type: <MDBadge badgeContent={row.access} color="info" variant="gradient" size="lg" />,
+          type: badgeByType("he"),
           originalImg: row.originalImg,
           detectImg: row.detectImg,
           location: row.location,
@@ -113,6 +123,25 @@ function Tables() {
     handleFilterClose();
   };
 
+  const toggleRow = (rowId) => setExpandedRow((prev) => (prev === rowId ? null : rowId));
+
+  const handleOpen = (src) => {
+    setImageSrc(src);
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+    setOpen(true);
+  };
+  const handleClose = () => setOpen(false);
+
+  const handleWheelZoom = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY;
+    setScale((prev) => {
+      let next = prev - delta * 0.001;
+      return Math.min(Math.max(next, 0.5), 5);
+    });
+  };
+
   const filteredRows = tabs[tabIndex].rows.filter((r) => {
     const txt = searchText.trim().toLowerCase();
     if (!txt) return true;
@@ -124,19 +153,6 @@ function Tables() {
     return true;
   });
 
-  const toggleRow = (rowId) => {
-    setExpandedRow((prev) => (prev === rowId ? null : rowId));
-  };
-
-  const handleOpen = (src) => {
-    setImageSrc(src);
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-    setImageSrc("");
-  };
-
   const columns = [
     { Header: "No.", accessor: "listNum", align: "center" },
     {
@@ -146,7 +162,7 @@ function Tables() {
       Cell: ({ value, row }) => (
         <MDTypography
           component="span"
-          sx={{ cursor: "pointer", color: "black", fontWeight: "bold" }}
+          sx={{ cursor: "pointer", color: "#111213ff", fontWeight: "bold" }}
           onClick={() => toggleRow(row.original.rowId)}
         >
           {value}
@@ -157,61 +173,100 @@ function Tables() {
     { Header: "날짜", accessor: "date", align: "center" },
   ];
 
-  const DetailRow = ({ row }) => (
-    <Box display="flex" flexDirection="column" gap={2} p={2}>
-      <Box display="flex" gap={2}>
-        {row.originalImg && (
-          <Card
-            sx={{ maxWidth: 400, cursor: "pointer" }}
-            onClick={() => handleOpen(row.originalImg)}
-          >
+  const DetailRow = ({ row }) => {
+    const isLong = (row.report || row.content || "").length > 100;
+    const fullShown = showFullText[row.rowId];
+    const textToShow = fullShown
+      ? row.report || row.content
+      : (row.report || row.content || "").slice(0, 100) + (isLong ? "..." : "");
+
+    return (
+      <Box
+        p={3}
+        mt={2}
+        bgcolor="#e3f2fd"
+        borderRadius={2}
+        display="flex"
+        flexDirection="column"
+        gap={2}
+      >
+        <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center">
+          {["originalImg", "detectImg"].map((key) =>
+            row[key] ? (
+              <Tooltip title="이미지를 클릭하면 확대됩니다" arrow key={key}>
+                <Card
+                  sx={{
+                    width: 360,
+                    borderRadius: 3,
+                    boxShadow: 3,
+                    ":hover": { boxShadow: 6 },
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpen(row[key]);
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                      {key === "originalImg" ? "원본 이미지" : "감지 이미지"}
+                    </Typography>
+                    <img
+                      src={row[key]}
+                      alt={key}
+                      style={{ width: "100%", borderRadius: 8, objectFit: "contain" }}
+                    />
+                  </CardContent>
+                </Card>
+              </Tooltip>
+            ) : null
+          )}
+        </Box>
+
+        <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center">
+          <Card sx={{ minWidth: 200, maxWidth: 400, flex: 1, backgroundColor: "#f8f9fa" }}>
             <CardContent>
-              <Typography variant="body2">원본 이미지</Typography>
-              <img
-                src={row.originalImg}
-                alt="original"
-                style={{ width: "100%", height: "auto", objectFit: "contain" }}
-              />
+              <Typography variant="subtitle2" color="text.secondary">
+                감지 위치
+              </Typography>
+              <Typography variant="h6" fontWeight="bold">
+                {row.location || "정보 없음"}
+              </Typography>
             </CardContent>
           </Card>
-        )}
-        {row.detectImg && (
-          <Card sx={{ maxWidth: 400, cursor: "pointer" }} onClick={() => handleOpen(row.detectImg)}>
+          <Card sx={{ minWidth: 200, maxWidth: 400, flex: 1, backgroundColor: "#f8f9fa" }}>
             <CardContent>
-              <Typography variant="body2">감지 이미지</Typography>
-              <img
-                src={row.detectImg}
-                alt="detected"
-                style={{ width: "100%", height: "auto", objectFit: "contain" }}
-              />
+              <Typography variant="subtitle2" color="text.secondary">
+                감지 일자
+              </Typography>
+              <Typography variant="h6" fontWeight="bold">
+                {row.date || "정보 없음"}
+              </Typography>
             </CardContent>
           </Card>
-        )}
-      </Box>
-      <Box display="flex" gap={2}>
-        <Card sx={{ flex: 1 }}>
+        </Box>
+
+        <Card sx={{ backgroundColor: "#fffde7", mt: 2 }}>
           <CardContent>
-            <Typography variant="body2">감지 위치</Typography>
-            <Typography variant="body1">{row.location || "정보 없음"}</Typography>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              보고서 내용
+            </Typography>
+            <Typography variant="body1" whiteSpace="pre-line" fontWeight="medium">
+              {textToShow || "정보 없음"}
+            </Typography>
+            {isLong && (
+              <Button
+                onClick={() => setShowFullText((prev) => ({ ...prev, [row.rowId]: !fullShown }))}
+                size="small"
+              >
+                {fullShown ? "접기" : "더보기"}
+              </Button>
+            )}
           </CardContent>
         </Card>
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography variant="body2">감지 일자</Typography>
-            <Typography variant="body1">{row.date || "정보 없음"}</Typography>
-          </CardContent>
-        </Card>
       </Box>
-      <Card>
-        <CardContent>
-          <Typography variant="body2">보고서 내용</Typography>
-          <Typography variant="body1" whiteSpace="pre-line">
-            {row.report || row.content || "정보 없음"}
-          </Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
+    );
+  };
 
   return (
     <motion.div
@@ -237,49 +292,37 @@ function Tables() {
                   borderRadius="lg"
                   coloredShadow="info"
                 >
-                  <MDTypography variant="h6" color="white">
-                    <Tabs
-                      value={tabIndex}
-                      onChange={handleTabChange}
-                      textColor="inherit"
-                      indicatorColor="secondary"
-                    >
-                      {tabs.map((t, i) => (
-                        <Tab
-                          key={i}
-                          label={t.label}
-                          sx={{
-                            color: "white",
-                            fontSize: "1.2rem",
-                            fontWeight: 600,
-                            textTransform: "none",
-                          }}
-                        />
-                      ))}
-                    </Tabs>
-                  </MDTypography>
+                  <Tabs
+                    value={tabIndex}
+                    onChange={handleTabChange}
+                    textColor="inherit"
+                    indicatorColor="secondary"
+                  >
+                    {tabs.map((t, i) => (
+                      <Tab
+                        key={i}
+                        label={t.label}
+                        sx={{
+                          color: "white",
+                          fontSize: "1.2rem",
+                          fontWeight: 600,
+                          textTransform: "none",
+                        }}
+                      />
+                    ))}
+                  </Tabs>
                 </MDBox>
                 <MDBox mx={2} mt={2} mb={1} display="flex" alignItems="center" gap={2}>
                   <Button
                     variant="outlined"
-                    size="medium"
                     onClick={handleFilterClick}
-                    sx={{
-                      fontSize: "11px",
-                      color: "black !important",
-                      borderColor: "gray",
-                      backgroundColor: "white",
-                      padding: 0,
-                      width: "120px",
-                    }}
+                    sx={{ minWidth: "100px", fontSize: "13px", color: "black !important" }}
                   >
                     {filterType === "titleContent"
                       ? "제목+내용"
                       : filterType === "title"
                       ? "제목"
-                      : filterType === "content"
-                      ? "내용"
-                      : "필터"}
+                      : "내용"}
                   </Button>
                   <Menu anchorEl={anchorEl} open={openMenu} onClose={handleFilterClose}>
                     <MenuItem onClick={() => handleFilterSelect("titleContent")}>
@@ -294,7 +337,6 @@ function Tables() {
                     fullWidth
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    sx={{ backgroundColor: "white", borderRadius: 1 }}
                   />
                 </MDBox>
                 <MDBox pt={3}>
@@ -306,7 +348,14 @@ function Tables() {
                         return [
                           row,
                           ...(isExpanded
-                            ? [{ listNum: "", title: <DetailRow row={row} />, type: "", date: "" }]
+                            ? [
+                                {
+                                  listNum: "",
+                                  title: <DetailRow row={row} />,
+                                  type: "",
+                                  date: "",
+                                },
+                              ]
                             : []),
                         ];
                       }),
@@ -323,13 +372,53 @@ function Tables() {
         </MDBox>
         <Footer />
       </DashboardLayout>
+
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-        <DialogContent>
-          <img src={imageSrc} alt="확대 이미지" style={{ width: "100%", height: "auto" }} />
+        <DialogContent
+          onWheel={handleWheelZoom}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+            setDragStart({ x: e.clientX - translate.x, y: e.clientY - translate.y });
+          }}
+          onMouseMove={(e) => {
+            if (!isDragging) return;
+            setTranslate({
+              x: e.clientX - dragStart.x,
+              y: e.clientY - dragStart.y,
+            });
+          }}
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
+          sx={{
+            overflow: "hidden",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "80vh",
+            cursor: isDragging ? "grabbing" : "grab",
+          }}
+        >
+          <img
+            src={imageSrc}
+            alt="확대 이미지"
+            style={{
+              transform: `scale(${scale}) translate(${translate.x / scale}px, ${
+                translate.y / scale
+              }px)`,
+              transformOrigin: "center center",
+              transition: isDragging ? "none" : "transform 0.1s ease-out",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              pointerEvents: "none",
+              userSelect: "none",
+            }}
+            draggable={false}
+          />
         </DialogContent>
       </Dialog>
     </motion.div>
   );
 }
 
-export default Tables;
+export default LogManagement;
