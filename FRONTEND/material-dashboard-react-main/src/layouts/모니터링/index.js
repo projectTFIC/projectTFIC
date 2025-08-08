@@ -13,7 +13,7 @@ import {
   Divider,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
-import socket from "socket"; // [Back] 모니터링 화면의 프레임을 스프링부트로 전달 (웹소캣)
+import socket from "../../socket"; // [Back] 모니터링 화면의 프레임을 스프링부트로 전달 (웹소캣)
 import axios from "axios";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 
@@ -43,35 +43,76 @@ const MonitoringPage = () => {
 
   // DB에서 장비 리스트 불러오기
   useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        const res = await axios.get("http://localhost:8090/web/GetDevicesList");
-        const devices = res.data.map((d, index) => ({
-          ...d,
-          status: d.status || "online",
-          video_url: `/videos/video${index + 1}.mp4`,
-        }));
-        setCameraList(res.data);
-        if (res.data.length > 0) {
-          const initialCamId = res.data[0].device_id;
-          setSelectedCam(initialCamId);
+    const setupConnectionAndFetchDevices = () => {
+      const normalizeDevices = (arr) => {
+        return (
+          arr
+            .map((d, index) => {
+              // 다양한 케이스 흡수: device_id / deviceId / deviceid / id
+              const rawId = d.device_id ?? d.deviceId ?? d.deviceid ?? d.id ?? null;
 
-          // ✅ 서버에 초기 선택 카메라 알림 추가
-          socket.emit("set_main_device", { deviceId: initialCamId });
+              // 숫자화. 변환 실패하면 null
+              const device_id =
+                rawId !== null && rawId !== undefined && rawId !== "" ? Number(rawId) : null;
+
+              return {
+                // 프론트 전역에서 일관되게 snake_case로 사용
+                device_id,
+                device_name: d.device_name ?? d.deviceName ?? d.name ?? "(이름없음)",
+                location: d.location ?? "(미지정)",
+                status: d.status ?? "online",
+                video_url: `${process.env.PUBLIC_URL || ""}/videos/video${index + 1}.mp4`,
+              };
+            })
+            // device_id 없는 항목 제거 (서버에 None 날리는 것 방지)
+            .filter((x) => Number.isFinite(x.device_id))
+        );
+      };
+
+      const fetchDevices = async () => {
+        try {
+          const res = await axios.get("http://localhost:8090/web/GetDevicesList");
+          const devices = normalizeDevices(res.data);
+          setCameraList(devices);
+
+          if (devices.length > 0) {
+            const initialCamId = devices[0].device_id; // 숫자 보장됨
+            setSelectedCam(initialCamId);
+
+            const payload = { deviceId: initialCamId }; // 문자열로 안 바꿔도 됨
+            console.log("[emit] set_main_device (init)", payload);
+            socket.emit("set_main_device", payload);
+          } else {
+            console.warn("장비 리스트에 유효한 device_id가 없습니다.");
+          }
+        } catch (err) {
+          console.error("장비 리스트 불러오기 실패", err);
         }
-      } catch (err) {
-        console.error("장비 리스트 불러오기 실패", err);
-      }
+      };
+      fetchDevices();
     };
-    fetchDevices();
+
+    // 소켓이 이미 연결되어 있으면 바로 실행
+    if (socket.connected) {
+      setupConnectionAndFetchDevices();
+    }
+
+    // 'connect' 이벤트를 리스닝하여, 연결이 확립되면 fetchDevices 함수를 실행
+    socket.on("connect", setupConnectionAndFetchDevices);
+
+    // 클린업 함수: 컴포넌트가 언마운트될 때 이벤트 리스너를 제거하여 메모리 누수를 방지합니다.
+    return () => {
+      socket.off("connect", setupConnectionAndFetchDevices);
+    };
   }, []);
 
   // 서브 모니터 영상 리스트
+  const videoBase = process.env.PUBLIC_URL || ""; // 스프링부트의 context path 설정을 제외하기 위해 설정
   const subVideos = [
-    "/videos/video1.mp4",
-    "/videos/video2.mp4",
-    "/videos/video3.mp4",
-    "/videos/video4.mp4",
+    `${videoBase}/videos/video1.mp4`,
+    `${videoBase}/videos/video2.mp4`,
+    `${videoBase}/videos/video3.mp4`,
+    `${videoBase}/videos/video4.mp4`,
   ];
 
   // 웹캠 연결
@@ -99,27 +140,32 @@ const MonitoringPage = () => {
   // [Back] 주기적으로 웹캠 프레임을 서버에 전송
   useEffect(() => {
     const interval = setInterval(() => {
-      if (
-        Object.values(globalToggles).some((status) => status) &&
-        videoRef.current &&
-        selectedCam
-      ) {
-        const canvas = document.createElement("canvas");
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg");
-        socket.emit("image_analysis_request", { image: dataUrl, deviceId: selectedCam });
-      }
-    }, 500); // 0.5초에 한번
+      const v = videoRef.current;
+      if (!v) return;
+      if (!Object.values(globalToggles).some(Boolean)) return;
+      if (!selectedCam) return;
+
+      const vw = v.videoWidth || v.clientWidth;
+      const vh = v.videoHeight || v.clientHeight;
+      if (!vw || !vh) return; // 아직 로드 전
+
+      const tmp = document.createElement("canvas");
+      tmp.width = vw;
+      tmp.height = vh;
+      const ctx = tmp.getContext("2d");
+      ctx.drawImage(v, 0, 0, vw, vh);
+      const dataUrl = tmp.toDataURL("image/jpeg");
+
+      socket.emit("image_analysis_request", { image: dataUrl, deviceId: selectedCam });
+    }, 500);
+
     return () => clearInterval(interval);
   }, [globalToggles, selectedCam]);
 
   // [Back] 서버로부터 전달 받은 AI 분석 결과 가져오기
   useEffect(() => {
     const handleAnalysisResult = (data) => {
-      if (data.deviceId === selectedCam) {
+      if (Number(data.deviceId) === Number(selectedCam)) {
         setDetections(data.detections || []);
       }
     };
@@ -132,31 +178,60 @@ const MonitoringPage = () => {
     if (!canvasRef.current || !videoRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    canvas.width = videoRef.current.clientWidth;
-    canvas.height = videoRef.current.clientHeight;
+
+    // 비디오 실제 픽셀 기준
+    const v = videoRef.current;
+    const vw = v.videoWidth || v.clientWidth;
+    const vh = v.videoHeight || v.clientHeight;
+    if (!vw || !vh) return;
+
+    // 캔버스 화면 크기 = 보이는 영역
+    canvas.width = v.clientWidth;
+    canvas.height = v.clientHeight;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (showDetections && detections.length > 0) {
-      const scaleX = canvas.width / (videoRef.current.videoWidth || canvas.width);
-      const scaleY = canvas.height / (videoRef.current.videoHeight || canvas.height);
-      detections.forEach((det) => {
-        const [x1, y1, x2, y2] = det.box;
-        const label = det.label || "";
-        let color = "red";
-        if (label.includes("wear")) color = "blue";
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.fillStyle = color;
-        ctx.font = "16px Arial";
-        ctx.strokeRect(x1 * scaleX, y1 * scaleY, (x2 - x1) * scaleX, (y2 - y1) * scaleY);
-        ctx.fillText(label, x1 * scaleX, y1 * scaleY > 10 ? y1 * scaleY - 5 : 10);
-      });
-    }
+    if (!showDetections || detections.length === 0) return;
+
+    const scaleX = canvas.width / vw;
+    const scaleY = canvas.height / vh;
+
+    detections.forEach((det) => {
+      const [x1, y1, x2, y2] = det.box || [];
+      if (x1 == null) return;
+
+      const label = det.label || "";
+      let color = "red";
+      if (label.includes("wear")) color = "blue";
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = color;
+      ctx.font = "16px Arial";
+
+      ctx.strokeRect(x1 * scaleX, y1 * scaleY, (x2 - x1) * scaleX, (y2 - y1) * scaleY);
+      ctx.fillText(label, x1 * scaleX, y1 * scaleY > 10 ? y1 * scaleY - 5 : 10);
+
+      // (선택) 포즈 키포인트가 오면 점 찍기
+      if (Array.isArray(det.keypoints)) {
+        det.keypoints.forEach(([kx, ky]) => {
+          ctx.beginPath();
+          ctx.arc(kx * scaleX, ky * scaleY, 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+    });
   }, [detections, showDetections]);
 
   // [Back] 영상 장비 리스트에서 장비를 선택하면, 선택한 장비를 서버에 전송
   const handleSelectCamera = (deviceId) => {
     setSelectedCam(deviceId);
-    socket.emit("set_main_device", { deviceId });
+    if (Number.isFinite(deviceId)) {
+      const payload = { deviceId }; // 숫자 그대로
+      console.log("[emit] set_main_device (click)", payload);
+      socket.emit("set_main_device", payload);
+    } else {
+      console.warn("[emit skipped] set_main_device (click): deviceId is", deviceId);
+    }
   };
 
   // [Back] AI 기능 전원 핸들러
@@ -176,23 +251,37 @@ const MonitoringPage = () => {
       backgroundColor: isActive ? "#1565c0" : "rgba(25, 118, 210, 0.04)",
     },
   });
-  useEffect(() => {
-    if (
-      selectedCamera?.device_id === cameraList[4]?.device_id &&
-      webcamStream &&
-      videoRef.current
-    ) {
-      videoRef.current.srcObject = webcamStream;
-    }
-  }, [selectedCamera, webcamStream, cameraList]);
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    const onConnect = () => {
+      if (Number.isFinite(selectedCam)) {
+        const payload = { deviceId: selectedCam };
+        console.log("[emit-after-connect] set_main_device", payload);
+        socket.emit("set_main_device", payload);
+      }
+    };
+    socket.on("connect", onConnect);
+    return () => socket.off("connect", onConnect);
+  }, [selectedCam]);
 
-    if (selectedCamera?.device_id === cameraList[4]?.device_id && webcamStream) {
-      videoRef.current.srcObject = webcamStream;
+  // ✅ 단일 useEffect로 소스 전환 (웹캠은 srcObject, 파일은 src)
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    const isWebcam = selectedCamera?.device_id === cameraList[4]?.device_id;
+
+    if (isWebcam && webcamStream) {
+      // 웹캠 모드
+      v.srcObject = webcamStream;
+      v.removeAttribute("src"); // src 제거
+      v.play().catch(() => {});
     } else {
-      videoRef.current.srcObject = null; // 🧹 스트림 끊기
+      // 파일 모드
+      v.srcObject = null;
+      const src = selectedCamera?.video_url || `${process.env.PUBLIC_URL || ""}/videos/video1.mp4`;
+      if (v.src !== src) v.src = src;
+      v.play().catch(() => {});
     }
   }, [selectedCamera, webcamStream, cameraList]);
 
@@ -209,26 +298,28 @@ const MonitoringPage = () => {
             overflow="hidden"
             sx={{ backgroundColor: "#000" }}
           >
-            {selectedCamera?.device_id === cameraList[4]?.device_id && webcamStream ? (
-              <video
-                ref={videoRef}
-                key="webcam" // 💡 강제 리렌더링
-                autoPlay
-                muted
-                playsInline
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              <video
-                key={selectedCamera?.device_id} // 💡 선택된 캠이 바뀔 때마다 리렌더링
-                src={selectedCamera?.video_url || "/videos/video1.mp4"}
-                autoPlay
-                muted
-                loop
-                playsInline
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            )}
+            {/* ✅ 단일 비디오만 사용 (웹캠/파일 공용) */}
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+
+            {/* ✅ 오버레이 캔버스 실제 렌더링 */}
+            <canvas
+              ref={canvasRef}
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                width: "100%",
+                height: "100%",
+                pointerEvents: "none",
+              }}
+            />
 
             {selectedCamera && (
               <>
@@ -288,7 +379,7 @@ const MonitoringPage = () => {
                         overflow: "hidden", // 영상 잘림 방지
                         backgroundColor: "#000",
                       }}
-                      onClick={() => setSelectedCam(cam.device_id)}
+                      onClick={() => handleSelectCamera(cam.device_id)}
                     >
                       <video
                         src={cam.video_url}
@@ -373,9 +464,9 @@ const MonitoringPage = () => {
                   const isLast = index === cameraList.length - 1;
 
                   return (
-                    <React.Fragment key={cam.device_id}>
+                    <React.Fragment key={String(cam?.device_id ?? `idx-${index}`)}>
                       <Box
-                        onClick={() => setSelectedCam(cam.device_id)}
+                        onClick={() => handleSelectCamera(cam.device_id)}
                         sx={{
                           width: "100%",
                           px: 2,
