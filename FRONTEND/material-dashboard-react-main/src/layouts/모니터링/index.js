@@ -35,6 +35,9 @@ const MonitoringPage = () => {
   const canSendRef = useRef(false);
   const inFlightRef = useRef(false);
 
+  const [deck, setDeck] = useState([]); // [mainId, s1Id, s2Id, s3Id]
+  const camById = (id) => cameraList.find((c) => c.device_id === id);
+
   // 소켓 리스너 등록 (마운트 1회)
   useEffect(() => {
     const onMainDeviceSet = (data) => {
@@ -125,7 +128,10 @@ const MonitoringPage = () => {
           device_name: d.device_name ?? d.deviceName ?? d.name ?? "(이름없음)",
           location: d.location ?? "(미지정)",
           status: d.status ?? "online",
-          video_url: `${process.env.PUBLIC_URL || ""}/videos/video${index + 1}.mp4`,
+          video_url:
+            index === 5
+              ? undefined
+              : `${process.env.PUBLIC_URL || ""}/videos/video${index + 1}.mp4`,
         };
       })
       .filter((x) => Number.isFinite(x.device_id));
@@ -136,11 +142,19 @@ const MonitoringPage = () => {
       const devices = normalizeDevices(res.data);
       setCameraList(devices);
       if (devices.length > 0) {
+        // [Back] 화면 로테이션 기능 변수 설정
+        const ids = devices.map((d) => d.device_id);
+        const saved = Number(localStorage.getItem("lastDeviceId"));
+        const main = Number.isFinite(saved) && ids.includes(saved) ? saved : ids[0];
+        // [Back] 화면 덱 초기화
+        const rest = ids.filter((id) => id !== main);
+        const nextDeck = [main, ...rest].slice(0, 4);
+        setDeck(nextDeck);
+        // [Back] 선택 복원 및 초기화
         // 페이지 로드 시, 아직 선택된 카메라가 없을 때만 초기값 설정
-        if (selectedCam === null) {
-          const initialCamId = devices[0].device_id;
-          setSelectedCam(initialCamId);
-          socket.emit("set_main_device", { deviceId: initialCamId });
+        if (selectedCam === null || !ids.includes(selectedCam)) {
+          setSelectedCam(main);
+          socket.emit("set_main_device", { deviceId: main });
         }
       }
     } catch (err) {
@@ -177,6 +191,7 @@ const MonitoringPage = () => {
     `${videoBase}/videos/video2.mp4`,
     `${videoBase}/videos/video3.mp4`,
     `${videoBase}/videos/video4.mp4`,
+    `${videoBase}/videos/video5.mp4`,
   ];
 
   // 웹캠 연결
@@ -263,6 +278,18 @@ const MonitoringPage = () => {
 
   // [Back] 영상 장비 리스트에서 장비를 선택하면, 선택한 장비를 서버에 전송
   const handleSelectCamera = (deviceId) => {
+    setDeck((prev) => {
+      if (!prev.length) return [deviceId];
+      const prevMain = prev[0];
+      // [Back] 덱 내부 (메인 화면 & 서브 화면) 클릭하는 경우
+      if (prev.includes(deviceId)) {
+        if (deviceId === prevMain) return prev; // 메인화면을 선택하는 경우, 변화 없음
+        const rest = prev.filter((id) => id !== deviceId && id !== prevMain);
+        return [deviceId, prevMain, ...rest].slice(0, 4);
+      }
+      // [Back] 덱 외부 (영상 장비 리스트) 클릭하는 경우
+      return [deviceId, ...prev.slice(0, 3)];
+    });
     setSelectedCam(deviceId);
     localStorage.setItem("lastDeviceId", String(deviceId)); // 재연결 복원용
     canSendRef.current = false; // ACK 오기 전까지 전송 금지
@@ -293,15 +320,20 @@ const MonitoringPage = () => {
     const v = videoRef.current;
     if (!v) return;
 
-    const isWebcam = selectedCamera?.device_id === cameraList[4]?.device_id;
+    const isWebcam = selectedCamera?.device_id === cameraList[5]?.device_id;
 
-    if (isWebcam && webcamStream) {
+    if (isWebcam) {
       // 웹캠 모드
-      v.srcObject = webcamStream;
-      v.removeAttribute("src"); // src 제거
-      v.play().catch(() => {});
+      if (webcamStream) {
+        v.srcObject = webcamStream;
+        v.removeAttribute("src"); // src 제거
+        v.play().catch(() => {});
+      } else {
+        // 파일 모드
+        v.srcObject = null;
+        v.removeAttribute("src");
+      }
     } else {
-      // 파일 모드
       v.srcObject = null;
       const src = selectedCamera?.video_url || `${process.env.PUBLIC_URL || ""}/videos/video1.mp4`;
       if (v.src !== src) v.src = src;
@@ -388,35 +420,53 @@ const MonitoringPage = () => {
           {/* 서브 모니터 2행 3열 */}
           <Box mt={2}>
             <Grid container spacing={2}>
-              {cameraList.slice(1, 4).map((cam, idx) => {
-                const isSelected = cam.device_id === selectedCam;
+              {deck
+                .slice(1, 4)
+                .map((id) => camById(id))
+                .filter(Boolean)
+                .map((cam) => {
+                  const isSelected = cam.device_id === selectedCam;
+                  const isWebcamTile = cam.device_id === cameraList[5]?.device_id;
 
-                return (
-                  <Grid item xs={4} key={idx}>
-                    <Box
-                      height={220}
-                      border={isSelected ? "2px solid #1976d2" : "1px solid #111"}
-                      sx={{
-                        cursor: cam ? "pointer" : "default",
-                        borderRadius: 0,
-                        position: "relative",
-                        overflow: "hidden", // 영상 잘림 방지
-                        backgroundColor: "#000",
-                      }}
-                      onClick={() => handleSelectCamera(cam.device_id)}
-                    >
-                      <video
-                        src={cam.video_url}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    </Box>
-                  </Grid>
-                );
-              })}
+                  return (
+                    <Grid item xs={4} key={cam.device_id}>
+                      <Box
+                        height={220}
+                        border={isSelected ? "2px solid #1976d2" : "1px solid #111"}
+                        sx={{
+                          cursor: cam ? "pointer" : "default",
+                          borderRadius: 0,
+                          position: "relative",
+                          overflow: "hidden", // 영상 잘림 방지
+                          backgroundColor: "#000",
+                        }}
+                        onClick={() => handleSelectCamera(cam.device_id)}
+                      >
+                        {isWebcamTile ? (
+                          <Box
+                            height="100%"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="#fff"
+                            sx={{ fontWeight: 700, letterSpacing: 1 }}
+                          >
+                            LIVE 웹캠
+                          </Box>
+                        ) : (
+                          <video
+                            src={cam.video_url}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        )}
+                      </Box>
+                    </Grid>
+                  );
+                })}
             </Grid>
           </Box>
 
