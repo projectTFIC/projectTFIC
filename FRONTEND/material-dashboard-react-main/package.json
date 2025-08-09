@@ -2,7 +2,6 @@
   "name": "material-dashboard-2-react",
   "version": "2.2.0",
   "private": true,
-  "homepage": ".",
   "author": "Creative Tim",
   "license": "See license in https://www.creative-tim.com/license",
   "description": "React version of Material Dashboard 2 by Creative Tim",
@@ -93,5 +92,5 @@
   "overrides": {
     "svgo": "3.0.2"
   },
-  "proxy": "http://localhost:8090"
+  "proxy": "http://localhost:8089"
 }

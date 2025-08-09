@@ -52,7 +52,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const handleLogout = async () => {
     try {
       // 실제 백엔드 로그아웃 API 필요 시 사용
-      await fetch("http://localhost:8090/web/logout", {
+      await fetch(`${process.env.REACT_APP_API_BASE_URL}/logout`, {
         method: "GET",
         credentials: "include",
       });

@@ -16,7 +16,7 @@ export default function useProjectsTableData(startDate, endDate) {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        let url = "http://localhost:8090/web/reportlist";
+        let url = `${process.env.REACT_APP_API_BASE_URL}/reportlist`;
         if (startDate && endDate) {
           url += `/search?start=${startDate}&end=${endDate}`;
         }

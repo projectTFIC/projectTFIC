@@ -62,7 +62,7 @@ function ReportPage() {
 
     try {
       const res = await axios.post(
-        "http://localhost:8090/web/api/reports/generate",
+        `${process.env.REACT_APP_API_BASE_URL}/api/reports/generate`,
         {
           period_start,
           period_end,

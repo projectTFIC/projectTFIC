@@ -42,7 +42,7 @@ function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:8090/web/GoLogin", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/GoLogin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

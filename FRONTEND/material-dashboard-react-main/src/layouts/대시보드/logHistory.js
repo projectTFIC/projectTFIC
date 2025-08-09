@@ -15,33 +15,44 @@ import 미착용감지 from "layouts/img/미착용감지3.png";
 import 입출입감지 from "layouts/img/체크표시(그린)2.png";
 
 import { io } from "socket.io-client";
+import api from "../../api/client";
 
 function LogHistory() {
   const [logItems, setLogItems] = useState([]);
 
   // 1. 최초에 DB 로그 불러오기
   useEffect(() => {
-    axios
-      .get("/web/tablelist/logs") // 서버 경로에 따라 조절하세요
-      .then((res) => {
-        if (res.data && Array.isArray(res.data)) setLogItems(res.data);
-      })
-      .catch((error) => console.error("로그 데이터 로드 실패:", error));
+    api
+      .get("/tablelist/logs") // 결국 https://LB도메인/web/tablelist/logs 로 전달
+      .then((res) => Array.isArray(res.data) && setLogItems(res.data))
+      .catch((err) => console.error("로그 초기 로드 실패:", err));
   }, []);
 
   // 2. 실시간 알람(WebSocket) 수신
   useEffect(() => {
-    const socket = io("http://localhost:5000"); // 플라스크 소켓 주소로 교체
-    socket.on("connect", () => {
-      console.log("Socket.io connected");
-    });
-    socket.on("realtime-log", (newLog) => {
-      setLogItems((prev) => [newLog, ...prev.slice(0, 49)]);
-    });
-    socket.on("disconnect", () => {
-      console.log("Socket.io disconnected");
-    });
-    return () => socket.disconnect();
+    const useSocket = true; // 🔹 이 값을 true/false로 전환해 사용
+
+    if (useSocket) {
+      import("../../socket").then(({ default: socket }) => {
+        socket.connect();
+        socket.on("connect", () => console.log("Socket connected"));
+        socket.on("realtime-log", (newLog) => {
+          setLogItems((prev) => [newLog, ...prev.slice(0, 49)]);
+        });
+        socket.on("disconnect", () => console.log("Socket disconnected"));
+      });
+    } else {
+      const id = setInterval(async () => {
+        try {
+          const { data } = await api.get("/tablelist/logs");
+          Array.isArray(data) && setLogItems(data);
+        } catch (e) {
+          console.warn("폴링 실패:", e.message);
+        }
+      }, 3000);
+
+      return () => clearInterval(id);
+    }
   }, []);
 
   // 3. 카테고리별 아이콘, 배경색, 기본 라벨 분기함수 (category 기준)

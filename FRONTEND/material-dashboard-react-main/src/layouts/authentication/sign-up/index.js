@@ -145,7 +145,7 @@ export default function SignUp() {
   const checkIdAvailability = async () => {
     if (!values.id) return;
     try {
-      const res = await fetch("http://localhost:8090/web/api/usersidcheck", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/usersidcheck`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: values.id }),
@@ -201,7 +201,7 @@ export default function SignUp() {
       phone: values.phone,
     };
     try {
-      const response = await fetch("http://localhost:8090/web/GoRegister", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/GoRegister`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // 쿠키 세션이 필요한 경우

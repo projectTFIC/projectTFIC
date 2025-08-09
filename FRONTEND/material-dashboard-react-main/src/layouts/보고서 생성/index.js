@@ -66,7 +66,10 @@ function ReportPage() {
     };
 
     try {
-      const response = await axios.post("http://localhost:8090/web/api/reports/generate", payload);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/reports/generate`,
+        payload
+      );
       setReportHtml(response.data.report_html || "⚠️ 응답이 없습니다.");
     } catch (error) {
       console.error("보고서 생성 오류:", error);

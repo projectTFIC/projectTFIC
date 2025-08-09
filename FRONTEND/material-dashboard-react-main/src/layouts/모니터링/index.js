@@ -31,7 +31,7 @@ const MonitoringPage = () => {
   const [showDetections, setShowDetections] = useState(false); // [Back] AI 탐지 결과 화면으로 전환
   const [detections, setDetections] = useState([]);
 
-  const selectedCamera = cameraList.find((cam) => cam.device_id === selectedCam);
+  const selectedCamera = cameraList.find((cam) => cam.device_id === String(selectedCam));
   const canSendRef = useRef(false);
   const inFlightRef = useRef(false);
 
@@ -138,7 +138,7 @@ const MonitoringPage = () => {
 
   const fetchDevices = async () => {
     try {
-      const res = await axios.get("http://localhost:8090/web/GetDevicesList");
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/GetDevicesList`);
       const devices = normalizeDevices(res.data);
       setCameraList(devices);
       if (devices.length > 0) {
