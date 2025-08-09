@@ -23,7 +23,7 @@ import kr.cloud.web.service.AccRecordService;
 import kr.cloud.web.service.HeRecordService;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/aiapi")
 @RequiredArgsConstructor

@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import kr.cloud.web.entity.Report;
 import kr.cloud.web.service.ReportListService;
 
+//@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/reportlist")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ReportListController {
 
     @Autowired

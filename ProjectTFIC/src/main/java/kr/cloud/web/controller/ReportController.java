@@ -38,7 +38,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
 	// 리포트 콘트롤러 
-		@CrossOrigin(origins = "http://localhost:3000")
+//		@CrossOrigin(origins = "http://localhost:3000")
 		@RestController
 		@RequestMapping("/api/reports")
 		public class ReportController {

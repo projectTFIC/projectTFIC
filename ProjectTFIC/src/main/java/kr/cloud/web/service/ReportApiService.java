@@ -1,6 +1,7 @@
 package kr.cloud.web.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,9 @@ public class ReportApiService {
     private final ReportMapper reportMapper;
     private final HeRecordService heRecordService;
     private final RestTemplate restTemplate;
+    
+    @Value("${ai.gpt-base-url}")
+    private String aiGptBaseUrl;
     
 
     public List<Report> getReportsByPeriod(Date start, Date end) {
@@ -177,7 +181,8 @@ public class ReportApiService {
     	 
 
     	 // Flask API 주소
-    	 String flaskUrl = "http://192.168.219.176:5000/api/report/generate";
+//    	 String flaskUrl = "http://192.168.219.176:5000/api/report/generate";
+    	 String flaskUrl = aiGptBaseUrl  + "/api/report/generate";
 
     	 // JSON 요청 바디 구성
     	 Map<String, Object> requestData = new HashMap<>();
@@ -222,7 +227,8 @@ public class ReportApiService {
     // GPT 보고서를 PDF로 저장하는 메서드
     public String generatePdfReport(String reportHtml, String reportType) {
         try {
-            String flaskUrl = "http://localhost:5000/api/report/generate/pdf";
+//            String flaskUrl = "http://localhost:5000/api/report/generate/pdf";
+            String flaskUrl = aiGptBaseUrl  + "/api/report/generate/pdf";
 
             Map<String, Object> requestData = new HashMap<>();
             requestData.put("report_html", reportHtml);
@@ -235,10 +241,19 @@ public class ReportApiService {
 
             ResponseEntity<byte[]> response = restTemplate.exchange(flaskUrl, HttpMethod.POST, entity, byte[].class);
             byte[] pdfBytes = response.getBody();
-
-            String desktopPath = System.getProperty("user.home") + "/Desktop/";
+            	
+            String basePath;
+            if ("develop".equals(System.getProperty("spring.profiles.active"))) {
+            	
+                basePath = System.getProperty("user.home") + "/Desktop/";	// 개발 환경 (로컬)
+                
+            } else {
+            	
+                basePath = System.getProperty("java.io.tmpdir"); 			// 배포 환경 (임시 폴더 /tmp)
+                
+            }
             String fileName = "report_" + reportType + ".pdf";
-            Path path = Paths.get(desktopPath + fileName);
+            Path path = Paths.get(basePath + fileName);
 
             Files.createDirectories(path.getParent()); // 바탕화면은 대부분 있지만 안전하게
             Files.write(path, pdfBytes);
@@ -256,7 +271,8 @@ public class ReportApiService {
     public String generatePdfReportAndUpload(String reportHtml, String reportType, String periodStart) {
         try {
             // 1. Flask에 PDF 변환 요청
-            String flaskUrl = "http://localhost:5000/api/report/generate/pdf";
+//            String flaskUrl = "http://localhost:5000/api/report/generate/pdf";
+            String flaskUrl = aiGptBaseUrl  + "/api/report/generate/pdf";
             Map<String, Object> requestData = new HashMap<>();
             requestData.put("report_html", reportHtml);
             requestData.put("report_type", reportType);

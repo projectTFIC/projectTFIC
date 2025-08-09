@@ -53,7 +53,7 @@ public class MyController {
 
    // [유저 페이지 - 로그인]
    // 로그인 기능
-   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+//   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
    @PostMapping("/GoLogin")
    public ResponseEntity<?> goLogin(HttpSession session, @RequestBody Users login) {
 
@@ -70,7 +70,7 @@ public class MyController {
 
    // [유저 페이지 - 로그아웃]
    // 로그아웃 기능
-   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+//   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
    @GetMapping("/logout")
    public ResponseEntity<String> logout(HttpSession session) {
        session.invalidate();
@@ -80,8 +80,8 @@ public class MyController {
 
    // [유저 페이지 - 회원가입]
    // 회원가입 기능
+//   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
    @PostMapping("/GoRegister")
-   @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
    public ResponseEntity<?> register(@RequestBody Users info) {
        int cnt = mapper.goRegister(info);
 
@@ -98,8 +98,8 @@ public class MyController {
 
    // [회원가입 - 중복 아이디 확인]
    // 중복 아이디 확인
+//   @CrossOrigin(origins = "http://localhost:3000")
    @RestController
-   @CrossOrigin(origins = "http://localhost:3000")
    @RequestMapping("/api")
    public class UserController {
 
@@ -136,10 +136,10 @@ public class MyController {
 
       return "list";
    }
-
+   
+//   @CrossOrigin(origins = "http://localhost:3000")
    @RestController
    @RequestMapping("/reports")
-   @CrossOrigin(origins = "http://localhost:3000")
    public class ReportController {
 
       @Autowired
@@ -168,7 +168,7 @@ public class MyController {
    
    
    // [ 영상장비 리스트 조회하기 ]
-   @CrossOrigin(origins = "http://localhost:3000") 
+//   @CrossOrigin(origins = "http://localhost:3000")
    @GetMapping("/GetDevicesList")
    @ResponseBody // JSON 으로 값 반환
    public List<Devices> getDevicesList() {
