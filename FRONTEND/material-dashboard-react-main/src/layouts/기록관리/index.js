@@ -21,11 +21,13 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+
 // import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 import MDBadge from "components/MDBadge";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import DetailRow from "layouts/기록관리/components/DetailRow";
 
 function LogManagement() {
   const { pathname } = useLocation();
@@ -174,106 +176,6 @@ function LogManagement() {
     { Header: "날짜", accessor: "date", align: "center" },
   ];
 
-  const DetailRow = ({ row }) => {
-    const isLong = (row.report || row.content || "").length > 100;
-    const fullShown = showFullText[row.rowId];
-    const textToShow = fullShown
-      ? row.report || row.content
-      : (row.report || row.content || "").slice(0, 100) + (isLong ? "..." : "");
-
-    return (
-      <Box
-        p={3}
-        mt={2}
-        bgcolor="#e3f2fd"
-        borderRadius={2}
-        display="flex"
-        flexDirection="column"
-        gap={2}
-      >
-        <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center">
-          {["originalImg", "detectImg"].map((key) =>
-            row[key] ? (
-              <Tooltip title="이미지를 클릭하면 확대됩니다" arrow key={key}>
-                <Card
-                  sx={{
-                    width: 360,
-                    borderRadius: 3,
-                    boxShadow: 3,
-                    ":hover": { boxShadow: 6 },
-                    cursor: "pointer",
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpen(row[key]);
-                  }}
-                >
-                  <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                      {key === "originalImg" ? "원본 이미지" : "감지 이미지"}
-                    </Typography>
-                    <img
-                      src={row[key]}
-                      alt={key}
-                      style={{ width: "100%", borderRadius: 8, objectFit: "contain" }}
-                    />
-                  </CardContent>
-                </Card>
-              </Tooltip>
-            ) : null
-          )}
-        </Box>
-
-        <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center">
-          <Card sx={{ minWidth: 200, maxWidth: 400, flex: 1, backgroundColor: "#f8f9fa" }}>
-            <CardContent>
-              <Typography variant="subtitle2" color="text.secondary">
-                감지 위치
-              </Typography>
-              <Typography variant="h6" fontWeight="bold">
-                {row.location || "정보 없음"}
-              </Typography>
-            </CardContent>
-          </Card>
-          <Card sx={{ minWidth: 200, maxWidth: 400, flex: 1, backgroundColor: "#f8f9fa" }}>
-            <CardContent>
-              <Typography variant="subtitle2" color="text.secondary">
-                감지 일자
-              </Typography>
-              <Typography variant="h6" fontWeight="bold">
-                {row.date || "정보 없음"}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Card sx={{ backgroundColor: "#fffde7", mt: 2 }}>
-          <CardContent>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              보고서 내용
-            </Typography>
-
-            {/* 🚘 차량 번호판 출력 */}
-            {row.heNumber && (
-              <Typography variant="body2" color="text.primary" sx={{ mb: 1, fontWeight: "bold" }}>
-                차량 번호: {row.heNumber}
-              </Typography>
-            )}
-
-            {isLong && (
-              <Button
-                onClick={() => setShowFullText((prev) => ({ ...prev, [row.rowId]: !fullShown }))}
-                size="small"
-              >
-                {fullShown ? "접기" : "더보기"}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </Box>
-    );
-  };
-
   return (
     <motion.div
       key={pathname}
@@ -357,7 +259,22 @@ function LogManagement() {
                             ? [
                                 {
                                   listNum: "",
-                                  title: <DetailRow row={row} />,
+                                  title: (
+                                    <motion.div
+                                      key={`detail-${row.rowId}`} // key가 자꾸 바뀌면 무한 렌더링
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: "auto", opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      transition={{ duration: 0.3 }}
+                                    >
+                                      <DetailRow
+                                        row={row}
+                                        showFullText={showFullText}
+                                        setShowFullText={setShowFullText}
+                                        handleOpen={handleOpen}
+                                      />
+                                    </motion.div>
+                                  ),
                                   type: "",
                                   date: "",
                                 },

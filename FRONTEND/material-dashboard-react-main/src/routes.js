@@ -16,9 +16,6 @@ import 기록 from "layouts/img/기록2.png";
 import 대시보드 from "layouts/img/대시보드2.png";
 import 차트 from "layouts/img/차트.png";
 
-// @mui icons
-import Icon from "@mui/material/Icon";
-
 const routes = [
   {
     type: "collapse",

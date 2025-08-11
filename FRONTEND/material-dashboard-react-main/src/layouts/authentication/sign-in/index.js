@@ -228,9 +228,7 @@ function SignIn() {
           <Typography
             variant="body2"
             sx={{ textAlign: "right", mb: 3, cursor: "pointer", color: "#fff" }}
-          >
-            Forgot Password
-          </Typography>
+          ></Typography>
           <Stack spacing={2}>
             <Button
               type="submit"
@@ -339,7 +337,7 @@ function SignIn() {
               accidents in advance.
             </Typography>
             <Typography variant="body2" sx={{ fontSize: "0.8rem", color: "#555" }}>
-              Be among the first founders to experience the easiest way to start run a business.
+              Prevent hazards before they happen, keeping every worker safe.
             </Typography>
           </Box>
         </Box>

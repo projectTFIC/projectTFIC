@@ -28,7 +28,8 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LOGO_IMG from "assets/images/logo.png";
 import { useMaterialUIController, setLayout } from "context";
 import { motion } from "framer-motion";
-import HyperspeedBackground from "layouts/Hyperspeed";
+import * as THREE from "three";
+import NET from "vanta/dist/vanta.net.min";
 
 const theme = createTheme({
   palette: {
@@ -221,273 +222,441 @@ export default function SignUp() {
       console.error(error);
     }
   };
+
+  const [vantaEffect, setVantaEffect] = React.useState(null);
+  const vantaRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!vantaEffect && vantaRef.current) {
+      const effect = NET({
+        el: vantaRef.current,
+        THREE: THREE,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        scale: 1.0,
+        scaleMobile: 1.0,
+        backgroundAlpha: 1,
+        backgroundColor: 0x23153c,
+        color: 0x3fd1ff,
+        maxDistance: 27,
+        points: 14,
+        spacing: 17,
+      });
+
+      const originalUpdate = effect.update;
+      const speedFactor = 0.3;
+      effect.update = function () {
+        if (this.particles) {
+          this.particles.forEach((p) => {
+            p.x += p.vx * speedFactor;
+            p.y += p.vy * speedFactor;
+          });
+        }
+        return originalUpdate.call(this);
+      };
+
+      setVantaEffect(effect);
+    }
+
+    return () => {
+      if (vantaEffect) {
+        try {
+          vantaEffect.destroy();
+        } catch (e) {
+          console.warn("Vanta destroy error:", e);
+        }
+      }
+    };
+  }, [vantaEffect]);
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }} // 오른쪽에서 시작
-      animate={{ opacity: 1, x: 0 }} // 중앙으로 이동
-      exit={{ opacity: 0, x: -50 }} // 왼쪽으로 사라짐 (App.js에서 AnimatePresence 있을 경우)
-      transition={{ duration: 0.4 }}
+    <Box
+      ref={vantaRef}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#0e1a1f",
+        p: 2,
+      }}
     >
-      <ThemeProvider theme={theme}>
-        <Box
-          sx={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            bgcolor: "#FFFFFF",
-            px: { xs: 2, md: 4 },
-          }}
-        >
+      <motion.div
+        initial={{ opacity: 0, x: 50 }} // 오른쪽에서 시작
+        animate={{ opacity: 1, x: 0 }} // 중앙으로 이동
+        exit={{ opacity: 0, x: -50 }} // 왼쪽으로 사라짐 (App.js에서 AnimatePresence 있을 경우)
+        transition={{ duration: 0.4 }}
+      >
+        <ThemeProvider theme={theme}>
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center", // 세로 중앙
-              justifyContent: "center", // 가로 중앙
               width: "100%",
-              height: "100%",
+              maxWidth: 560,
+              p: { xs: 3, md: 4 },
+              borderRadius: 2,
+              // glassmorphism
+              background: "rgba(255,255,255,0.08)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.18)",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.35)",
+              color: "#fff",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "700px",
+                height: "700px",
+                background: "radial-gradient(circle, rgba(59,183,143,0.5) 0%, transparent 70%)",
+                filter: "blur(80px)",
+                zIndex: 0,
+                pointerEvents: "none",
+              },
             }}
           >
-            {/* RIGHT 회원가입 폼 */}
-            <Box sx={{ flex: 1, maxWidth: 360 }}>
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-              >
-                <Typography
-                  variant="h4"
-                  align="center"
-                  sx={{ fontWeight: 700, mb: 1, letterSpacing: 1 }}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center", // 세로 중앙
+                justifyContent: "center", // 가로 중앙
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              {/* RIGHT 회원가입 폼 */}
+              <Box sx={{ flex: 1, maxWidth: 360 }}>
+                <Box
+                  component="form"
+                  onSubmit={handleSubmit}
+                  sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                 >
-                  회원가입
-                </Typography>
-
-                <TextField
-                  label="이름"
-                  value={values.name}
-                  onChange={handleChange("name")}
-                  required
-                  fullWidth
-                  InputLabelProps={{ required: false }}
-                />
-
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label="생년월일"
-                    value={values.dob}
-                    onChange={handleDOBChange}
-                    inputFormat="yyyy-MM-dd"
-                    disableFuture
-                    openTo="year"
-                    views={["year", "month", "day"]}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        fullWidth
-                        InputLabelProps={{ required: false }}
-                        inputProps={{ ...params.inputProps, readOnly: true }}
-                      />
-                    )}
-                  />
-                </LocalizationProvider>
-
-                <TextField
-                  label="부서"
-                  value={values.department}
-                  onChange={handleChange("department")}
-                  required
-                  fullWidth
-                  InputLabelProps={{ required: false }}
-                />
-
-                <TextField
-                  label="전화번호"
-                  placeholder="010-1234-5678"
-                  value={values.phone}
-                  onChange={handleChange("phone")}
-                  required
-                  fullWidth
-                  InputLabelProps={{ required: false }}
-                  error={values.phone !== "" && !isValidPhone(values.phone)}
-                  helperText={
-                    values.phone !== "" && !isValidPhone(values.phone)
-                      ? "전화번호 형식이 올바르지 않습니다."
-                      : ""
-                  }
-                />
-
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <TextField
-                    label="이메일 입력"
-                    placeholder="username"
-                    value={values.emailLocal}
-                    onChange={handleChange("emailLocal")}
-                    required
-                    fullWidth
-                    InputLabelProps={{ required: false }}
-                  />
-                  <Typography sx={{ fontSize: 18 }}>@</Typography>
-                  <FormControl fullWidth sx={{ minWidth: 120 }}>
-                    <InputLabel>도메인</InputLabel>
-                    <Select value={values.emailDomain} label="도메인" onChange={handleDomainChange}>
-                      <MenuItem value="gmail.com">gmail.com</MenuItem>
-                      <MenuItem value="naver.com">naver.com</MenuItem>
-                      <MenuItem value="daum.net">daum.net</MenuItem>
-                      <MenuItem value="outlook.com">outlook.com</MenuItem>
-                      <MenuItem value="hotmail.com">hotmail.com</MenuItem>
-                      <MenuItem value="yahoo.com">yahoo.com</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                {/* 아이디 + 중복확인 버튼 */}
-                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                  <TextField
-                    label="아이디"
-                    value={values.id}
-                    onChange={handleChange("id")}
-                    required
-                    fullWidth
-                    InputLabelProps={{ required: false }}
-                    disabled={idChecked}
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={checkIdAvailability}
-                    disabled={!values.id || idChecked}
-                    sx={{ whiteSpace: "nowrap" }}
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontFamily: "GmarketSans",
+                      mb: 2,
+                      mt: 2,
+                      color: "#fff",
+                      fontWeight: 500,
+                      fontSize: 37,
+                      textAlign: "center",
+                    }}
                   >
-                    중복확인
-                  </Button>
-                  {idAvailable === true && (
-                    <Typography variant="caption" color="success.main" sx={{ ml: 1 }}>
-                      사용 가능한 아이디입니다.
-                    </Typography>
-                  )}
-                  {idAvailable === false && (
-                    <Typography variant="caption" color="error.main" sx={{ ml: 1 }}>
-                      이미 존재하는 아이디입니다.
-                    </Typography>
-                  )}
-                </Box>
+                    회원가입
+                  </Typography>
 
-                <TextField
-                  label="비밀번호"
-                  type={showPassword ? "text" : "password"}
-                  value={values.password}
-                  onChange={handleChange("password")}
-                  error={!passMatch}
-                  helperText={!passMatch ? "비밀번호가 일치하지 않습니다." : ""}
-                  required
-                  fullWidth
-                  InputLabelProps={{ required: false }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={toggleShowPassword}>
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                <TextField
-                  label="비밀번호 확인"
-                  type={showConfirm ? "text" : "password"}
-                  value={values.confirmPassword}
-                  onChange={handleChange("confirmPassword")}
-                  error={!passMatch}
-                  helperText={!passMatch ? "비밀번호가 일치하지 않습니다." : ""}
-                  required
-                  fullWidth
-                  InputLabelProps={{ required: false }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={toggleShowConfirm}>
-                          {showConfirm ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                {/* 약관 동의 체크박스 및 전체보기 */}
-                <Box>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={values.agree}
-                        onChange={handleAgree}
-                        disabled={!hasAgreedTOS}
-                      />
-                    }
-                    label={
-                      <>
-                        약관에 동의합니다.&nbsp;
-                        <Link
-                          component="button"
-                          variant="body2"
-                          onClick={handleOpenTOS}
-                          type="button"
-                        >
-                          전체보기
-                        </Link>
-                      </>
-                    }
-                    sx={{ alignItems: "flex-start", m: 0 }}
+                  <TextField
+                    label="이름"
+                    value={values.name}
+                    onChange={handleChange("name")}
+                    required
+                    fullWidth
+                    InputLabelProps={{ required: false }}
                   />
-                  {!hasAgreedTOS && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
+
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="생년월일"
+                      value={values.dob}
+                      onChange={handleDOBChange}
+                      inputFormat="yyyy-MM-dd"
+                      disableFuture
+                      openTo="year"
+                      views={["year", "month", "day"]}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          fullWidth
+                          InputLabelProps={{ required: false }}
+                          inputProps={{ ...params.inputProps, readOnly: true }}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+
+                  <TextField
+                    label="부서"
+                    value={values.department}
+                    onChange={handleChange("department")}
+                    required
+                    fullWidth
+                    InputLabelProps={{ required: false }}
+                  />
+
+                  <TextField
+                    label="전화번호"
+                    placeholder="010-1234-5678"
+                    value={values.phone}
+                    onChange={handleChange("phone")}
+                    required
+                    fullWidth
+                    InputLabelProps={{ required: false }}
+                    error={values.phone !== "" && !isValidPhone(values.phone)}
+                    helperText={
+                      values.phone !== "" && !isValidPhone(values.phone)
+                        ? "전화번호 형식이 올바르지 않습니다."
+                        : ""
+                    }
+                  />
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <TextField
+                      label="이메일 입력"
+                      placeholder="username"
+                      value={values.emailLocal}
+                      onChange={handleChange("emailLocal")}
+                      required
+                      fullWidth
+                      InputLabelProps={{ required: false }}
+                    />
+                    <Typography sx={{ fontSize: 18 }}>@</Typography>
+                    <FormControl fullWidth sx={{ minWidth: 120 }}>
+                      <InputLabel
+                        sx={{
+                          color: "#fff",
+                        }}
+                      >
+                        도메인
+                      </InputLabel>
+                      <Select
+                        value={values.emailDomain}
+                        label="도메인"
+                        onChange={handleDomainChange}
+                        sx={{
+                          color: "#fff",
+                          ".MuiSvgIcon-root": { color: "#fff" },
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              backgroundColor: "rgba(30,30,30,0.9)",
+                              color: "#fff",
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem value="gmail.com">gmail.com</MenuItem>
+                        <MenuItem value="naver.com">naver.com</MenuItem>
+                        <MenuItem value="daum.net">daum.net</MenuItem>
+                        <MenuItem value="outlook.com">outlook.com</MenuItem>
+                        <MenuItem value="hotmail.com">hotmail.com</MenuItem>
+                        <MenuItem value="yahoo.com">yahoo.com</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* 아이디 + 중복확인 버튼 */}
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    <TextField
+                      label="아이디"
+                      value={values.id}
+                      onChange={handleChange("id")}
+                      required
+                      fullWidth
+                      InputLabelProps={{ required: false }}
+                      disabled={idChecked}
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={checkIdAvailability}
+                      disabled={!values.id || idChecked}
                       sx={{
-                        pl: "32px",
-                        lineHeight: 1.8,
-                        mt: "-6px",
-                        mb: 1,
-                        display: "block",
-                        wordBreak: "keep-all",
-                        maxWidth: "100%",
+                        whiteSpace: "nowrap",
+                        backgroundColor: "#fff",
+                        color: "#000",
+                        borderRadius: "8px",
+                        fontWeight: 500,
+                        boxShadow: "none",
+                        border: "none",
+                        "&:hover": {
+                          backgroundColor: "#f0f0f0",
+                        },
+                        "&.Mui-disabled": {
+                          backgroundColor: "#fff",
+                          color: "#000",
+                          opacity: 0.7,
+                        },
                       }}
                     >
-                      약관을 확인하신 후 모달에서 “동의” 버튼을 눌러주세요.
-                    </Typography>
-                  )}
-                </Box>
+                      중복확인
+                    </Button>
+                    {idAvailable === true && (
+                      <Typography variant="caption" color="success.main" sx={{ ml: 1 }}>
+                        사용 가능한 아이디입니다.
+                      </Typography>
+                    )}
+                    {idAvailable === false && (
+                      <Typography variant="caption" color="error.main" sx={{ ml: 1 }}>
+                        이미 존재하는 아이디입니다.
+                      </Typography>
+                    )}
+                  </Box>
 
-                <Button type="submit" variant="contained" color="primary" fullWidth>
-                  회원가입
-                </Button>
+                  <TextField
+                    label="비밀번호"
+                    type={showPassword ? "text" : "password"}
+                    value={values.password}
+                    onChange={handleChange("password")}
+                    error={!passMatch}
+                    helperText={!passMatch ? "비밀번호가 일치하지 않습니다." : ""}
+                    required
+                    fullWidth
+                    InputLabelProps={{ required: false }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={toggleShowPassword}>
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
 
-                <Box textAlign="center" sx={{ mt: 1 }}>
-                  이미 계정이 있으신가요? <Link href="/authentication/sign-in">로그인</Link>
+                  <TextField
+                    label="비밀번호 확인"
+                    type={showConfirm ? "text" : "password"}
+                    value={values.confirmPassword}
+                    onChange={handleChange("confirmPassword")}
+                    error={!passMatch}
+                    helperText={!passMatch ? "비밀번호가 일치하지 않습니다." : ""}
+                    required
+                    fullWidth
+                    InputLabelProps={{ required: false }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={toggleShowConfirm}>
+                            {showConfirm ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  {/* 약관 동의 체크박스 및 전체보기 */}
+                  <Box>
+                    <FormControlLabel
+                      sx={{
+                        alignItems: "flex-start",
+                        m: 0,
+                        // 라벨 색
+                        "& .MuiFormControlLabel-label": {
+                          color: "#fff",
+                          fontSize: "0.875rem",
+                        },
+                        // disabled 라벨 색
+                        "&.Mui-disabled .MuiFormControlLabel-label": {
+                          color: "#fff",
+                        },
+                      }}
+                      control={
+                        <Checkbox
+                          checked={values.agree}
+                          onChange={handleAgree}
+                          disabled={!hasAgreedTOS}
+                          sx={{
+                            color: "#fff",
+                            "&.Mui-checked": { color: "#fff" },
+                            "&.Mui-disabled": { color: "rgba(255, 253, 253, 0.99)" },
+                          }}
+                        />
+                      }
+                      label={
+                        <>
+                          약관에 동의합니다.&nbsp;
+                          <Link
+                            component="button"
+                            variant="body2"
+                            onClick={handleOpenTOS}
+                            type="button"
+                            sx={{
+                              color: "#fff",
+                              textDecorationColor: "#fff",
+                              "&:hover": { color: "#ddd", textDecorationColor: "#ddd" },
+                            }}
+                          >
+                            전체보기
+                          </Link>
+                        </>
+                      }
+                    />
+                    {!hasAgreedTOS && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          pl: "32px",
+                          lineHeight: 1.8,
+                          mt: "-6px",
+                          mb: 1,
+                          display: "block",
+                          wordBreak: "keep-all",
+                          maxWidth: "100%",
+                          color: "#fff",
+                        }}
+                      >
+                        약관을 확인하신 후 모달에서 “동의” 버튼을 눌러주세요.
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{
+                      backgroundColor: "#3bb78f",
+                      fontFamily: "GmarketSans",
+                      color: "#fff",
+                      py: 1.5,
+                      fontWeight: 500,
+                      borderRadius: "8px",
+                      "&:hover": { backgroundColor: "#329e7b" },
+                    }}
+                  >
+                    회원가입
+                  </Button>
+
+                  <Box textAlign="center" sx={{ mt: 1 }}>
+                    이미 계정이 있으신가요?{" "}
+                    <Link
+                      href="/authentication/sign-in"
+                      sx={{
+                        color: "#3bb78f",
+                      }}
+                    >
+                      로그인
+                    </Link>
+                  </Box>
                 </Box>
               </Box>
             </Box>
-          </Box>
 
-          {/* 약관 모달 */}
-          <Dialog open={openTOS} onClose={handleCloseTOS} maxWidth="sm" fullWidth>
-            <DialogTitle>서비스 이용 약관</DialogTitle>
-            <DialogContent dividers>
-              <Typography paragraph>
-                제1조 (목적) 본 약관은 OOO 서비스 이용과 관련하여...
-              </Typography>
-              <Typography paragraph>제2조 (정의) “서비스”란...</Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseTOS}>취소</Button>
-              <Button variant="contained" onClick={handleAgreeInModal} autoFocus>
-                동의
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Box>
-      </ThemeProvider>
-    </motion.div>
+            {/* 약관 모달 */}
+            <Dialog open={openTOS} onClose={handleCloseTOS} maxWidth="sm" fullWidth>
+              <DialogTitle>서비스 이용 약관</DialogTitle>
+              <DialogContent dividers>
+                <Typography paragraph>
+                  제1조 (목적) 본 약관은 OOO 서비스 이용과 관련하여...
+                </Typography>
+                <Typography paragraph>제2조 (정의) “서비스”란...</Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseTOS}>취소</Button>
+                <Button variant="contained" onClick={handleAgreeInModal} autoFocus>
+                  동의
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        </ThemeProvider>
+      </motion.div>
+    </Box>
   );
 }

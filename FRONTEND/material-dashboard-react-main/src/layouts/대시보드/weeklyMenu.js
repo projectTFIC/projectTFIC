@@ -126,12 +126,19 @@ function WeeklyMenuFromCSV() {
   const tomorrowStr = formatMMDD(tomorrow);
 
   // day 문자열에서 MM/DD 추출해 당일, 내일만 필터링
-  const filteredItems = items.filter((item) => {
-    const match = item.day.match(/\((\d{2}\/\d{2})\)/);
-    if (!match) return false;
-    const dateStr = match[1];
-    return dateStr === todayStr || dateStr === tomorrowStr;
-  });
+  const filteredItems = items
+    .filter((item) => {
+      const dayText = item[""]; // 요일 (08/04)
+      if (!dayText) return false;
+      const match = dayText.match(/\((\d{2}\/\d{2})\)/);
+      if (!match) return false;
+      const dateStr = match[1];
+      return dateStr === todayStr || dateStr === tomorrowStr;
+    })
+    .map((item) => ({
+      day: item[""], // 👈 여기에 요일 정보 담김
+      menu: item.menu,
+    }));
 
   return <WeeklyMenuCard items={filteredItems} />;
 }
