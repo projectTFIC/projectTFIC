@@ -2,30 +2,25 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  Box,
   Card,
-  CardContent,
-  Dialog,
-  DialogContent,
   Grid,
-  Typography,
   Tabs,
   Tab,
   TextField,
   Button,
   Menu,
   MenuItem,
-  Tooltip,
+  Dialog,
+  DialogContent,
 } from "@mui/material";
+
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-
-// import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 import MDBadge from "components/MDBadge";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import DetailRow from "layouts/기록관리/components/DetailRow";
 import Collapse from "@mui/material/Collapse";
@@ -33,26 +28,28 @@ import Collapse from "@mui/material/Collapse";
 function LogManagement() {
   const { pathname } = useLocation();
 
+  // 탭 데이터
   const [accidents, setAccidents] = useState([]);
   const [ppe, setPpe] = useState([]);
   const [access, setAccess] = useState([]);
+
+  // UI 상태
   const [tabIndex, setTabIndex] = useState(0);
   const [filterType, setFilterType] = useState("title");
   const [searchText, setSearchText] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [expandedRow, setExpandedRow] = useState(null);
+  const openMenu = Boolean(anchorEl);
 
-  // 모달 확대 기능
-  const [open, setOpen] = useState(false);
+  // 행 아래 토글(한 번에 하나만)
+  const [expandedRowId, setExpandedRowId] = useState(null);
+
+  // 이미지 확대 모달(줌/팬)
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-  const [showFullText, setShowFullText] = useState({});
-
-  const openMenu = Boolean(anchorEl);
 
   const badgeByType = (type) => {
     const color = type === "acc" ? "error" : type === "ppe" ? "warning" : "success";
@@ -119,31 +116,16 @@ function LogManagement() {
     { label: "입출입 감지", rows: access },
   ];
 
-  const handleTabChange = (_, v) => setTabIndex(v);
+  // 필터/검색
+  const handleTabChange = (_, v) => {
+    setTabIndex(v);
+    setExpandedRowId(null); // 탭 전환 시 접기
+  };
   const handleFilterClick = (e) => setAnchorEl(e.currentTarget);
   const handleFilterClose = () => setAnchorEl(null);
   const handleFilterSelect = (t) => {
     setFilterType(t);
     handleFilterClose();
-  };
-
-  const toggleRow = (rowId) => setExpandedRow((prev) => (prev === rowId ? null : rowId));
-
-  const handleOpen = (src) => {
-    setImageSrc(src);
-    setScale(1);
-    setTranslate({ x: 0, y: 0 });
-    setOpen(true);
-  };
-  const handleClose = () => setOpen(false);
-
-  const handleWheelZoom = (e) => {
-    e.preventDefault();
-    const delta = e.deltaY;
-    setScale((prev) => {
-      let next = prev - delta * 0.001;
-      return Math.min(Math.max(next, 0.5), 5);
-    });
   };
 
   const filteredRows = tabs[tabIndex].rows.filter((r) => {
@@ -157,6 +139,20 @@ function LogManagement() {
     return true;
   });
 
+  // 이미지 줌 핸들러
+  const openZoom = (src) => {
+    setImageSrc(src);
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+    setZoomOpen(true);
+  };
+  const onWheelZoom = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY;
+    setScale((prev) => Math.min(Math.max(prev - delta * 0.001, 0.5), 5));
+  };
+
+  // DataTable 컬럼
   const columns = [
     { Header: "No.", accessor: "listNum", align: "center" },
 
@@ -165,6 +161,7 @@ function LogManagement() {
       accessor: "title",
       align: "center",
       Cell: ({ value, row }) => {
+<<<<<<< HEAD
         const rid = row.original.rowId;
         const isOpen = expandedRow === rid;
         return (
@@ -189,6 +186,22 @@ function LogManagement() {
               </Box>
             </Collapse>
           </Box>
+=======
+        const id = row.original.rowId;
+        const isOpen = expandedRowId === id;
+        return (
+          <MDTypography
+            component="span"
+            sx={{
+              cursor: "pointer",
+              color: isOpen ? "#1976d2" : "#111213ff",
+              fontWeight: "bold",
+            }}
+            onClick={() => setExpandedRowId(isOpen ? null : id)}
+          >
+            {value}
+          </MDTypography>
+>>>>>>> 13222a2 (log: 행 아래 토글 + 이미지 클릭 시 토글 유지)
         );
       },
     },
@@ -196,6 +209,33 @@ function LogManagement() {
     { Header: "유형", accessor: "type", align: "center" },
     { Header: "날짜", accessor: "date", align: "center" },
   ];
+
+  // 행 아래 토글: detail 행에 클릭 전파 방지
+  const rowsWithDetail = filteredRows.flatMap((r) => {
+    const isOpen = expandedRowId === r.rowId;
+    return [
+      r,
+      ...(isOpen
+        ? [
+            {
+              listNum: "",
+              title: (
+                <div
+                  style={{ padding: "8px 0" }}
+                  onClick={(e) => e.stopPropagation()} // 🔒 행 토글로 전파 방지
+                  onMouseDown={(e) => e.stopPropagation()} // 🔒 일부 구현 보호
+                >
+                  <DetailRow row={r} onOpenImage={openZoom} />
+                </div>
+              ),
+              type: "",
+              date: "",
+              rowId: `${r.rowId}-detail`,
+            },
+          ]
+        : []),
+    ];
+  });
 
   return (
     <motion.div
@@ -207,10 +247,12 @@ function LogManagement() {
     >
       <DashboardLayout>
         <DashboardNavbar />
-        <MDBox pt={6} pb={3}>
+        {/* 페이지 스크롤 보장 */}
+        <MDBox pt={6} pb={3} sx={{ overflowY: "auto" }}>
           <Grid container spacing={6}>
             <Grid item xs={12}>
               <Card>
+                {/* 탭 */}
                 <MDBox
                   mx={2}
                   mt={-3}
@@ -241,6 +283,8 @@ function LogManagement() {
                     ))}
                   </Tabs>
                 </MDBox>
+
+                {/* 검색/필터 */}
                 <MDBox mx={2} mt={2} mb={1} display="flex" alignItems="center" gap={2}>
                   <Button
                     variant="outlined"
@@ -268,12 +312,18 @@ function LogManagement() {
                     onChange={(e) => setSearchText(e.target.value)}
                   />
                 </MDBox>
+
+                {/* DataTable: 행 아래 토글 포함 */}
                 <MDBox pt={3}>
                   <DataTable
+<<<<<<< HEAD
                     table={{
                       columns,
                       rows: filteredRows, // ✅ flatMap으로 디테일 행 추가하던 부분 제거
                     }}
+=======
+                    table={{ columns, rows: rowsWithDetail }}
+>>>>>>> 13222a2 (log: 행 아래 토글 + 이미지 클릭 시 토글 유지)
                     isSorted={false}
                     entriesPerPage={false}
                     showTotalEntries={false}
@@ -284,12 +334,14 @@ function LogManagement() {
             </Grid>
           </Grid>
         </MDBox>
-        {/* <Footer /> */}
       </DashboardLayout>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      {/* 이미지 확대 모달 */}
+      <Dialog open={zoomOpen} onClose={() => setZoomOpen(false)} maxWidth="md" fullWidth>
         <DialogContent
-          onWheel={handleWheelZoom}
+          onWheel={(e) => {
+            onWheelZoom(e);
+          }}
           onMouseDown={(e) => {
             e.preventDefault();
             setIsDragging(true);
@@ -297,10 +349,7 @@ function LogManagement() {
           }}
           onMouseMove={(e) => {
             if (!isDragging) return;
-            setTranslate({
-              x: e.clientX - dragStart.x,
-              y: e.clientY - dragStart.y,
-            });
+            setTranslate({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
           }}
           onMouseUp={() => setIsDragging(false)}
           onMouseLeave={() => setIsDragging(false)}
