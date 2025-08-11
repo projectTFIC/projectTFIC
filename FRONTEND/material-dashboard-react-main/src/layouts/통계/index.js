@@ -21,7 +21,11 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Layout
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
+
+import { styled, alpha } from "@mui/material/styles";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import TimelineRoundedIcon from "@mui/icons-material/TimelineRounded";
+import StackedBarChartRoundedIcon from "@mui/icons-material/StackedBarChartRounded";
 
 // Charts
 import { Pie, Bar, Line } from "react-chartjs-2";
@@ -71,6 +75,49 @@ export default function Notifications() {
       current.setDate(current.getDate() + 1);
     }
     return arr;
+  };
+
+  const FilterPanel = styled(Card)(({ theme }) => ({
+    borderRadius: 16,
+    padding: theme.spacing(2.5), // 20px -> 24px
+    background: "linear-gradient(180deg, rgba(17,24,39,0.6), rgba(17,24,39,0.4))",
+    border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
+    boxShadow: "0 12px 36px rgba(2,8,23,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
+    backdropFilter: "blur(10px)",
+  }));
+
+  const FieldCard = styled(Box)(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 14, // 10 -> 14
+    padding: "12px 14px", // 10x12 -> 12x14
+    borderRadius: 12,
+    border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
+    background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
+  }));
+
+  const ModeButton = styled(MDButton)(({ theme }) => ({
+    textTransform: "none",
+    fontWeight: 700,
+    borderRadius: 12,
+    padding: "10px 14px",
+    "&.MuiButton-contained": {
+      color: "#0B1020",
+      boxShadow: "0 8px 18px rgba(2,8,23,0.33)",
+    },
+    "&.MuiButton-outlined": {
+      borderColor: "rgba(139,139,139,1)",
+      color: "#E6EAF2",
+    },
+  }));
+
+  const setQuickRange = (days) => {
+    const end = new Date();
+    const start = new Date(end);
+    start.setDate(end.getDate() - (days - 1));
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
   };
 
   // 색상 매핑 (구역별 추가 필요시 추가)
@@ -245,128 +292,137 @@ export default function Notifications() {
         <DashboardNavbar />
 
         {/* 날짜 필터와 버튼을 하나의 flex 컨테이너에 배치합니다. */}
-        <MDBox
-          px={3}
-          pt={3}
-          pb={1}
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          flexWrap="wrap"
-        >
-          {/* 날짜 필터 그룹을 flex-item으로 묶습니다. */}
-          <Box display="flex" gap={2}>
-            {/* 시작일 라벨과 DatePicker */}
-            <Box display="flex" flexDirection="column" alignItems="flex-start">
-              <MDTypography variant="caption" color="white" fontWeight="regular">
-                시작일
-              </MDTypography>
-              <DatePicker
-                value={startDate}
-                onChange={(d) => setStartDate(d?.toISOString().slice(0, 10) || null)}
-                renderInput={(p) => (
-                  <TextField
-                    {...p}
-                    size="small"
-                    sx={{
-                      "& .MuiInputBase-input": {
-                        color: "white !important",
-                      },
-                      "& .MuiSvgIcon-root": {
-                        color: "white !important",
-                      },
-                      "& .MuiInputBase-input::placeholder": {
-                        color: "white !important",
-                        opacity: 1,
-                      },
-                      "& .MuiOutlinedInput-root.Mui-disabled": {
-                        "& .MuiInputBase-input": {
-                          color: "white !important",
-                        },
-                        "& .MuiSvgIcon-root": {
-                          color: "white !important",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Box>
-            {/* 종료일 라벨과 DatePicker */}
-            <Box display="flex" flexDirection="column" alignItems="flex-start">
-              <MDTypography variant="caption" color="white" fontWeight="regular">
-                종료일
-              </MDTypography>
-              <DatePicker
-                value={endDate}
-                onChange={(d) => setEndDate(d?.toISOString().slice(0, 10) || null)}
-                renderInput={(p) => (
-                  <TextField
-                    {...p}
-                    size="small"
-                    sx={{
-                      "& .MuiInputBase-input": {
-                        color: "white !important",
-                      },
-                      "& .MuiSvgIcon-root": {
-                        color: "white !important",
-                      },
-                      "& .MuiInputBase-input::placeholder": {
-                        color: "white !important",
-                        opacity: 1,
-                      },
-                      "& .MuiOutlinedInput-root.Mui-disabled": {
-                        "& .MuiInputBase-input": {
-                          color: "white !important",
-                        },
-                        "& .MuiSvgIcon-root": {
-                          color: "white !important",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Box>
+        <FilterPanel sx={{ mx: 3, mt: 3, mb: 2 }}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            flexWrap="wrap"
+            mb={1.5}
+          >
+            {/* 타이틀 더 큼직하게 + 굵게 */}
+            <MDTypography
+              variant="h6"
+              sx={{ fontWeight: 900, color: "#F5F7FB", letterSpacing: 0.2 }}
+            >
+              통계 기간 설정
+            </MDTypography>
+            {/* 기간 문자열도 크고 선명하게 */}
+            <MDTypography variant="body1" sx={{ color: "#E6EAF2", fontWeight: 600 }}>
+              {startDate} ~ {endDate}
+            </MDTypography>
           </Box>
-          {/* 버튼 그룹을 flex-item으로 묶습니다. */}
-          <Stack direction="row" spacing={2} sx={{ mt: { xs: 2, md: 0 } }}>
-            <MDButton
-              variant={barMode === "type" ? "contained" : "outlined"}
-              onClick={() => setBarMode("type")}
-              sx={{
-                flexGrow: 1,
-                color: "rgba(255, 255, 255, 1) !important", // 버튼 텍스트 색상을 흰색으로 강제
-                "&.MuiButton-contained": {
-                  backgroundColor: "rgba(0, 153, 255, 1) !important", // contained 상태일 때 흰색 배경에 투명도 20% 적용
-                },
-                "&.MuiButton-outlined": {
-                  color: "white !important", // outlined 상태일 때 텍스트 색상 강제
-                  borderColor: "rgba(139, 139, 139, 1) !important", // outlined 상태일 때 테두리 색상
-                },
-              }}
-            >
-              탐지유형 일자별 추이
-            </MDButton>
-            <MDButton
-              variant={barMode === "area" ? "contained" : "outlined"}
-              onClick={() => setBarMode("area")}
-              sx={{
-                flexGrow: 1,
-                color: "rgba(255, 255, 255, 1) !important", // 버튼 텍스트 색상을 흰색으로 강제
-                "&.MuiButton-contained": {
-                  backgroundColor: "rgba(0, 153, 255, 1) !important", // contained 상태일 때 흰색 배경에 투명도 20% 적용
-                },
-                "&.MuiButton-outlined": {
-                  color: "white !important", // outlined 상태일 때 텍스트 색상 강제
-                  borderColor: "rgba(139, 139, 139, 1) !important", // outlined 상태일 때 테두리 색상
-                },
-              }}
-            >
-              발생구역 일자별 추이
-            </MDButton>
-          </Stack>
-        </MDBox>
+
+          <Box display="flex" gap={2} flexWrap="wrap" alignItems="center">
+            {/* 시작일 */}
+            <FieldCard>
+              <CalendarMonthRoundedIcon sx={{ color: "#FFFFFF", fontSize: 28 }} />
+              <Box display="flex" flexDirection="column">
+                <MDTypography
+                  variant="subtitle2"
+                  sx={{ color: "#FFFFFF", mb: 0.75, fontWeight: 700 }}
+                >
+                  시작일
+                </MDTypography>
+                <DatePicker
+                  value={startDate}
+                  onChange={(d) => setStartDate(d?.toISOString().slice(0, 10) || null)}
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      size="small"
+                      sx={{
+                        minWidth: 200, // 넉넉하게
+                        "& .MuiInputBase-input": {
+                          color: "#FFFFFF !important",
+                          fontSize: "0.95rem",
+                          fontWeight: 600,
+                        },
+                        "& .MuiSvgIcon-root": { color: "#FFFFFF !important" },
+                        "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+            </FieldCard>
+
+            {/* 종료일 */}
+            <FieldCard>
+              <CalendarMonthRoundedIcon sx={{ color: "#FFFFFF", fontSize: 28 }} />
+              <Box display="flex" flexDirection="column">
+                <MDTypography
+                  variant="subtitle2"
+                  sx={{ color: "#FFFFFF", mb: 0.75, fontWeight: 700 }}
+                >
+                  종료일
+                </MDTypography>
+                <DatePicker
+                  value={endDate}
+                  onChange={(d) => setEndDate(d?.toISOString().slice(0, 10) || null)}
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      size="small"
+                      sx={{
+                        minWidth: 200,
+                        "& .MuiInputBase-input": {
+                          color: "#FFFFFF !important",
+                          fontSize: "0.95rem",
+                          fontWeight: 600,
+                        },
+                        "& .MuiSvgIcon-root": { color: "#FFFFFF !important" },
+                        "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+            </FieldCard>
+
+            {/* 퀵 레인지 */}
+            <Stack direction="row" spacing={1} sx={{ ml: { xs: 0, md: 1 } }}>
+              <MDButton variant="outlined" color="info" onClick={() => setQuickRange(1)}>
+                오늘
+              </MDButton>
+              <MDButton variant="outlined" color="info" onClick={() => setQuickRange(7)}>
+                7일
+              </MDButton>
+              <MDButton variant="outlined" color="info" onClick={() => setQuickRange(14)}>
+                14일
+              </MDButton>
+              <MDButton variant="outlined" color="info" onClick={() => setQuickRange(30)}>
+                1개월
+              </MDButton>
+            </Stack>
+
+            {/* 모드 토글 */}
+            <Stack direction="row" spacing={1.2} sx={{ ml: "auto" }}>
+              <ModeButton
+                variant={barMode === "type" ? "contained" : "outlined"}
+                color="info"
+                onClick={() => setBarMode("type")}
+                startIcon={<TimelineRoundedIcon />}
+                sx={{
+                  "&.MuiButton-contained": { backgroundColor: "rgba(0,153,255,1) !important" },
+                }}
+              >
+                탐지유형 일자별 추이
+              </ModeButton>
+              <ModeButton
+                variant={barMode === "area" ? "contained" : "outlined"}
+                color="info"
+                onClick={() => setBarMode("area")}
+                startIcon={<StackedBarChartRoundedIcon />}
+                sx={{
+                  "&.MuiButton-contained": { backgroundColor: "rgba(0,153,255,1) !important" },
+                }}
+              >
+                발생구역 일자별 추이
+              </ModeButton>
+            </Stack>
+          </Box>
+        </FilterPanel>
 
         {/* 차트 레이아웃 */}
         <MDBox pt={1} pb={3}>

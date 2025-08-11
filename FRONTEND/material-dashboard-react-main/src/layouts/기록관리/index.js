@@ -28,6 +28,7 @@ import MDBadge from "components/MDBadge";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import DetailRow from "layouts/기록관리/components/DetailRow";
+import Collapse from "@mui/material/Collapse";
 
 function LogManagement() {
   const { pathname } = useLocation();
@@ -54,7 +55,7 @@ function LogManagement() {
   const openMenu = Boolean(anchorEl);
 
   const badgeByType = (type) => {
-    const color = type === "acc" ? "error" : type === "ppe" ? "warning" : "info";
+    const color = type === "acc" ? "error" : type === "ppe" ? "warning" : "success";
     const label = type === "acc" ? "사고" : type === "ppe" ? "미착용" : "입출입";
     return <MDBadge badgeContent={label} color={color} variant="gradient" size="lg" />;
   };
@@ -158,20 +159,40 @@ function LogManagement() {
 
   const columns = [
     { Header: "No.", accessor: "listNum", align: "center" },
+
     {
       Header: "제목",
       accessor: "title",
       align: "center",
-      Cell: ({ value, row }) => (
-        <MDTypography
-          component="span"
-          sx={{ cursor: "pointer", color: "#111213ff", fontWeight: "bold" }}
-          onClick={() => toggleRow(row.original.rowId)}
-        >
-          {value}
-        </MDTypography>
-      ),
+      Cell: ({ value, row }) => {
+        const rid = row.original.rowId;
+        const isOpen = expandedRow === rid;
+        return (
+          <Box>
+            <MDTypography
+              component="span"
+              sx={{ cursor: "pointer", color: "#111213ff", fontWeight: "bold" }}
+              onClick={() => toggleRow(rid)}
+            >
+              {value}
+            </MDTypography>
+
+            <Collapse in={isOpen} timeout="auto" unmountOnExit>
+              {/* 여기에 디테일 영역을 같은 셀 안에 렌더 */}
+              <Box sx={{ mt: 1 }}>
+                <DetailRow
+                  row={row.original}
+                  showFullText={showFullText}
+                  setShowFullText={setShowFullText}
+                  handleOpen={handleOpen}
+                />
+              </Box>
+            </Collapse>
+          </Box>
+        );
+      },
     },
+
     { Header: "유형", accessor: "type", align: "center" },
     { Header: "날짜", accessor: "date", align: "center" },
   ];
@@ -251,37 +272,7 @@ function LogManagement() {
                   <DataTable
                     table={{
                       columns,
-                      rows: filteredRows.flatMap((row) => {
-                        const isExpanded = expandedRow === row.rowId;
-                        return [
-                          row,
-                          ...(isExpanded
-                            ? [
-                                {
-                                  listNum: "",
-                                  title: (
-                                    <motion.div
-                                      key={`detail-${row.rowId}`} // key가 자꾸 바뀌면 무한 렌더링
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: "auto", opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      transition={{ duration: 0.3 }}
-                                    >
-                                      <DetailRow
-                                        row={row}
-                                        showFullText={showFullText}
-                                        setShowFullText={setShowFullText}
-                                        handleOpen={handleOpen}
-                                      />
-                                    </motion.div>
-                                  ),
-                                  type: "",
-                                  date: "",
-                                },
-                              ]
-                            : []),
-                        ];
-                      }),
+                      rows: filteredRows, // ✅ flatMap으로 디테일 행 추가하던 부분 제거
                     }}
                     isSorted={false}
                     entriesPerPage={false}

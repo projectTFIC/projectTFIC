@@ -85,7 +85,6 @@ export default function SignUp() {
   // 폼 상태
   const [values, setValues] = React.useState({
     name: "",
-    dob: null,
     department: "",
     phone: "",
     emailLocal: "",
@@ -128,7 +127,6 @@ export default function SignUp() {
     setValues((prev) => ({ ...prev, [prop]: val }));
   };
 
-  const handleDOBChange = (date) => setValues((prev) => ({ ...prev, dob: date }));
   const handleDomainChange = (e) => setValues((prev) => ({ ...prev, emailDomain: e.target.value }));
   const toggleShowPassword = () => setShowPassword((v) => !v);
   const toggleShowConfirm = () => setShowConfirm((v) => !v);
@@ -194,7 +192,7 @@ export default function SignUp() {
 
     const email = `${values.emailLocal}@${values.emailDomain}`;
     const signupData = {
-      user_id: values.id,
+      userId: values.id,
       password: values.password,
       name: values.name,
       department: values.department,
@@ -356,27 +354,6 @@ export default function SignUp() {
                     fullWidth
                     InputLabelProps={{ required: false }}
                   />
-
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
-                      label="생년월일"
-                      value={values.dob}
-                      onChange={handleDOBChange}
-                      inputFormat="yyyy-MM-dd"
-                      disableFuture
-                      openTo="year"
-                      views={["year", "month", "day"]}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          required
-                          fullWidth
-                          InputLabelProps={{ required: false }}
-                          inputProps={{ ...params.inputProps, readOnly: true }}
-                        />
-                      )}
-                    />
-                  </LocalizationProvider>
 
                   <TextField
                     label="부서"

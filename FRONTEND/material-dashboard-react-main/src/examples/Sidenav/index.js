@@ -140,10 +140,33 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             <Icon sx={{ fontWeight: "bold" }}>close</Icon>
           </MDTypography>
         </MDBox>
-        <MDBox component={NavLink} to="/" display="flex" alignItems="center">
-          {brand && <MDBox component="img" src={brand} alt="Brand" width="2rem" />}
+        <MDBox
+          component={NavLink}
+          to="/"
+          display="flex"
+          flexDirection="column" // 세로 배치
+          alignItems="center"
+          justifyContent="center"
+        >
+          {brand && (
+            <MDBox
+              component="img"
+              src={brand}
+              alt="Brand"
+              sx={{
+                width: 230, // 로고 크게
+                height: 230,
+                borderRadius: "12px",
+                objectFit: "contain",
+                mb: 1.5, // 텍스트와 간격
+                ml: 2.5,
+              }}
+            />
+          )}
+
           <MDBox
-            width={!brandName && "100%"}
+            width="100%"
+            textAlign="center" // 가운데 정렬
             sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
           >
             <MDTypography
@@ -152,8 +175,8 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
               fontWeight="medium"
               color={textColor}
               sx={{
-                fontSize: "1.25rem", // ← 글자 크기 조절
-                ml: 1, // ← 로고와 간격 조절 (8px * 2 = 16px)
+                fontSize: "2.5rem",
+                ml: -2.5,
               }}
             >
               {brandName}

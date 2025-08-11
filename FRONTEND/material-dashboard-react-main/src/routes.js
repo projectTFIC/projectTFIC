@@ -44,7 +44,7 @@ const routes = [
   {
     type: "collapse",
     name: "기록관리",
-    key: "logmanagement",
+    key: "log-management",
     icon: <img src={기록} alt="기록" style={{ width: 24, height: 24, marginRight: 9 }} />,
     route: "/log-management",
     component: (
@@ -68,7 +68,7 @@ const routes = [
   {
     type: "collapse",
     name: "보고서 생성",
-    key: "createreport",
+    key: "create-report",
     icon: (
       <img src={보고서생성} alt="보고서생성" style={{ width: 24, height: 24, marginRight: 9 }} />
     ),

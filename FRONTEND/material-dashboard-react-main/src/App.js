@@ -16,6 +16,7 @@ import Configurator from "examples/Configurator";
 import theme from "assets/theme";
 import themeDark from "assets/theme-dark";
 import SignUp from "layouts/authentication/sign-up";
+import logo from "layouts/img/로그인.png";
 
 // Context
 import {
@@ -129,7 +130,7 @@ function MainApp() {
         <>
           <Sidenav
             color={sidenavColor}
-            brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+            brand={logo}
             brandName="AIVIS"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}

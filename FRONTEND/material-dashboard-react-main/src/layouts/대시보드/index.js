@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 import 사고 from "layouts/img/사고3.png";
 import 중장비 from "layouts/img/중장비3.png";
 import 보호장구 from "layouts/img/보호장구3.png";
+import CCTV from "layouts/img/cctv1.png";
 
 function DashBoard() {
   const [summary, setSummary] = useState(null);
@@ -68,6 +69,7 @@ function DashBoard() {
       yesterdayEventDiff: 3       // 어제 대비 추가
     }
   */
+  const cctvCount = 28;
 
   return (
     <DashboardLayout>
@@ -153,19 +155,29 @@ function DashBoard() {
               <MDBox mb={1.5}>
                 <ComplexStatisticsCard
                   color="warning"
-                  icon="person_add"
-                  title="이벤트 발생"
-                  count={summary.todayEvent}
+                  icon={<img src={CCTV} alt="CCTV 아이콘" style={{ width: 110, height: 80 }} />}
+                  title="CCTV 설치 현황"
+                  count={cctvCount} // 내부는 "{count}건"이지만 h4를 숨기고 대체 텍스트만 보이게 함
                   percentage={{
                     color: summary.eventDiff >= 0 ? "success" : "error",
                     amount: `${summary.eventDiff > 0 ? "+" : ""}${summary.eventDiff}%`,
                     label: "지난주 대비",
                   }}
-                  comparison={{
-                    label: "어제 대비",
-                    amount: `${summary.yesterdayEventDiff > 0 ? "+" : ""}${
-                      summary.yesterdayEventDiff
-                    }건`,
+                  sx={{
+                    // 1) 원래 h4("{count}건")는 보이지 않게, 자리는 유지
+                    "& .MuiTypography-h4": {
+                      position: "relative",
+                      visibility: "hidden",
+                      marginBottom: "4px", // 제목과 겹침 방지(살짝 여백)
+                    },
+                    // 2) 같은 위치에 내가 원하는 텍스트를 올려 그림
+                    "& .MuiTypography-h4::after": {
+                      content: `"총 ${cctvCount}대"`,
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      visibility: "visible",
+                    },
                   }}
                 />
               </MDBox>

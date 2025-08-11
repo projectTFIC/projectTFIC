@@ -7,14 +7,14 @@ import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import MagicBento from "../../layouts/authentication/components/MagicBento/MagicBento.jsx";
+// import MagicBento from "../../layouts/authentication/components/MagicBento/MagicBento.jsx";
 
-/**
- * WeeklyMenuCard 컴포넌트
- * props.items: [{ day: string, menu: string }]
- * items의 처음 두 개 항목만 중앙 정렬해서 보여줌
- */
+/** =========================
+ *  카드 (UI 동일, 빈 데이터 처리 추가)
+ *  ========================= */
 function WeeklyMenuCard({ items }) {
+  const showItems = Array.isArray(items) ? items.slice(0, 2) : [];
+
   return (
     <Card
       sx={{
@@ -35,34 +35,45 @@ function WeeklyMenuCard({ items }) {
       {/* 구분선 */}
       <Divider sx={{ my: 1.5, borderBottomWidth: 2 }} />
 
-      {/* 중앙 정렬된 이틀치 메뉴 */}
+      {/* 콘텐츠 */}
       <Box
         sx={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
+          justifyContent: showItems.length ? "center" : "flex-start",
           alignItems: "center",
           textAlign: "center",
         }}
       >
-        {items.slice(0, 2).map((item, index) => (
-          <Box key={index} sx={{ mb: index === 0 ? 2 : 0 }}>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              {item.day}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: "0.8rem" }}>
-              {item.menu.split("\n").map((line, i) => (
-                <div key={i}>{line}</div>
-              ))}
-            </Typography>
+        {showItems.length ? (
+          showItems.map((item, index) => (
+            <Box key={index} sx={{ mb: index === 0 ? 2 : 0 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {item.day}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5, fontSize: "0.8rem" }}
+              >
+                {String(item.menu || "")
+                  .split("\n")
+                  .map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+              </Typography>
 
-            {/* 첫 항목 아래에만 구분선 */}
-            {index === 0 && (
-              <Divider sx={{ mt: 2, mb: 1.2, borderColor: "#ccc", width: "310px", mx: "auto" }} />
-            )}
-          </Box>
-        ))}
+              {index === 0 && (
+                <Divider sx={{ mt: 2, mb: 1.2, borderColor: "#ccc", width: "310px", mx: "auto" }} />
+              )}
+            </Box>
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            표시할 메뉴가 없습니다.
+          </Typography>
+        )}
       </Box>
     </Card>
   );
@@ -81,16 +92,14 @@ WeeklyMenuCard.defaultProps = {
   items: [],
 };
 
-/**
- * WeeklyMenuFromCSV 컴포넌트
- * - 구글 시트 CSV URL에서 메뉴 데이터 fetch 후 파싱
- * - 당일, 내일 메뉴만 필터링해서 WeeklyMenuCard에 전달
- */
+/** =========================
+ *  CSV → 오늘/내일 메뉴만 표시
+ *  ========================= */
 function WeeklyMenuFromCSV() {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    // 구글 스프레드시트 "웹에 게시" 후 CSV URL을 넣어주세요
+    // 구글 스프레드시트 "웹에 게시" 후 CSV URL
     const csvUrl =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhjXDLYS_NC5u2nqfMSBmoz5rNY1ZfAyDWz548H7io_PoRuzrsskXb3ZBWXRJG7THlH_6BKWdk0uu4/pub?gid=0&single=true&output=csv";
 
@@ -101,7 +110,30 @@ function WeeklyMenuFromCSV() {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
-            setItems(results.data);
+            const rows = Array.isArray(results.data) ? results.data : [];
+
+            // 각 행에서 day/menu 컬럼 자동 탐색
+            const normalized = rows
+              .map((r) => {
+                const keys = Object.keys(r);
+
+                // dayKey 후보: 값에 (MM/DD) 포함, 또는 헤더가 요일/날짜/date/day 계열
+                const dayKey =
+                  keys.find((k) => /\(\d{2}\/\d{2}\)/.test(String(r[k] || ""))) ||
+                  keys.find((k) => /(요일|날짜|date|day)/i.test(k)) ||
+                  keys[0]; // 최후의 수단
+
+                // menuKey 후보: menu/메뉴/중식/석식/식단 등
+                const menuKey = keys.find((k) => /(menu|메뉴|중식|석식|식단)/i.test(k)) || keys[1]; // 최후의 수단
+
+                return {
+                  dayRaw: String(r[dayKey] ?? "").trim(),
+                  menuRaw: String(r[menuKey] ?? "").trim(),
+                };
+              })
+              .filter((x) => x.dayRaw || x.menuRaw);
+
+            setItems(normalized);
           },
           error: (error) => {
             console.error("CSV 파싱 실패:", error);
@@ -113,32 +145,23 @@ function WeeklyMenuFromCSV() {
       });
   }, []);
 
-  // 오늘, 내일 MM/DD 문자열 생성
+  // 오늘 / 내일 MM/DD
   const today = new Date();
-  const formatMMDD = (date) =>
-    (date.getMonth() + 1).toString().padStart(2, "0") +
-    "/" +
-    date.getDate().toString().padStart(2, "0");
+  const formatMMDD = (d) =>
+    `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
   const todayStr = formatMMDD(today);
-
-  const tomorrow = new Date();
+  const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const tomorrowStr = formatMMDD(tomorrow);
 
-  // day 문자열에서 MM/DD 추출해 당일, 내일만 필터링
+  // dayRaw 에서 (MM/DD) 추출해서 오늘/내일만
   const filteredItems = items
-    .filter((item) => {
-      const dayText = item[""]; // 요일 (08/04)
-      if (!dayText) return false;
-      const match = dayText.match(/\((\d{2}\/\d{2})\)/);
-      if (!match) return false;
-      const dateStr = match[1];
-      return dateStr === todayStr || dateStr === tomorrowStr;
+    .map(({ dayRaw, menuRaw }) => {
+      const m = String(dayRaw).match(/\((\d{2}\/\d{2})\)/);
+      const mmdd = m ? m[1] : null;
+      return { day: dayRaw, menu: menuRaw, mmdd };
     })
-    .map((item) => ({
-      day: item[""], // 👈 여기에 요일 정보 담김
-      menu: item.menu,
-    }));
+    .filter((x) => x.mmdd === todayStr || x.mmdd === tomorrowStr);
 
   return <WeeklyMenuCard items={filteredItems} />;
 }
