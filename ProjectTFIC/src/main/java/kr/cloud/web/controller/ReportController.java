@@ -78,9 +78,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 			        Report report = new Report();
 			        report.setReportTitle("보고서_" + reportType + "_" + periodStart);  // or 원하는 방식
 			        report.setTypeId(reportType.equals("accident") ? 1L : 2L);  // 타입 매핑 예시
-			        report.setReportFile(fileUrl);   // 오브젝트스토리지 PDF URL
-			        report.setUserId(userId);
-			        report.setName(userId);          // 또는 사용자명 필드
+			        report.setReportFile(fileUrl);   // 오브젝트 스토리지 PDF URL
+			        report.setUserId(userId);     	
 			        report.setRegDate(new Date());   // 생성일
 
 			        // 2 저장

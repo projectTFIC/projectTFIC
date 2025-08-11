@@ -11,7 +11,7 @@
 	<!-- [ 회원가입 정보 저장하기 ] -->
 	<insert id="goRegister" parameterType="kr.cloud.web.entity.Users" useGeneratedKeys="true" keyProperty="idx">
 		INSERT INTO users(user_id, password, name, department, email, phone, reg_date)
-		VALUES(#{user_id} ,#{password} ,#{name}, #{department}, #{email}, #{phone}, now());
+		VALUES(#{userId} ,#{password} ,#{name}, #{department}, #{email}, #{phone}, now());
 	</insert>
 	
 	

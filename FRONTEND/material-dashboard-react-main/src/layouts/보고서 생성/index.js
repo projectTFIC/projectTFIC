@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   Card,
@@ -25,40 +25,98 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DownloadPdfButton from "./DownloadPdfButton";
 
+// useAuth 훅을 사용하여 현재 로그인한 사용자 정보 가져오기
+const useAuth = () => {
+  // 실제로는 백엔드에서 사용자 정보를 가져오는 API를 호출하거나,
+  // 로그인 시 로컬 스토리지에 저장된 정보를 파싱하여 반환합니다.
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    try {
+      return JSON.parse(storedUser);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+// 항상 한국 시간 기준 'YYYY-MM-DD' 형식의 날짜를 반환하는 함수
+const getKoreaDateString = () => {
+  // 옵션 객체에 한국 시간대(Asia/Seoul)를 명시
+  const options = {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Seoul",
+  };
+
+  // 'ko-KR' 로케일 기준으로 포맷터를 생성하면 'YYYY. MM. DD.' 형식이 되므로,
+  // 'en-CA' 같은 'YYYY-MM-DD' 순서를 따르는 로케일로 포맷을 맞춥니다.
+  const formatter = new Intl.DateTimeFormat("en-CA", options);
+
+  return formatter.format(new Date());
+};
+
 function ReportPage() {
   const [loading, setLoading] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
   const [promptType, setPromptType] = useState("default");
-  const defaultPrompts = {
-    accident: `- 작업 중 사고 발생 내용을 바탕으로 사고 보고서를 작성해 주세요.\n- 사고 시간, 장소, 경과, 조치 사항 포함`,
-    entry: `- 차량/중장비 출입 기록을 분석하여 출입 관리 보고서를 작성해 주세요.\n- 출입 현황, 통제 상태, 개선 사항 포함`,
-    total: `- 사고 및 출입 기록을 종합하여 종합 보고서를 작성해 주세요.\n- 각 항목별 주요 사항 포함`,
-  };
+  const { defaultPrompts, reportTypes } = React.useMemo(
+    () => ({
+      defaultPrompts: {
+        accident: `- 작업 중 사고 발생 내용을 바탕으로 사고 보고서를 작성해 주세요.\n- 사고 시간, 장소, 경과, 조치 사항 포함`,
+        entry: `- 차량/중장비 출입 기록을 분석하여 출입 관리 보고서를 작성해 주세요.\n- 출입 현황, 통제 상태, 개선 사항 포함`,
+        total: `- 사고 및 출입 기록을 종합하여 종합 보고서를 작성해 주세요.\n- 각 항목별 주요 사항 포함`,
+      },
+      reportTypes: ["accident", "entry", "total"],
+    }),
+    []
+  );
+
+  // 탭 인덱스가 변경될 때마다 promptText를 업데이트하는 useEffect 추가
+  useEffect(() => {
+    const currentReportType = reportTypes[tabIndex];
+    setPromptText(defaultPrompts[currentReportType]);
+  }, [tabIndex, defaultPrompts, reportTypes]); // 의존성 배열에 tabIndex 추가
 
   const [promptText, setPromptText] = useState(defaultPrompts["accident"]);
   const [reportHtml, setReportHtml] = useState("");
   const [reportGenerated, setReportGenerated] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [startTime, setStartTime] = useState("06:00");
-  const [endTime, setEndTime] = useState("18:00");
+  const [startDate, setStartDate] = useState(getKoreaDateString);
+  const [endDate, setEndDate] = useState(getKoreaDateString);
+  const [startTime, setStartTime] = useState("00:01");
+  const [endTime, setEndTime] = useState("23:59");
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // 2. 컴포넌트가 처음 마운트될 때 한 번만 실행하여 사용자 정보를 설정
+  useEffect(() => {
+    setCurrentUser(useAuth());
+  }, []);
 
   const reportTitles = ["사고 보고서", "입출입 보고서", "종합 보고서"];
-  const reportTypes = ["accident", "entry", "total"];
   const reportSubtexts = [
     "안전사고 및 위험 상황 분석",
     "출입 통계 및 보안 행동 분석",
     "현장 전반의 운영 통합 정리",
-  ];
+  ]; // 사용자 정보를 불러오는 예시 (실제 구현에 맞게 수정 필요)
 
   const handleGenerateReport = async () => {
     setLoading(true);
     setReportGenerated(false);
 
+    // 유효성 검사 로직 강화: 실제 사용자가 로그인했는지 확인
+    if (!currentUser || !currentUser.userId) {
+      console.error("로그인 정보가 없어 보고서를 생성할 수 없습니다.");
+      setReportHtml("🚨 보고서 생성 중 오류가 발생했습니다: 로그인 정보가 없습니다.");
+      setLoading(false);
+      setReportGenerated(true);
+      return; // 함수 실행 중단
+    }
+
     const payload = {
       period_start: `${startDate} ${startTime}`,
       period_end: `${endDate} ${endTime}`,
-      user_id: "123",
+      user_id: currentUser.userId,
       report_type: reportTypes[tabIndex],
       use_custom_prompt: promptType === "custom",
       custom_prompt: promptText,

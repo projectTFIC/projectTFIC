@@ -24,6 +24,7 @@ import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import DetailRow from "layouts/기록관리/components/DetailRow";
 import Collapse from "@mui/material/Collapse";
+import socket from "../../socket";
 
 function LogManagement() {
   const { pathname } = useLocation();
@@ -57,7 +58,7 @@ function LogManagement() {
     return <MDBadge badgeContent={label} color={color} variant="gradient" size="lg" />;
   };
 
-  useEffect(() => {
+  const fetchData = () => {
     axios.get("/web/tablelist/accidents").then((res) => {
       setAccidents(
         res.data.map((row, idx) => ({
@@ -108,7 +109,29 @@ function LogManagement() {
         }))
       );
     });
+  };
+
+  // 기존의 길었던 useEffect를 아래와 같이 한 줄로 수정
+  useEffect(() => {
+    fetchData(); // 페이지가 처음 로드될 때 데이터 불러오기
   }, []);
+
+  // 실시간 업데이트를 위한 새로운 useEffect를 이곳에 추가
+  useEffect(() => {
+    const handleNewRecord = (data) => {
+      console.log(`새로운 ${data.type} 기록 감지! 목록을 새로고침합니다.`);
+      // 데이터가 변경되었으므로, 전체 데이터를 다시 불러오기
+      fetchData();
+    };
+
+    // 소켓 이벤트 리스너 등록
+    socket.on("new_record_added", handleNewRecord);
+
+    // 컴포넌트가 사라질 때 리스너를 정리합니다 (메모리 누수 방지)
+    return () => {
+      socket.off("new_record_added", handleNewRecord);
+    };
+  }, []); // 이 useEffect는 페이지가 처음 로드될 때 한 번만 실행
 
   const tabs = [
     { label: "사고 감지", rows: accidents },
