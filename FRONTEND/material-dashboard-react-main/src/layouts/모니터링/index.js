@@ -23,6 +23,11 @@ import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import PrecisionManufacturingRoundedIcon from "@mui/icons-material/PrecisionManufacturingRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 
+import PPE from "layouts/img/헬멧_모니터링.png";
+import 낙상사고 from "layouts/img/낙상사고_모니터링.png";
+import 중장비 from "layouts/img/중장비_모니터링.png";
+import 화면전환 from "layouts/img/화면전환_모니터링.png";
+
 const Panel = styled(Paper)(({ theme }) => ({
   borderRadius: 16,
   padding: theme.spacing(2),
@@ -86,6 +91,11 @@ const MonitoringPage = () => {
   const camById = (id) => cameraList.find((c) => c.device_id === id);
   const WEBCAM_DEVICE_ID = 6;
 
+  // ✅ 버튼 클릭 시 1초 알림
+  const showQuickToast = (title, description) => {
+    setToastInfo({ open: true, title, description });
+  };
+
   // 소켓 리스너 등록 (마운트 1회)
   useEffect(() => {
     const onMainDeviceSet = (data) => {
@@ -106,27 +116,21 @@ const MonitoringPage = () => {
     }
   }, [globalToggles, selectedCam]);
 
-  // 프레임 전송 루프 (500ms 고정 X → in-flight/ACK 기반)
+  // 프레임 전송 루프 (in-flight/ACK 기반)
   useEffect(() => {
     const tick = () => {
       const v = videoRef.current;
       if (!v) return;
 
-      // 토글이 하나도 켜져 있지 않으면 전송 X
       if (!Object.values(globalToggles).some(Boolean)) return;
       if (!selectedCam) return;
-
-      // 서버로부터 main_device_set ACK 받기 전이면 전송 X
       if (!canSendRef.current) return;
-
-      // 직전 전송의 결과를 기다리는 중이면 전송 X
       if (inFlightRef.current) return;
 
       const vw = v.videoWidth || v.clientWidth;
       const vh = v.videoHeight || v.clientHeight;
       if (!vw || !vh) return;
 
-      // 캔버스 스냅샷 → JPEG dataURL (품질은 그대로)
       const tmp = document.createElement("canvas");
       tmp.width = vw;
       tmp.height = vh;
@@ -137,12 +141,10 @@ const MonitoringPage = () => {
       inFlightRef.current = true;
       socket.emit("image_analysis_request", { image: dataUrl, deviceId: selectedCam });
 
-      // 안전 타이머: 결과가 너무 늦으면 락 해제
       const safetyTimer = setTimeout(() => {
         inFlightRef.current = false;
       }, 1500);
 
-      // 이번 전송의 결과만 한 번 듣고 락 해제
       const onResult = (res) => {
         if (String(res?.deviceId) === String(selectedCam)) {
           inFlightRef.current = false;
@@ -178,11 +180,9 @@ const MonitoringPage = () => {
   const normalizeDevices = (arr) =>
     (Array.isArray(arr) ? arr : [])
       .map((d) => {
-        // API 응답의 다양한 id 필드 이름을 처리하고 숫자로 변환
         const rawId = d.device_id ?? d.deviceId ?? d.deviceid ?? d.id ?? null;
         const device_id = Number(rawId);
 
-        // 현재 장치가 웹캠인지 여부를 device_id를 기준으로 명확하게 판단
         const isWebcamDevice = device_id === WEBCAM_DEVICE_ID;
 
         return {
@@ -190,15 +190,12 @@ const MonitoringPage = () => {
           device_name: d.device_name ?? d.deviceName ?? d.name ?? "(이름없음)",
           location: d.location ?? "(미지정)",
           status: d.status ?? "online",
-          // 웹캠이 아닐 경우, public/videos 폴더의 영상 경로를 device_id에 맞춰 생성
           video_url: isWebcamDevice
             ? null
             : `${process.env.PUBLIC_URL || ""}/videos/video${device_id}.mp4`,
-          // isWebcam 플래그를 추가하여 이 장치가 웹캠인지 아닌지 명시
           isWebcam: isWebcamDevice,
         };
       })
-      // 유효한 device_id가 없는 데이터는 필터링
       .filter((x) => Number.isFinite(x.device_id));
 
   const fetchDevices = async () => {
@@ -207,16 +204,13 @@ const MonitoringPage = () => {
       const devices = normalizeDevices(res.data);
       setCameraList(devices);
       if (devices.length > 0) {
-        // [Back] 화면 로테이션 기능 변수 설정
         const ids = devices.map((d) => d.device_id);
         const saved = Number(localStorage.getItem("lastDeviceId"));
         const main = saved && ids.includes(saved) ? saved : ids[0];
-        // [Back] 화면 덱 초기화
         const rest = ids.filter((id) => id !== main);
         const nextDeck = [main, ...rest].slice(0, 4);
         setDeck(nextDeck);
-        // [Back] 선택 복원 및 초기화
-        // 페이지 로드 시, 아직 선택된 카메라가 없을 때만 초기값 설정
+
         if (selectedCam == null || !ids.includes(String(selectedCam))) {
           setSelectedCam(main);
           socket.emit("set_main_device", { deviceId: main });
@@ -235,11 +229,10 @@ const MonitoringPage = () => {
       console.log("Socket connected, fetching devices...");
       const saved = Number(localStorage.getItem("lastDeviceId"));
       if (Number.isFinite(saved) && saved > 0) {
-        // 유효한 숫자인지 확인
         setSelectedCam(saved);
         socket.emit("set_main_device", { deviceId: saved });
       }
-      fetchDevices(); // 장비 목록 로드
+      fetchDevices();
     };
 
     socket.on("connect", onConnect);
@@ -256,7 +249,7 @@ const MonitoringPage = () => {
   }, []);
 
   // 서브 모니터 영상 리스트
-  const videoBase = process.env.PUBLIC_URL || ""; // 스프링부트의 context path 설정을 제외하기 위해 설정
+  const videoBase = process.env.PUBLIC_URL || "";
   const subVideos = [
     `${videoBase}/videos/video1.mp4`,
     `${videoBase}/videos/video2.mp4`,
@@ -308,13 +301,11 @@ const MonitoringPage = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // 비디오 실제 픽셀 기준
     const v = videoRef.current;
     const vw = v.videoWidth || v.clientWidth;
     const vh = v.videoHeight || v.clientHeight;
     if (!vw || !vh) return;
 
-    // 캔버스 화면 크기 = 보이는 영역
     canvas.width = v.clientWidth;
     canvas.height = v.clientHeight;
 
@@ -340,7 +331,6 @@ const MonitoringPage = () => {
       ctx.strokeRect(x1 * scaleX, y1 * scaleY, (x2 - x1) * scaleX, (y2 - y1) * scaleY);
       ctx.fillText(label, x1 * scaleX, y1 * scaleY > 10 ? y1 * scaleY - 5 : 10);
 
-      // (선택) 포즈 키포인트가 오면 점 찍기
       if (Array.isArray(det.keypoints)) {
         det.keypoints.forEach(([kx, ky]) => {
           ctx.beginPath();
@@ -356,35 +346,36 @@ const MonitoringPage = () => {
     setDeck((prev) => {
       if (!prev.length) return [deviceId];
       const prevMain = prev[0];
-      // [Back] 덱 내부 (메인 화면 & 서브 화면) 클릭하는 경우
       if (prev.includes(deviceId)) {
-        if (deviceId === prevMain) return prev; // 메인화면을 선택하는 경우, 변화 없음
+        if (deviceId === prevMain) return prev;
         const rest = prev.filter((id) => id !== deviceId && id !== prevMain);
         return [deviceId, prevMain, ...rest].slice(0, 4);
       }
-      // [Back] 덱 외부 (영상 장비 리스트) 클릭하는 경우
       return [deviceId, ...prev.slice(0, 3)];
     });
     setSelectedCam(deviceId);
-    localStorage.setItem("lastDeviceId", String(deviceId)); // 재연결 복원용
-    canSendRef.current = false; // ACK 오기 전까지 전송 금지
-    inFlightRef.current = false; // 진행 중인 전송도 초기화
+    localStorage.setItem("lastDeviceId", String(deviceId));
+    canSendRef.current = false;
+    inFlightRef.current = false;
     socket.emit("set_main_device", { deviceId });
   };
 
-  // [Back] AI 기능 전원 핸들러
+  // [Back] AI 기능 전원 핸들러 (토스트 표시 포함)
   const handleToggleDetection = (type) => {
     const newIsActive = !globalToggles[type];
     setGlobalToggles((prev) => ({ ...prev, [type]: newIsActive }));
     socket.emit("toggle_global_detection", { detectionType: type, isActive: newIsActive });
+
+    const labelMap = { ppe: "PPE AI", acc: "ACC AI", he: "HE AI" };
+    showQuickToast(`${labelMap[type]} ${newIsActive ? "활성화" : "비활성화"}`, "AI 기능 전환됨");
   };
 
   // [Back] 버튼 스타일 정의
   const buttonStyle = (isActive) => ({
     borderColor: "#1976d2",
     fontWeight: 600,
-    color: isActive ? "#fff" : "#000", // 활성화 시 흰색, 비활성화 시 검은색 (글자 색상)
-    backgroundColor: isActive ? "#1976d2" : "#fff", // 활성화 시 파란색, 비활성화 시 흰색 (버튼 색상)
+    color: isActive ? "#fff" : "#000",
+    backgroundColor: isActive ? "#1976d2" : "#fff",
     "&:hover": {
       backgroundColor: isActive ? "#1565c0" : "rgba(25, 118, 210, 0.04)",
     },
@@ -398,13 +389,11 @@ const MonitoringPage = () => {
     const isWebcam = selectedCamera?.isWebcam === true;
 
     if (isWebcam) {
-      // 웹캠 모드
       if (webcamStream) {
         v.srcObject = webcamStream;
-        v.removeAttribute("src"); // src 제거
+        v.removeAttribute("src");
         v.play().catch(() => {});
       } else {
-        // 파일 모드
         v.srcObject = null;
         v.removeAttribute("src");
       }
@@ -524,7 +513,6 @@ const MonitoringPage = () => {
                 .filter(Boolean)
                 .map((cam) => {
                   const isSelected = cam.device_id === selectedCam;
-                  // cam 객체에 들어있는 isWebcam 플래그를 직접 사용합니다.
                   const isWebcamTile = cam.isWebcam;
 
                   return (
@@ -536,7 +524,7 @@ const MonitoringPage = () => {
                           cursor: cam ? "pointer" : "default",
                           borderRadius: 0,
                           position: "relative",
-                          overflow: "hidden", // 영상 잘림 방지
+                          overflow: "hidden",
                           backgroundColor: "#000",
                         }}
                         onClick={() => handleSelectCamera(cam.device_id)}
@@ -576,7 +564,8 @@ const MonitoringPage = () => {
                 실시간 AI 제어
               </Typography>
               <Typography variant="caption" sx={{ color: "#B7C0CE" }}>
-                상태: {Object.values(globalToggles).some(Boolean) ? "ON" : "OFF"}
+                {/* ✅ showDetections도 상태에 반영 */}
+                상태: {showDetections || Object.values(globalToggles).some(Boolean) ? "ON" : "OFF"}
               </Typography>
             </Box>
 
@@ -598,17 +587,24 @@ const MonitoringPage = () => {
                   <Box
                     className="icon"
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: 60,
+                      height: 60,
                       borderRadius: 12,
                       display: "grid",
                       placeItems: "center",
                     }}
                   >
-                    <SecurityIcon />
+                    <img
+                      src={PPE}
+                      alt="PPE 아이콘"
+                      style={{
+                        width: 53,
+                        height: 53,
+                        objectFit: "contain",
+                      }}
+                    />
                   </Box>
                   <Box>
-                    {/* ← 라벨·기능 이름 기존 그대로 */}
                     <Typography sx={{ fontWeight: 700, lineHeight: 1.15 }}>PPE AI</Typography>
                     <Typography variant="caption" sx={{ opacity: 0.8 }}>
                       안전모/벨트/고리/안전화
@@ -618,7 +614,7 @@ const MonitoringPage = () => {
                 </ToggleCard>
               </Grid>
 
-              {/* 👁️ ACC AI */}
+              {/* ACC AI */}
               <Grid item xs={12} sm={6} md={3}>
                 <ToggleCard
                   className={globalToggles.acc ? "active" : ""}
@@ -635,14 +631,23 @@ const MonitoringPage = () => {
                   <Box
                     className="icon"
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: 58,
+                      height: 58,
                       borderRadius: 12,
                       display: "grid",
                       placeItems: "center",
                     }}
                   >
-                    <WarningAmberRoundedIcon />
+                    <img
+                      src={낙상사고}
+                      alt="낙상사고 아이콘"
+                      style={{
+                        width: 68,
+                        height: 68,
+                        transform: "translateY(-12px)", // ← 아이콘만 위로 이동
+                        objectFit: "contain",
+                      }}
+                    />
                   </Box>
                   <Box>
                     <Typography sx={{ fontWeight: 700, lineHeight: 1.15 }}>ACC AI</Typography>
@@ -654,7 +659,7 @@ const MonitoringPage = () => {
                 </ToggleCard>
               </Grid>
 
-              {/* 👁️ HE AI */}
+              {/* HE AI */}
               <Grid item xs={12} sm={6} md={3}>
                 <ToggleCard
                   className={globalToggles.he ? "active" : ""}
@@ -671,14 +676,22 @@ const MonitoringPage = () => {
                   <Box
                     className="icon"
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: 60,
+                      height: 60,
                       borderRadius: 12,
                       display: "grid",
                       placeItems: "center",
                     }}
                   >
-                    <PrecisionManufacturingRoundedIcon />
+                    <img
+                      src={중장비}
+                      alt="중장비 아이콘"
+                      style={{
+                        width: 48,
+                        height: 48,
+                        objectFit: "contain",
+                      }}
+                    />
                   </Box>
                   <Box>
                     <Typography sx={{ fontWeight: 700, lineHeight: 1.15 }}>HE AI</Typography>
@@ -690,11 +703,15 @@ const MonitoringPage = () => {
                 </ToggleCard>
               </Grid>
 
-              {/* 🖥️ AI 화면 전환 */}
+              {/* AI 화면 전환 */}
               <Grid item xs={12} sm={6} md={3}>
                 <ToggleCard
                   className={showDetections ? "active" : ""}
-                  onClick={() => setShowDetections(!showDetections)}
+                  onClick={() => {
+                    const newValue = !showDetections;
+                    setShowDetections(newValue);
+                    showQuickToast(`AI 화면 ${newValue ? "ON" : "OFF"}`, "탐지 결과 표시 전환됨");
+                  }}
                   sx={{
                     "& .icon": {
                       background: showDetections
@@ -707,14 +724,22 @@ const MonitoringPage = () => {
                   <Box
                     className="icon"
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: 60,
+                      height: 60,
                       borderRadius: 12,
                       display: "grid",
                       placeItems: "center",
                     }}
                   >
-                    <VisibilityRoundedIcon />
+                    <img
+                      src={화면전환}
+                      alt="화면전환 아이콘"
+                      style={{
+                        width: 60,
+                        height: 60,
+                        objectFit: "contain",
+                      }}
+                    />
                   </Box>
                   <Box>
                     <Typography sx={{ fontWeight: 700, lineHeight: 1.15 }}>AI 화면 전환</Typography>
@@ -773,13 +798,13 @@ const MonitoringPage = () => {
                           display: "flex",
                           alignItems: "center",
                           backgroundImage: isActive
-                            ? "linear-gradient(to right, transparent 5%, rgba(74, 150, 238, 0.7) 50%, transparent 95%)"
-                            : "none", // ✅ 선택된 항목만 그라디언트
+                            ? "linear-gradient(to right, transparent 5%, rgba(74,150,238,0.7) 50%, transparent 95%)"
+                            : "none",
                           cursor: "pointer",
                           transition: "background 0.3s",
                           "&:hover": {
                             backgroundImage: isActive
-                              ? "linear-gradient(to right, transparent, rgba(46, 117, 209, 0.35), transparent)"
+                              ? "linear-gradient(to right, transparent, rgba(46,117,209,0.35), transparent)"
                               : "linear-gradient(to right, transparent, rgba(0,0,0,0.04), transparent)",
                           },
                         }}
@@ -817,19 +842,76 @@ const MonitoringPage = () => {
       {/* 토스트 알림 */}
       <Snackbar
         open={toastInfo.open}
-        autoHideDuration={3000}
+        autoHideDuration={1000}
         onClose={() => setToastInfo((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        sx={{ "&.MuiSnackbar-root": { bottom: 24, right: 24 } }} // 위치값 우선순위 보장
       >
         <Alert
           onClose={() => setToastInfo((prev) => ({ ...prev, open: false }))}
-          severity="info"
+          // severity="info"는 기본 파랑이 강해서 제외, 커스텀 색 적용
           variant="filled"
-          sx={{ width: "100%" }}
+          icon={false}
+          sx={{
+            width: "100%",
+            height: 200, // ✅ 너가 정한 사이즈 그대로
+            minWidth: 450, // ✅ 그대로
+            px: 2,
+            py: 1.25,
+            borderRadius: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center", // ✅ 세로 중앙
+            alignItems: "center", // ✅ 가로 중앙
+            textAlign: "center",
+            background: "linear-gradient(135deg, #1f2340 0%, #3b2d5c 55%, #2a2e5a 100%)",
+            color: "#ECECF6",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(4px)",
+
+            // 본문/제목 타이포 가독성
+            "& .MuiAlert-message": {
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 0.5, // 제목-본문 간격
+            },
+          }}
         >
-          <strong>{toastInfo.title}</strong>
-          <br />
-          {toastInfo.description}
+          {/* 타이틀 */}
+          <strong
+            style={{
+              fontSize: 18,
+              fontWeight: 800,
+              letterSpacing: "0.2px",
+              marginBottom: 6,
+              // 포인트 라인(고급스럽게 살짝만)
+              backgroundImage:
+                "linear-gradient(to right, rgba(157,141,241,.8), rgba(157,141,241,0))",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "100% 2px",
+              backgroundPosition: "0 100%",
+              paddingBottom: 4,
+            }}
+          >
+            {toastInfo.title}
+          </strong>
+
+          {/* 본문: 한국어 줄바꿈/가독성 최적화 */}
+          <span
+            style={{
+              fontSize: 15,
+              lineHeight: 1.7,
+              opacity: 0.95,
+              whiteSpace: "pre-line", // \n 포함 시 자연스럽게 줄바꿈
+              wordBreak: "keep-all", // 한국어 단어 뚝뚝 끊김 방지
+              maxWidth: 420, // 너무 길게 늘어지지 않게
+            }}
+          >
+            {toastInfo.description}
+          </span>
         </Alert>
       </Snackbar>
     </DashboardLayout>

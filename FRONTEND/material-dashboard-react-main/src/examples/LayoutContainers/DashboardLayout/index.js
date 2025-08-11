@@ -10,11 +10,11 @@ import MDBox from "components/MDBox";
 import { useMaterialUIController, setLayout } from "context";
 
 // BG
-import Particles from "components/BG/Particles";
 import Squares from "components/BG/Squares";
 import "components/BG/Particles.css"; // .particles-container 스타일 사용 시
 import RippleGrid from "components/BG/RippleGrid";
 import "components/BG/RippleGrid.css";
+import Particles from "components/BG/Particles2";
 
 function DashboardLayout({ children }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -38,7 +38,9 @@ function DashboardLayout({ children }) {
           background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)",
           pointerEvents: "none",
         }}
-      ></Box>
+      >
+        <Particles />
+      </Box>
 
       {/* 실제 컨텐츠 */}
       <MDBox
