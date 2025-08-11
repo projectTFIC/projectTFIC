@@ -161,32 +161,6 @@ function LogManagement() {
       accessor: "title",
       align: "center",
       Cell: ({ value, row }) => {
-<<<<<<< HEAD
-        const rid = row.original.rowId;
-        const isOpen = expandedRow === rid;
-        return (
-          <Box>
-            <MDTypography
-              component="span"
-              sx={{ cursor: "pointer", color: "#111213ff", fontWeight: "bold" }}
-              onClick={() => toggleRow(rid)}
-            >
-              {value}
-            </MDTypography>
-
-            <Collapse in={isOpen} timeout="auto" unmountOnExit>
-              {/* 여기에 디테일 영역을 같은 셀 안에 렌더 */}
-              <Box sx={{ mt: 1 }}>
-                <DetailRow
-                  row={row.original}
-                  showFullText={showFullText}
-                  setShowFullText={setShowFullText}
-                  handleOpen={handleOpen}
-                />
-              </Box>
-            </Collapse>
-          </Box>
-=======
         const id = row.original.rowId;
         const isOpen = expandedRowId === id;
         return (
@@ -201,7 +175,6 @@ function LogManagement() {
           >
             {value}
           </MDTypography>
->>>>>>> 13222a2 (log: 행 아래 토글 + 이미지 클릭 시 토글 유지)
         );
       },
     },
@@ -316,14 +289,7 @@ function LogManagement() {
                 {/* DataTable: 행 아래 토글 포함 */}
                 <MDBox pt={3}>
                   <DataTable
-<<<<<<< HEAD
-                    table={{
-                      columns,
-                      rows: filteredRows, // ✅ flatMap으로 디테일 행 추가하던 부분 제거
-                    }}
-=======
                     table={{ columns, rows: rowsWithDetail }}
->>>>>>> 13222a2 (log: 행 아래 토글 + 이미지 클릭 시 토글 유지)
                     isSorted={false}
                     entriesPerPage={false}
                     showTotalEntries={false}
