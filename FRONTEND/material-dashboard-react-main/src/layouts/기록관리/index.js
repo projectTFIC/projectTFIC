@@ -287,7 +287,38 @@ function LogManagement() {
                 </MDBox>
 
                 {/* DataTable: 행 아래 토글 포함 */}
-                <MDBox pt={3}>
+                <MDBox
+                  pt={3}
+                  sx={{
+                    "& table": {
+                      borderCollapse: "separate",
+                      borderSpacing: "0 10px", // 좌우 0, 위아래 20px 간격
+                      width: "100%",
+                    },
+                    "& tbody tr": {
+                      backgroundColor: "#fff",
+                      borderRadius: 8,
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      cursor: "pointer",
+                      boxShadow: "none",
+                    },
+                    "& tbody tr:hover": {
+                      transform: "scale(1.02)",
+                      boxShadow: "0 8px 25px rgba(25, 118, 210, 0.3)",
+                      backgroundColor: "rgba(25, 118, 210, 0.15)",
+                      transition:
+                        "transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease",
+                      cursor: "pointer",
+                    },
+                    "& tbody td": {
+                      padding: "16px 12px",
+                      verticalAlign: "middle",
+                      fontSize: "1rem",
+                      fontWeight: "500",
+                      color: "#222",
+                    },
+                  }}
+                >
                   <DataTable
                     table={{ columns, rows: rowsWithDetail }}
                     isSorted={false}

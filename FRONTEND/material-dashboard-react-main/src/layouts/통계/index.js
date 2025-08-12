@@ -58,12 +58,42 @@ ChartJS.register(
 
 // ============= Styles =============
 const FilterPanel = styled(Card)(({ theme }) => ({
+  position: "relative",
   borderRadius: 16,
   padding: theme.spacing(2.5),
   background: "linear-gradient(180deg, rgba(17,24,39,0.6), rgba(17,24,39,0.4))",
   border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
   boxShadow: "0 12px 36px rgba(2,8,23,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
   backdropFilter: "blur(10px)",
+  overflow: "hidden",
+
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: "-20%", // 위쪽 위치를 더 위로 올림
+    left: "-50%",
+    width: "200%",
+    height: "200%",
+    background: "radial-gradient(ellipse at top, rgba(64, 224, 208, 0.4) 0%, transparent 60%)", // 위쪽에 타원형 그라데이션으로 투명해짐
+    animation: "pulseMint 4s ease-in-out infinite",
+    zIndex: 0,
+  },
+
+  "& > *": {
+    position: "relative",
+    zIndex: 1,
+  },
+
+  "@keyframes pulseMint": {
+    "0%, 100%": {
+      transform: "scale(0.9)",
+      opacity: 0.6,
+    },
+    "50%": {
+      transform: "scale(1.2)",
+      opacity: 0.3,
+    },
+  },
 }));
 
 const FieldCard = styled(Box)(({ theme }) => ({

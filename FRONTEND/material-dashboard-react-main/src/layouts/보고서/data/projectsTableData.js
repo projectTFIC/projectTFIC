@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 export default function useProjectsTableData(startDate, endDate) {
   const [columns] = useState([
     { Header: "NO.", accessor: "no", align: "center" },
-    { Header: "제목", accessor: "title", align: "left" },
+    { Header: "제목", accessor: "title", align: "center" },
     { Header: "작성자", accessor: "author", align: "center" },
     { Header: "날짜", accessor: "date", align: "center" },
   ]);
