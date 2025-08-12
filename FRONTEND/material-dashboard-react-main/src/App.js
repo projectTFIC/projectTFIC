@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
+import { Typography } from "@mui/material";
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -131,7 +132,21 @@ function MainApp() {
           <Sidenav
             color={sidenavColor}
             brand={logo}
-            brandName="AIVIS"
+            brandName={
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: "Airbeat",
+                  fontSize: "3.6rem",
+                  color: "White",
+                  fontWeight: 600,
+                  mb: 1,
+                  ml: 1,
+                }}
+              >
+                AIVIS
+              </Typography>
+            }
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
