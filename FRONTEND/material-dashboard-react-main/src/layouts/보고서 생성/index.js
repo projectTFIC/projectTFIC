@@ -12,6 +12,7 @@ import {
   Slide,
 } from "@mui/material";
 import axios from "axios";
+import { useAuthController } from "context";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import PeopleIcon from "@mui/icons-material/People";
 import AssessmentIcon from "@mui/icons-material/Assessment";
@@ -25,98 +26,70 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DownloadPdfButton from "./DownloadPdfButton";
 
-// useAuth 훅을 사용하여 현재 로그인한 사용자 정보 가져오기
-const useAuth = () => {
-  // 실제로는 백엔드에서 사용자 정보를 가져오는 API를 호출하거나,
-  // 로그인 시 로컬 스토리지에 저장된 정보를 파싱하여 반환합니다.
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    try {
-      return JSON.parse(storedUser);
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
-
-// 항상 한국 시간 기준 'YYYY-MM-DD' 형식의 날짜를 반환하는 함수
-const getKoreaDateString = () => {
-  // 옵션 객체에 한국 시간대(Asia/Seoul)를 명시
-  const options = {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: "Asia/Seoul",
-  };
-
-  // 'ko-KR' 로케일 기준으로 포맷터를 생성하면 'YYYY. MM. DD.' 형식이 되므로,
-  // 'en-CA' 같은 'YYYY-MM-DD' 순서를 따르는 로케일로 포맷을 맞춥니다.
-  const formatter = new Intl.DateTimeFormat("en-CA", options);
-
-  return formatter.format(new Date());
-};
-
 function ReportPage() {
+  const API_BASE = (process.env.REACT_APP_API_BASE_URL || "").replace(/\/$/, "");
+  const api = axios.create({ baseURL: API_BASE });
   const [loading, setLoading] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
+
+  const defaultPrompts = {
+    accident: `- 작업 중 사고 발생 내용을 바탕으로 사고 보고서를 작성해 주세요.\n- 사고 시간, 장소, 경과, 조치 사항 포함`,
+    entry: `- 차량/중장비 출입 기록을 분석하여 출입 관리 보고서를 작성해 주세요.\n- 출입 현황, 통제 상태, 개선 사항 포함`,
+    total: `- 사고 및 출입 기록을 종합하여 종합 보고서를 작성해 주세요.\n- 각 항목별 주요 사항 포함`,
+  };
   const [promptType, setPromptType] = useState("default");
-  const { defaultPrompts, reportTypes } = React.useMemo(
-    () => ({
-      defaultPrompts: {
-        accident: `- 작업 중 사고 발생 내용을 바탕으로 사고 보고서를 작성해 주세요.\n- 사고 시간, 장소, 경과, 조치 사항 포함`,
-        entry: `- 차량/중장비 출입 기록을 분석하여 출입 관리 보고서를 작성해 주세요.\n- 출입 현황, 통제 상태, 개선 사항 포함`,
-        total: `- 사고 및 출입 기록을 종합하여 종합 보고서를 작성해 주세요.\n- 각 항목별 주요 사항 포함`,
-      },
-      reportTypes: ["accident", "entry", "total"],
-    }),
-    []
-  );
-
-  // 탭 인덱스가 변경될 때마다 promptText를 업데이트하는 useEffect 추가
-  useEffect(() => {
-    const currentReportType = reportTypes[tabIndex];
-    setPromptText(defaultPrompts[currentReportType]);
-  }, [tabIndex, defaultPrompts, reportTypes]); // 의존성 배열에 tabIndex 추가
-
   const [promptText, setPromptText] = useState(defaultPrompts["accident"]);
+
+  useEffect(() => {
+    if (promptType === "default") {
+      setPromptText(defaultPrompts[reportTypes[tabIndex]]);
+    }
+  }, [tabIndex, promptType]);
+
   const [reportHtml, setReportHtml] = useState("");
   const [reportGenerated, setReportGenerated] = useState(false);
-  const [startDate, setStartDate] = useState(getKoreaDateString);
-  const [endDate, setEndDate] = useState(getKoreaDateString);
+  const nowKST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const fmtYMD = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(
+      2,
+      "0"
+    )}`;
+  const [startDate, setStartDate] = useState(() => fmtYMD(nowKST));
+  const [endDate, setEndDate] = useState(() => fmtYMD(nowKST));
   const [startTime, setStartTime] = useState("00:01");
   const [endTime, setEndTime] = useState("23:59");
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // 2. 컴포넌트가 처음 마운트될 때 한 번만 실행하여 사용자 정보를 설정
-  useEffect(() => {
-    setCurrentUser(useAuth());
-  }, []);
+  const { user } = useAuthController();
+  const userId = user?.userId || user?.id;
+  const isLoggedIn = Boolean(userId);
 
   const reportTitles = ["사고 보고서", "입출입 보고서", "종합 보고서"];
+  const reportTypes = ["accident", "entry", "total"];
   const reportSubtexts = [
     "안전사고 및 위험 상황 분석",
     "출입 통계 및 보안 행동 분석",
     "현장 전반의 운영 통합 정리",
-  ]; // 사용자 정보를 불러오는 예시 (실제 구현에 맞게 수정 필요)
+  ];
 
   const handleGenerateReport = async () => {
+    if (!isLoggedIn) {
+      alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert("시작/종료 날짜를 선택해 주세요.");
+      return;
+    }
+    if (new Date(`${startDate}T${startTime}`) > new Date(`${endDate}T${endTime}`)) {
+      alert("종료 시점이 시작 시점보다 빠릅니다.");
+      return;
+    }
     setLoading(true);
     setReportGenerated(false);
-
-    // 유효성 검사 로직 강화: 실제 사용자가 로그인했는지 확인
-    if (!currentUser || !currentUser.userId) {
-      console.error("로그인 정보가 없어 보고서를 생성할 수 없습니다.");
-      setReportHtml("🚨 보고서 생성 중 오류가 발생했습니다: 로그인 정보가 없습니다.");
-      setLoading(false);
-      setReportGenerated(true);
-      return; // 함수 실행 중단
-    }
 
     const payload = {
       period_start: `${startDate} ${startTime}`,
       period_end: `${endDate} ${endTime}`,
-      user_id: currentUser.userId,
+      user_id: userId,
       report_type: reportTypes[tabIndex],
       use_custom_prompt: promptType === "custom",
       custom_prompt: promptText,
@@ -124,17 +97,55 @@ function ReportPage() {
     };
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/reports/generate`,
-        payload
-      );
+      const response = await api.post(`/api/reports/generate`, payload);
       setReportHtml(response.data.report_html || "⚠️ 응답이 없습니다.");
     } catch (error) {
-      console.error("보고서 생성 오류:", error);
-      setReportHtml("🚨 보고서 생성 중 오류가 발생했습니다.");
+      console.error("보고서 생성 오류:", error?.response?.data || error);
+      setReportHtml(`🚨 보고서 생성 중 오류: ${error?.response?.data?.error || error.message}`);
     } finally {
       setLoading(false);
       setReportGenerated(true);
+    }
+  };
+  // PDF 미리보기(다운로드)
+  const handlePdfDownload = async () => {
+    try {
+      const res = await api.post(
+        `/api/reports/preview-pdf`,
+        { report_html: reportHtml, report_type: reportTypes[tabIndex] },
+        { responseType: "blob" }
+      );
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `report_preview_${reportTypes[tabIndex]}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert("PDF 다운로드 실패");
+    }
+  };
+
+  // PDF 저장(오브젝트 스토리지 업로드 + DB 반영)
+  const handlePdfSave = async () => {
+    try {
+      const payload = {
+        report_html: reportHtml,
+        report_type: reportTypes[tabIndex],
+        period_start: `${startDate} ${startTime}`, // 파일명에 들어감
+        title: reportTitles[tabIndex],
+        user_id: userId,
+      };
+      const { data } = await api.post(`/api/reports/save`, payload);
+      console.log("save res:", data); // 확인용
+      alert(`저장 완료!\n${data.pdf_url}`);
+      // 백엔드가 URL 문자열만 주면 data가 URL, 맵으로 주면 data.fileUrl
+      const url = data.pdf_url;
+      // TODO: 게시판으로 이동 or 목록 새로고침
+    } catch (e) {
+      console.error(e);
+      alert("PDF 저장 실패");
     }
   };
 
@@ -433,8 +444,30 @@ function ReportPage() {
                 />
 
                 {/* 3. PDF 다운로드 버튼 */}
-                <Box mt={3}>
-                  <DownloadPdfButton reportHtml={reportHtml} reportType={reportTypes[tabIndex]} />
+                <Box mt={3} display="flex" gap={1}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handlePdfDownload}
+                    sx={{
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#1565c0", color: "#1565c0" },
+                    }}
+                  >
+                    PDF 다운로드
+                  </Button>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={handlePdfSave}
+                    sx={{
+                      backgroundColor: "#ff9800",
+                      "&:hover": { backgroundColor: "#f57c00" },
+                    }}
+                  >
+                    PDF 저장(업로드)
+                  </Button>
                 </Box>
               </Card>
             </Grid>

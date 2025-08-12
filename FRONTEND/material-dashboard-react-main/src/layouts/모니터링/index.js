@@ -91,7 +91,10 @@ const MonitoringPage = () => {
   const camById = (id) => cameraList.find((c) => c.device_id === id);
   const WEBCAM_DEVICE_ID = 6;
 
-  // ✅ 버튼 클릭 시 1초 알림
+  const nextDelayRef = useRef(450); // 기본값: 450ms(2.2fps)
+  const loopTimerRef = useRef(null);
+
+  // 버튼 클릭 시 1초 알림
   const showQuickToast = (title, description) => {
     setToastInfo({ open: true, title, description });
   };
@@ -116,46 +119,86 @@ const MonitoringPage = () => {
     }
   }, [globalToggles, selectedCam]);
 
-  // 프레임 전송 루프 (in-flight/ACK 기반)
+  // 프레임 전송 루프
   useEffect(() => {
-    const tick = () => {
-      const v = videoRef.current;
-      if (!v) return;
+    let cancelled = false;
 
-      if (!Object.values(globalToggles).some(Boolean)) return;
-      if (!selectedCam) return;
-      if (!canSendRef.current) return;
-      if (inFlightRef.current) return;
+    const scheduleNext = (delay) => {
+      if (loopTimerRef.current) clearTimeout(loopTimerRef.current);
+      loopTimerRef.current = setTimeout(runOnce, delay);
+    };
+
+    const runOnce = () => {
+      if (cancelled) return;
+
+      const v = videoRef.current;
+      if (!v) return scheduleNext(300);
+
+      // 전송 가능 조건
+      if (
+        !Object.values(globalToggles).some(Boolean) ||
+        !selectedCam ||
+        !canSendRef.current ||
+        inFlightRef.current
+      ) {
+        return scheduleNext(300);
+      }
 
       const vw = v.videoWidth || v.clientWidth;
       const vh = v.videoHeight || v.clientHeight;
-      if (!vw || !vh) return;
+      if (!vw || !vh) return scheduleNext(300);
 
       const tmp = document.createElement("canvas");
       tmp.width = vw;
       tmp.height = vh;
       const ctx = tmp.getContext("2d");
       ctx.drawImage(v, 0, 0, vw, vh);
+
+      // 화질은 그대로(기본 JPEG 품질) — 번호판 품질 보존
       const dataUrl = tmp.toDataURL("image/jpeg");
 
       inFlightRef.current = true;
       socket.emit("image_analysis_request", { image: dataUrl, deviceId: selectedCam });
 
-      const safetyTimer = setTimeout(() => {
-        inFlightRef.current = false;
-      }, 1500);
-
+      // analysis_result 리스너를 여기에 정의하고 모든 처리를 통합
       const onResult = (res) => {
+        // 이 요청에 대한 응답인지 확인
         if (String(res?.deviceId) === String(selectedCam)) {
           inFlightRef.current = false;
           clearTimeout(safetyTimer);
+          socket.off("analysis_result", onResult); // 중요: 수신 후 즉시 리스너 해제
+
+          // 1. 상태 업데이트 로직 (제거했던 코드)
+          setDetections(res.detections || []);
+          if (typeof res.nextDelayMs === "number") {
+            const clamped = Math.min(900, Math.max(120, Math.round(res.nextDelayMs)));
+            nextDelayRef.current = clamped;
+          }
+
+          // 2. 다음 루프 예약
+          scheduleNext(nextDelayRef.current);
         }
       };
-      socket.once("analysis_result", onResult);
+      socket.on("analysis_result", onResult);
+
+      // 3. 안전장치 (서버 응답이 1.5초 이상 없을 경우)
+      const safetyTimer = setTimeout(() => {
+        inFlightRef.current = false;
+        socket.off("analysis_result", onResult);
+        // 타임아웃 시에도 현재 delay 값으로 다음 루프 예약
+        scheduleNext(nextDelayRef.current);
+      }, 1500);
     };
 
-    const id = setInterval(tick, 450);
-    return () => clearInterval(id);
+    // 첫 스타트
+    scheduleNext(300);
+
+    return () => {
+      cancelled = true;
+      if (loopTimerRef.current) clearTimeout(loopTimerRef.current);
+      // 컴포넌트가 사라질 때 리스너가 남아있을 수 있으므로 확실하게 정리
+      socket.off("analysis_result");
+    };
   }, [globalToggles, selectedCam]);
 
   // 실시간 시계
@@ -285,15 +328,20 @@ const MonitoringPage = () => {
   }, []);
 
   // [Back] 서버로부터 전달 받은 AI 분석 결과 가져오기
-  useEffect(() => {
-    const handleAnalysisResult = (data) => {
-      if (Number(data.deviceId) === Number(selectedCam)) {
-        setDetections(data.detections || []);
-      }
-    };
-    socket.on("analysis_result", handleAnalysisResult);
-    return () => socket.off("analysis_result", handleAnalysisResult);
-  }, [selectedCam]);
+  // useEffect(() => {
+  //   const handleAnalysisResult = (data) => {
+  //     if (Number(data.deviceId) === Number(selectedCam)) {
+  //       setDetections(data.detections || []);
+  //       // ✅ 서버 힌트 반영 (최소/최대 가드)
+  //       if (typeof data.nextDelayMs === "number") {
+  //         const clamped = Math.min(900, Math.max(120, Math.round(data.nextDelayMs)));
+  //         nextDelayRef.current = clamped;
+  //       }
+  //     }
+  //   };
+  //   socket.on("analysis_result", handleAnalysisResult);
+  //   return () => socket.off("analysis_result", handleAnalysisResult);
+  // }, [selectedCam]);
 
   // [Back] 객체 탐지 결과를 화면에 표현하기
   useEffect(() => {
@@ -320,8 +368,15 @@ const MonitoringPage = () => {
       if (x1 == null) return;
 
       const label = det.label || "";
-      let color = "red";
-      if (label.includes("wear")) color = "blue";
+      let color = "rgba(0,128,0,1)";
+      if (det.heType) color = "rgba(229,255,0,1)"; // 중장비 노란색
+      else if (det.is_falling) color = "rgba(255,139,0,1)"; // 사고 감지 주황
+      else if (det.kind === "gear" && det.gear_state === "unwear") color = "rgba(255,86,48,1)";
+      else if (det.kind === "gear" && det.gear_state === "wear") color = "rgba(0,82,204,1)";
+      else if ((det.safety_status || []).some((s) => s.includes("unwear")))
+        color = "rgba(255,86,48,1)"; // 안전장비 미착용 빨강
+      else if ((det.safety_status || []).some((s) => s.includes("wear")))
+        color = "rgba(0,82,204,1)"; // 안전장비 착용 파랑
 
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
