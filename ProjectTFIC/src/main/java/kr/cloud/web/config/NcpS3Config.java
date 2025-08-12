@@ -25,13 +25,6 @@ public class NcpS3Config {
     @Value("${ncp.s3.endpoint}")
     private String endpoint;
     
-    @PostConstruct
-    public void printS3Config() {
-        System.out.println("S3 엔드포인트: " + endpoint);
-        System.out.println("S3 리전: " + region);
-        System.out.println("S3 AccessKey: " + accessKey);
-        // 시크릿키는 노출 주의! (테스트용만)
-    }
 
     @Bean
     public AmazonS3 ncpS3Client() {

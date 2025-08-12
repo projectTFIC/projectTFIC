@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import kr.cloud.web.dto.AccidentSummaryDto;
 import kr.cloud.web.dto.HeRecordDto;
-import kr.cloud.web.entity.PpeRecordViewDto;
+import kr.cloud.web.dto.PpeRecordViewDto;
 import kr.cloud.web.entity.Report;
 
 import java.util.Date;
