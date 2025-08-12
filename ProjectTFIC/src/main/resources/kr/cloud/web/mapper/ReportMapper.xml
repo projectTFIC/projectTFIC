@@ -95,7 +95,7 @@
     </select>
     
     <!-- 5. 요약용: ppe (개인보호구 미착용 기록 DTO) -->
-<select id="selectPpeRecordsByPeriod" resultType="kr.cloud.web.entity.PpeRecordViewDto">
+<select id="selectPpeRecordsByPeriod" resultType="kr.cloud.web.dto.PpeRecordViewDto">
     SELECT
         pr.record_id AS recordId,
         pr.record_title AS recordTitle,
