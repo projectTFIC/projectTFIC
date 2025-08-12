@@ -1,35 +1,77 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+
+// MUI
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import Link from "@mui/material/Link";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 
+// Template components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
+// import Footer from "examples/Footer";
 import MDBox from "components/MDBox";
 import DataTable from "examples/Tables/DataTable";
 
-// projectsTableData 파일에 구현한 커스텀 훅 불러오기 (또는 API 연동 훅)
+// 데이터 훅 (API 연동)
 import useProjectsTableData from "layouts/보고서/data/projectsTableData";
 
-// 제목 컬럼 셀 컴포넌트 (다운로드 링크 포함)
+// === 제목 컬럼 셀: 문서 아이콘 + 제목(호버 강조) + 다운로드 아이콘 ===
 function TitleCell({ row }) {
+  const url = row.original.reportFile;
+  const title = row.original.title;
+
   return (
-    <a
-      href={row.original.reportFile}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
-      download
+    <Stack
+      direction="row"
+      alignItems="center"
+      spacing={1}
+      sx={{
+        minWidth: 0,
+        backgroundColor: "#f9f9f9", // 연한 배경
+        borderRadius: "6px",
+        padding: "4px 8px",
+        transition: "background-color 0.2s ease",
+        "&:hover": {
+          backgroundColor: "#f1f5ff", // 호버 시 살짝 파란 배경
+        },
+      }}
     >
-      {row.original.title}
-    </a>
+      <DescriptionOutlinedIcon fontSize="small" color="primary" />
+
+      <Link
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        download
+        underline="hover"
+        color="text.primary"
+        sx={{
+          fontSize: "1.25rem", // 제목 크기
+          fontWeight: 700, // 제목 굵기
+          lineHeight: 1.3,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: 520,
+          "&:hover": { color: "primary.main" },
+        }}
+      >
+        {title}
+      </Link>
+    </Stack>
   );
 }
+
 TitleCell.propTypes = {
   row: PropTypes.shape({
     original: PropTypes.shape({
@@ -38,57 +80,50 @@ TitleCell.propTypes = {
     }).isRequired,
   }).isRequired,
 };
+
 function Billing() {
-  // 검색어, 필터 상태
+  // 검색/필터 상태
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState("title");
   const [anchorEl, setAnchorEl] = useState(null);
 
-  // 날짜 필터 상태 (중복 선언 제거)
+  // 날짜 필터
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // API에서 컬럼과 행 데이터 받아오기 (날짜 필터 인자 전달)
+  // 데이터 불러오기 (필요 시 날짜 전달)
   const { columns, rows } = useProjectsTableData(startDate, endDate);
 
-  // 제목 컬럼에 다운로드 링크 Cell 추가
-  const columnsWithDownload = columns.map((col) => {
-    if (col.accessor === "title") {
-      return {
-        ...col,
-        Cell: TitleCell,
-      };
-    }
-    return col;
-  });
+  // 제목 컬럼만 커스텀 셀로 교체
+  const columnsWithDownload = columns.map((col) =>
+    col.accessor === "title" ? { ...col, Cell: TitleCell } : col
+  );
 
-  // 필터링된 데이터 계산
+  // 필터링(Prettier가 싫어하는 긴 한 줄 OR 조건을 변수로 분리)
   const filteredRows = rows.filter((item) => {
-    const text = searchText.toLowerCase();
+    const text = (searchText || "").toLowerCase();
 
-    // originDate가 "2025-08-01T..." 형식 문자열이라 startDate/endDate와 비교하기 위해 Date 객체로 변환
+    // 날짜 비교: originDate가 ISO 문자열이라고 가정
     const itemDate = new Date(item.originDate);
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
-    // 날짜 필터 (item.date 포맷 주의)
-    const isDateInRange = (!start || itemDate >= start) && (!end || itemDate <= end);
-    if (!isDateInRange) return false;
+    const inRange = (!start || itemDate >= start) && (!end || itemDate <= end);
+    if (!inRange) return false;
 
-    // 텍스트 필터링 조건
-    if (filterType === "title") {
-      return item.title?.toLowerCase().includes(text);
-    } else if (filterType === "author") {
-      return item.author?.toLowerCase().includes(text);
-    } else if (filterType === "all") {
-      return item.title?.toLowerCase().includes(text) || item.author?.toLowerCase().includes(text);
-    }
+    const titleMatch = (item.title || "").toLowerCase().includes(text);
+    const authorMatch = (item.author || "").toLowerCase().includes(text);
+
+    if (filterType === "title") return titleMatch;
+    if (filterType === "author") return authorMatch;
+    if (filterType === "all") return titleMatch || authorMatch;
+
     return true;
   });
 
-  // 필터 메뉴 열기/닫기 이벤트
+  // 필터 메뉴
   const open = Boolean(anchorEl);
-  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClick = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleMenuItemClick = (type) => {
     setFilterType(type);
@@ -114,7 +149,7 @@ function Billing() {
                 flexWrap="wrap"
                 gap={2}
               >
-                {/* 왼쪽: 필터 버튼 + 검색 입력 */}
+                {/* 왼쪽: 필터 버튼 + 검색 */}
                 <MDBox display="flex" alignItems="center" gap={2} flexGrow={1}>
                   <Button
                     variant="outlined"
@@ -172,7 +207,7 @@ function Billing() {
                 </MDBox>
               </MDBox>
 
-              {/* 데이터 테이블 출력 */}
+              {/* 테이블 */}
               <MDBox pt={3}>
                 <DataTable
                   table={{ columns: columnsWithDownload, rows: filteredRows }}
