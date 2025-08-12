@@ -1,7 +1,11 @@
-# AIVIS
+# AI-VIS
+![image](https://github.com/user-attachments/assets/bf1dce66-78f0-4ed6-83d2-9984f64b34e9)
+
+
+
 ## 👀 서비스 소개
-* 서비스명: YOLO/LLM 을 이용한 공사장 안전관리 서비스 AIVIS
-* 서비스설명: YOLO 객체탐지를 기반으로 한 보호장구 착용 감지, 사고 감지, 중장비 출입등을 확인, ChatGPT를 이용하여 자동 보고서 작성 시스템
+* 서비스명: YOLO/LLM 을 이용한 스마트 현장안전 감지관리 시스템 AI-VIS
+* 서비스설명: YOLO 객체탐지를 기반으로 한 보호장구 착용 감지, 사고 감지, 중장비 출입등을 확인, LLM을 이용한 자동 보고서 작성 시스템
 <br>
 
 ## 📅 프로젝트 기간
@@ -15,7 +19,7 @@
 * 기능3 : 아이와 가장 성향이 잘 맞는 돌보미 매칭
 * 기능4 : 모니터링을 통한 실시간 CCTV 확인 및 AI 탐지를 이용한 안전장구/사고/중장비 감지
 * 기능5 : 기록관리를 통한 각 사고별 기록 확인
-* 기능6 : 각 사고별 기록을 바탕으로 ChatGPT를 이용한 사고 보고서 생성
+* 기능6 : 각 사고별 기록을 바탕으로 LLM을 이용한 사고 보고서 생성
 * 기능7 : 사고 보고서 목록을 조회하고 다운로드 가능
 * 기능8 : 각 감지기록을 통계별로 그래프로 표현
 <br>
@@ -39,17 +43,23 @@
     <tr>
         <td>라이브러리</td>
         <td>
-            <img src="https://img.shields.io/badge/scikitlearn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white"/>
-            <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=NumPy&logoColor=white"/>
-            <img src="https://img.shields.io/badge/gensim-000000?style=for-the-badge"/>
-            <img src="https://img.shields.io/badge/fastText-000000?style=for-the-badge"/>
+            <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
+        </td>
+    </tr>
+        <tr>
+        <td>AI</td>
+        <td>
+            <img src="https://img.shields.io/badge/YOLO-111F68?style=for-the-badge&logo=yolo&logoColor=white"/>
+            <img src="https://img.shields.io/badge/NAVER OCR-03C75A?style=for-the-badge&logo=Naver&logoColor=white"/>
+            <img src="https://img.shields.io/badge/ChatGPT-412991?style=for-the-badge&logo=openai&logoColor=white"/>
         </td>
     </tr>
     <tr>
         <td>개발도구</td>
         <td>
-            <img src="https://img.shields.io/badge/Eclipse-2C2255?style=for-the-badge&logo=Eclipse&logoColor=white"/>
+            <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"/>
             <img src="https://img.shields.io/badge/VSCode-007ACC?style=for-the-badge&logo=VisualStudioCode&logoColor=white"/>
+            <img src="https://img.shields.io/badge/jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white"/>
         </td>
     </tr>
     <tr>
@@ -57,6 +67,7 @@
         <td>
             <img src="https://img.shields.io/badge/Apache%20Tomcat-F8DC75?style=for-the-badge&logo=apachetomcat&logoColor=black"/>
             <img src="https://img.shields.io/badge/flask-000000?style=for-the-badge&logo=flask&logoColor=white"/>
+            <img src="https://img.shields.io/badge/NCP-03C75A?style=for-the-badge&logo=Naver&logoColor=white"/>
         </td>
     </tr>
     <tr>
@@ -78,17 +89,17 @@
 
 <br>
 
-## ⚙ 시스템 아키텍처(구조) 예시 
-![서비스 아키텍처](https://github.com/user-attachments/assets/793845b2-222d-47c3-ac0c-011acf196c91)
+## ⚙ 클라우드 아키텍처
+![클라우드 아키텍처](https://github.com/user-attachments/assets/0ffe16f8-1f47-429c-b557-628a4b4e6c3d)
 <br>
 
 
-## 📌 SW유스케이스
-![image](https://github.com/user-attachments/assets/c407ff83-5c6c-4752-bc5e-7db0cd225289)
+## 📌 소프트웨어 아키텍처
+![image](https://github.com/user-attachments/assets/b398c9c0-78ae-44f5-80ac-dce97c76d144)
 <br>
 
 ## 📌 서비스 흐름도
-![image](https://github.com/user-attachments/assets/d238027e-8483-4d53-9e18-252aac7d01fa)
+![image](https://github.com/user-attachments/assets/a9cf3be7-60b0-47be-a087-83115c30e07d)
 <br>
 
 
@@ -169,12 +180,10 @@
 
 ## 🤾‍♂️ 트러블슈팅
 개념: 문제 해결을 위해 문제의 원인을 논리적이고 체계적으로 찾는 일이며 제품이나 프로세스의 운영을 재개
-프로젝트 진행하는 동안 발생했던 이슈 중 가장 기억에 남았던 문제와 해결 프로세스 나열(2~5가지 정도)
+프로젝트 진행하는 동안 발생했던 이슈 중 가장 기억에 남았던 문제와 해결 프로세스 나열
   
-* 문제1 : FastText 모델 윈도우 미지원 해결책<br>
-Gensim 자연어 처리 모델 안의 FastText 모델 이용으로 해결
+* 문제1 : 예정1<br>
+  내용 예정1
  
-* 문제2 : 코드에 문제는 없으나 500 내부문제 발생
-  현재 로그인 완료 후 일정 확률로 메인페이지로 돌아갈 때 일정 확률로 500 에러가 걸리는 것을 확인
-평소에 작동은 잘 되나 가끔 이렇게 오류가 나는 것을 확인, db서버가 느린것을 예전에 파악한 것과 종합해보면 코드 자체에 문제는 없으나 가끔 플라스크 서버 부하로 인해 발생하는 문제라고 생각
-db서버에서 받아온 직후 바로 다음 코드를 실행한 것이 아닌 sleep 메소드를 중간에 사용해 1초 대기함으로서 cpu 점유율을 줄인 뒤 로그인 여부를 판단하는 것으로 해결함 
+* 문제2 : 예정2<br>
+  내용 예정2
