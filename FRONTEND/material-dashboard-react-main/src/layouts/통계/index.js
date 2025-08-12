@@ -1,10 +1,10 @@
+// File: src/layouts/통계/index.js
 import React, { useState, useEffect, useMemo } from "react";
 
 // MUI
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 
@@ -28,7 +28,7 @@ import TimelineRoundedIcon from "@mui/icons-material/TimelineRounded";
 import StackedBarChartRoundedIcon from "@mui/icons-material/StackedBarChartRounded";
 
 // Charts
-import { Pie, Bar, Line } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -41,6 +41,10 @@ import {
   BarElement,
 } from "chart.js";
 
+// Local components / utils
+import PieChart from "./components/PieChart";
+import { colorOf, fillOf, normalizeLabel } from "./components/Chart";
+
 ChartJS.register(
   ArcElement,
   BarElement,
@@ -52,19 +56,60 @@ ChartJS.register(
   Legend
 );
 
-export default function Notifications() {
+// ============= Styles =============
+const FilterPanel = styled(Card)(({ theme }) => ({
+  borderRadius: 16,
+  padding: theme.spacing(2.5),
+  background: "linear-gradient(180deg, rgba(17,24,39,0.6), rgba(17,24,39,0.4))",
+  border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
+  boxShadow: "0 12px 36px rgba(2,8,23,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
+  backdropFilter: "blur(10px)",
+}));
+
+const FieldCard = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: 14,
+  padding: "12px 14px",
+  borderRadius: 12,
+  border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
+  background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
+}));
+
+const ModeButton = styled(MDButton)(({ theme }) => ({
+  textTransform: "none",
+  fontWeight: 700,
+  borderRadius: 12,
+  padding: "10px 14px",
+  "&.MuiButton-contained": {
+    color: "#0B1020",
+    boxShadow: "0 8px 18px rgba(2,8,23,0.33)",
+  },
+  "&.MuiButton-outlined": {
+    borderColor: "rgba(139,139,139,1)",
+    color: "#E6EAF2",
+  },
+}));
+
+export default function Statistics() {
+  // date range (Date objects)
   const today = new Date();
   const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
-  const defaultStart = twoWeeksAgo.toISOString().slice(0, 10);
-  const defaultEnd = today.toISOString().slice(0, 10);
+  const [startDate, setStartDate] = useState(twoWeeksAgo);
+  const [endDate, setEndDate] = useState(today);
 
-  const [startDate, setStartDate] = useState(defaultStart);
-  const [endDate, setEndDate] = useState(defaultEnd);
-  const [barMode, setBarMode] = useState("type"); // 'type', 'area', 'type-timeline'
+  // view mode + data
+  const [barMode, setBarMode] = useState("type"); // 'type' | 'area'
   const [typeStats, setTypeStats] = useState([]);
   const [areaStats, setAreaStats] = useState({});
   const [dayStats, setDayStats] = useState([]);
   const [heDayStats, setHeDayStats] = useState([]);
+
+  const startStr = useMemo(() => startDate.toISOString().slice(0, 10), [startDate]);
+  const endStr = useMemo(() => endDate.toISOString().slice(0, 10), [endDate]);
+
+  const API = process.env.REACT_APP_API_BASE || "";
 
   const getDateRangeArray = (start, end) => {
     const arr = [];
@@ -77,221 +122,219 @@ export default function Notifications() {
     return arr;
   };
 
-  const FilterPanel = styled(Card)(({ theme }) => ({
-    borderRadius: 16,
-    padding: theme.spacing(2.5), // 20px -> 24px
-    background: "linear-gradient(180deg, rgba(17,24,39,0.6), rgba(17,24,39,0.4))",
-    border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
-    boxShadow: "0 12px 36px rgba(2,8,23,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
-    backdropFilter: "blur(10px)",
-  }));
-
-  const FieldCard = styled(Box)(({ theme }) => ({
-    display: "flex",
-    alignItems: "center",
-    gap: 14, // 10 -> 14
-    padding: "12px 14px", // 10x12 -> 12x14
-    borderRadius: 12,
-    border: `1px solid ${alpha("#FFFFFF", 0.16)}`,
-    background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
-  }));
-
-  const ModeButton = styled(MDButton)(({ theme }) => ({
-    textTransform: "none",
-    fontWeight: 700,
-    borderRadius: 12,
-    padding: "10px 14px",
-    "&.MuiButton-contained": {
-      color: "#0B1020",
-      boxShadow: "0 8px 18px rgba(2,8,23,0.33)",
-    },
-    "&.MuiButton-outlined": {
-      borderColor: "rgba(139,139,139,1)",
-      color: "#E6EAF2",
-    },
-  }));
-
   const setQuickRange = (days) => {
     const end = new Date();
     const start = new Date(end);
     start.setDate(end.getDate() - (days - 1));
-    setStartDate(start.toISOString().slice(0, 10));
-    setEndDate(end.toISOString().slice(0, 10));
+    setStartDate(start);
+    setEndDate(end);
   };
 
-  // 색상 매핑 (구역별 추가 필요시 추가)
-  const colorMap = {
-    "PPE 감지": "#4dc9f6",
-    "ACC 감지": "#f67019",
-    "중장비 출입": "#f53794",
-    "안전장비 미착용": "#9b59b6",
-    "1층 일반 좌측 복도 동로": "#36a2eb",
-    B: "#ffcd56",
-    A: "#4bc0c0",
-  };
-
-  // 데이터 로드
+  // fetch
   useEffect(() => {
-    fetch(`/web/tablelist/statistics?start=${startDate}&end=${endDate}`)
-      .then((res) => res.json())
-      .then((data) => {
+    const url = `${API}/web/tablelist/statistics?start=${startStr}&end=${endStr}`;
+    fetch(url)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
         setTypeStats(Array.isArray(data.typeStats) ? data.typeStats : []);
-        setAreaStats(
-          typeof data.areaStats === "object" && data.areaStats !== null ? data.areaStats : {}
-        );
+        setAreaStats(data?.areaStats && typeof data.areaStats === "object" ? data.areaStats : {});
         setDayStats(Array.isArray(data.dayStats) ? data.dayStats : []);
         setHeDayStats(Array.isArray(data.heDayStats) ? data.heDayStats : []);
       })
-      .catch((err) => console.error(err));
-  }, [startDate, endDate]);
+      .catch(() => {
+        setTypeStats([]);
+        setAreaStats({});
+        setDayStats([]);
+        setHeDayStats([]);
+      });
+  }, [API, startStr, endStr]);
 
-  // 도넛/파이/누적용 - 유형별
-  const mergedTypeStats = {};
-  typeStats.forEach((item) => {
-    let label = item.type;
-    if (label.startsWith("안전장비 미착용")) label = "안전장비 미착용";
-    else if (label.startsWith("중장비 출입")) label = "중장비 출입";
-    mergedTypeStats[label] = (mergedTypeStats[label] || 0) + item.count;
-  });
-  const typeLabels = Object.keys(mergedTypeStats);
-  const typeCounts = Object.values(mergedTypeStats);
+  // ===== pie: type =====
+  const mergedTypeStats = useMemo(() => {
+    const acc = {};
+    for (const item of typeStats) {
+      const label = normalizeLabel(item.type);
+      acc[label] = (acc[label] || 0) + (item.count || 0);
+    }
+    return acc;
+  }, [typeStats]);
+  const typeLabels = useMemo(() => Object.keys(mergedTypeStats), [mergedTypeStats]);
+  const typeCounts = useMemo(() => Object.values(mergedTypeStats), [mergedTypeStats]);
 
-  // 도넛/파이/누적용 - 구역별
-  const mergedAreaStats = {};
-  Object.entries(areaStats).forEach(([areaName, dailyStatsArray]) => {
-    let areaTotalCount = 0;
-    dailyStatsArray.forEach((dailyStat) => {
-      const typeCounts = dailyStat.typeCounts || {};
-      Object.entries(typeCounts).forEach(([typeLabel, count]) => {
-        let label = typeLabel;
-        if (label.startsWith("안전장비 미착용")) label = "안전장비 미착용";
-        else if (label.startsWith("중장비 출입")) label = "중장비 출입";
-        areaTotalCount += count;
+  // ===== pie: area =====
+  const mergedAreaStats = useMemo(() => {
+    const acc = {};
+    Object.entries(areaStats).forEach(([areaName, dailyStatsArray]) => {
+      let total = 0;
+      (dailyStatsArray || []).forEach((d) => {
+        const tc = d?.typeCounts || {};
+        Object.values(tc).forEach((v) => (total += Number(v) || 0));
+      });
+      acc[areaName] = total;
+    });
+    return acc;
+  }, [areaStats]);
+  const areaLabels = useMemo(() => Object.keys(mergedAreaStats), [mergedAreaStats]);
+  const areaCounts = useMemo(() => Object.values(mergedAreaStats), [mergedAreaStats]);
+
+  // common x axis
+  const dateRange = useMemo(() => getDateRangeArray(startStr, endStr), [startStr, endStr]);
+
+  // ===== line: type timeline =====
+  const typeTimelineChartData = useMemo(() => {
+    const series = {};
+    typeLabels.forEach((label) => (series[label] = dateRange.map(() => 0)));
+    dayStats.forEach((d) => {
+      const idx = dateRange.indexOf(d.date);
+      if (idx === -1) return;
+      Object.entries(d.typeCounts || {}).forEach(([raw, c]) => {
+        const label = normalizeLabel(raw);
+        if (series[label]) series[label][idx] += Number(c) || 0;
       });
     });
-    mergedAreaStats[areaName] = areaTotalCount;
-  });
-  const areaLabels = Object.keys(mergedAreaStats);
-  const areaCounts = Object.values(mergedAreaStats);
+    return {
+      labels: dateRange,
+      datasets: typeLabels.map((label) => ({
+        label,
+        data: series[label],
+        borderColor: colorOf(label),
+        backgroundColor: fillOf(label, 0.25),
+        pointBackgroundColor: colorOf(label),
+        pointBorderColor: colorOf(label),
+        borderWidth: 2,
+        tension: 0.35,
+        fill: false,
+      })),
+    };
+  }, [typeLabels, dateRange, dayStats]);
 
-  // 공통 x축 날짜
-  const dateRange = useMemo(() => getDateRangeArray(startDate, endDate), [startDate, endDate]);
-
-  // === [1] 유형별 x 일자별 - 시계열(line/bar)
-  const allTypeSeries = {};
-  typeLabels.forEach((label) => (allTypeSeries[label] = dateRange.map(() => 0)));
-  dayStats.forEach((dayObj) => {
-    const d = dayObj.date;
-    const idx = dateRange.indexOf(d);
-    if (idx === -1) return;
-    const typeMap = dayObj.typeCounts;
-    Object.entries(typeMap).forEach(([originLabel, count]) => {
-      let label = originLabel;
-      if (label.startsWith("안전장비 미착용")) label = "안전장비 미착용";
-      else if (label.startsWith("중장비 출입")) label = "중장비 출입";
-      else if (label === "ACC 감지") label = "ACC 감지";
-      else return;
-      if (allTypeSeries[label]) allTypeSeries[label][idx] += count;
+  // ===== line: area timeline =====
+  const areaTimelineChartData = useMemo(() => {
+    const series = {};
+    areaLabels.forEach((area) => (series[area] = dateRange.map(() => 0)));
+    Object.entries(areaStats).forEach(([area, arr]) => {
+      (arr || []).forEach((st) => {
+        const idx = dateRange.indexOf(st.date);
+        if (idx !== -1) {
+          const sum = Object.values(st.typeCounts || {}).reduce((a, b) => a + (Number(b) || 0), 0);
+          series[area][idx] += sum;
+        }
+      });
     });
-  });
-  const typeTimelineChartData = {
-    labels: dateRange,
-    datasets: typeLabels.map((label) => ({
-      label,
-      data: allTypeSeries[label],
-      borderColor: colorMap[label] || "#999",
-      backgroundColor: (colorMap[label] || "#999") + "55",
-      fill: false,
-      tension: 0.3,
-    })),
-  };
+    return {
+      labels: dateRange,
+      datasets: areaLabels.map((area) => ({
+        label: area,
+        data: series[area],
+        borderColor: colorOf(area),
+        backgroundColor: fillOf(area, 0.25),
+        pointBackgroundColor: colorOf(area),
+        pointBorderColor: colorOf(area),
+        borderWidth: 2,
+        tension: 0.35,
+        fill: false,
+      })),
+    };
+  }, [areaLabels, dateRange, areaStats]);
 
-  // === [2] 구역별 x 일자별 - 시계열(line/bar)
-  const areaSeries = {};
-  areaLabels.forEach((area) => (areaSeries[area] = dateRange.map(() => 0)));
-  Object.entries(areaStats).forEach(([area, arr]) => {
-    arr.forEach((stat) => {
-      const idx = dateRange.indexOf(stat.date);
-      if (idx !== -1) {
-        const dayTotal = Object.values(stat.typeCounts).reduce((a, b) => a + b, 0);
-        areaSeries[area][idx] += dayTotal;
-      }
+  // ===== bar: heavy equipment =====
+  const heavyEquipmentData = useMemo(() => {
+    const entry = {};
+    const exit = {};
+    (heDayStats || []).forEach((d) => {
+      const c = Number(d.count) || 0;
+      if (d.access === "입차") entry[d.date] = (entry[d.date] || 0) + c;
+      else if (d.access === "출차") exit[d.date] = (exit[d.date] || 0) + c;
     });
-  });
-  const areaTimelineChartData = {
-    labels: dateRange,
-    datasets: areaLabels.map((area) => ({
-      label: area,
-      data: areaSeries[area],
-      borderColor: colorMap[area] || "#aaa",
-      backgroundColor: (colorMap[area] || "#aaa") + "55",
-      fill: false,
-      tension: 0.3,
-    })),
-  };
+    return {
+      labels: dateRange,
+      datasets: [
+        {
+          label: "입차",
+          data: dateRange.map((dt) => entry[dt] || 0),
+          borderColor: colorOf("입차"),
+          backgroundColor: fillOf("입차", 0.45),
+          pointBackgroundColor: colorOf("입차"),
+          pointBorderColor: colorOf("입차"),
+          borderWidth: 2,
+          tension: 0.35,
+          fill: true,
+        },
+        {
+          label: "출차",
+          data: dateRange.map((dt) => exit[dt] || 0),
+          borderColor: colorOf("출차"),
+          backgroundColor: fillOf("출차", 0.45),
+          pointBackgroundColor: colorOf("출차"),
+          pointBorderColor: colorOf("출차"),
+          borderWidth: 2,
+          tension: 0.35,
+          fill: true,
+        },
+      ],
+    };
+  }, [heDayStats, dateRange]);
 
-  // === [3] 중장비 입차/출차 라인 차트
-  const entryDataMap = {},
-    exitDataMap = {};
-  heDayStats.forEach((d) => {
-    if (d.access === "입차") entryDataMap[d.date] = (entryDataMap[d.date] || 0) + d.count;
-    else if (d.access === "출차") exitDataMap[d.date] = (exitDataMap[d.date] || 0) + d.count;
-  });
-  const heavyEquipmentData = {
-    labels: dateRange,
-    datasets: [
-      {
-        label: "입차",
-        data: dateRange.map((date) => entryDataMap[date] || 0),
-        borderColor: "#67d5fdff",
-        backgroundColor: "rgba(77,201,246,0.8)",
-        tension: 0.4,
-        fill: true,
+  // ===== chart options tuned for dark background =====
+  const gridColor = "rgba(230,234,242,0.15)";
+  const tickColor = "#0b1018ff";
+  const legendColor = "#14161aff";
+
+  const barOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false, labels: { color: legendColor } },
+        tooltip: {
+          backgroundColor: "#111827",
+          titleColor: "#E6EDF7",
+          bodyColor: "#E6EDF7",
+          borderColor: "#23314d",
+          borderWidth: 1,
+        },
       },
-      {
-        label: "출차",
-        data: dateRange.map((date) => exitDataMap[date] || 0),
-        borderColor: "#f67019",
-        backgroundColor: "rgba(246,112,25,0.8)",
-        tension: 0.4,
-        fill: true,
+      scales: {
+        x: { ticks: { color: tickColor }, grid: { color: gridColor } },
+        y: { beginAtZero: true, ticks: { color: tickColor }, grid: { color: gridColor } },
       },
-    ],
-  };
+    }),
+    []
+  );
 
-  // Chart options
-  const pieOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom",
-        labels: { boxWidth: 12, font: { size: 14 } },
+  const lineOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      elements: { point: { radius: 2, hitRadius: 6 } },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: { color: legendColor, usePointStyle: true, boxWidth: 10 },
+        },
+        tooltip: {
+          backgroundColor: "#111827",
+          titleColor: "#E6EDF7",
+          bodyColor: "#E6EDF7",
+          borderColor: "#23314d",
+          borderWidth: 1,
+        },
       },
-    },
-  };
-
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true } },
-  };
-
-  const lineOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: "top" } },
-    scales: { y: { beginAtZero: true } },
-  };
+      scales: {
+        x: { ticks: { color: tickColor }, grid: { color: gridColor } },
+        y: { beginAtZero: true, ticks: { color: tickColor }, grid: { color: gridColor } },
+      },
+    }),
+    []
+  );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DashboardLayout>
         <DashboardNavbar />
 
-        {/* 날짜 필터와 버튼을 하나의 flex 컨테이너에 배치합니다. */}
+        {/* Filter */}
         <FilterPanel sx={{ mx: 3, mt: 3, mb: 2 }}>
           <Box
             display="flex"
@@ -300,16 +343,14 @@ export default function Notifications() {
             flexWrap="wrap"
             mb={1.5}
           >
-            {/* 타이틀 더 큼직하게 + 굵게 */}
             <MDTypography
               variant="h6"
               sx={{ fontWeight: 900, color: "#F5F7FB", letterSpacing: 0.2 }}
             >
               통계 기간 설정
             </MDTypography>
-            {/* 기간 문자열도 크고 선명하게 */}
             <MDTypography variant="body1" sx={{ color: "#E6EAF2", fontWeight: 600 }}>
-              {startDate} ~ {endDate}
+              {startStr} ~ {endStr}
             </MDTypography>
           </Box>
 
@@ -326,13 +367,13 @@ export default function Notifications() {
                 </MDTypography>
                 <DatePicker
                   value={startDate}
-                  onChange={(d) => setStartDate(d?.toISOString().slice(0, 10) || null)}
+                  onChange={(d) => d && setStartDate(d)}
                   renderInput={(p) => (
                     <TextField
                       {...p}
                       size="small"
                       sx={{
-                        minWidth: 200, // 넉넉하게
+                        minWidth: 200,
                         "& .MuiInputBase-input": {
                           color: "#FFFFFF !important",
                           fontSize: "0.95rem",
@@ -359,7 +400,7 @@ export default function Notifications() {
                 </MDTypography>
                 <DatePicker
                   value={endDate}
-                  onChange={(d) => setEndDate(d?.toISOString().slice(0, 10) || null)}
+                  onChange={(d) => d && setEndDate(d)}
                   renderInput={(p) => (
                     <TextField
                       {...p}
@@ -380,7 +421,7 @@ export default function Notifications() {
               </Box>
             </FieldCard>
 
-            {/* 퀵 레인지 */}
+            {/* quick ranges */}
             <Stack direction="row" spacing={1} sx={{ ml: { xs: 0, md: 1 } }}>
               <MDButton variant="outlined" color="info" onClick={() => setQuickRange(1)}>
                 오늘
@@ -396,7 +437,7 @@ export default function Notifications() {
               </MDButton>
             </Stack>
 
-            {/* 모드 토글 */}
+            {/* mode toggle */}
             <Stack direction="row" spacing={1.2} sx={{ ml: "auto" }}>
               <ModeButton
                 variant={barMode === "type" ? "contained" : "outlined"}
@@ -424,62 +465,18 @@ export default function Notifications() {
           </Box>
         </FilterPanel>
 
-        {/* 차트 레이아웃 */}
+        {/* Charts */}
         <MDBox pt={1} pb={3}>
           <Grid container spacing={3}>
-            {/* 왼쪽 Pie 2개 (누적 도넛) */}
+            {/* Pies */}
             <Grid item xs={12} md={4}>
               <Box display="flex" flexDirection="column" gap={3} height={520}>
-                <Card sx={{ flexGrow: 1 }}>
-                  <MDBox px={2} pt={1}>
-                    <MDTypography variant="h6">탐지 유형별 (누적)</MDTypography>
-                  </MDBox>
-                  <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-                    <Pie
-                      data={{
-                        labels: typeLabels,
-                        datasets: [
-                          {
-                            data: typeCounts,
-                            backgroundColor: typeLabels.map(
-                              (label) => colorMap[label] || "#9b59b6"
-                            ),
-                            borderColor: typeLabels.map((label) => colorMap[label] || "#9b59b6"),
-                            borderWidth: 2,
-                          },
-                        ],
-                      }}
-                      options={pieOptions}
-                    />
-                  </MDBox>
-                </Card>
-                <Card sx={{ flexGrow: 1 }}>
-                  <MDBox px={2} pt={1}>
-                    <MDTypography variant="h6">발생 구역별 (누적)</MDTypography>
-                  </MDBox>
-                  <MDBox p={2} sx={{ height: "calc(100% - 40px)" }}>
-                    <Pie
-                      data={{
-                        labels: areaLabels,
-                        datasets: [
-                          {
-                            data: areaCounts,
-                            backgroundColor: areaLabels.map(
-                              (label) => colorMap[label] || "#95a5a6"
-                            ),
-                            borderColor: areaLabels.map((label) => colorMap[label] || "#95a5a6"),
-                            borderWidth: 2,
-                          },
-                        ],
-                      }}
-                      options={pieOptions}
-                    />
-                  </MDBox>
-                </Card>
+                <PieChart title="탐지 유형별 (누적)" labels={typeLabels} values={typeCounts} />
+                <PieChart title="발생 구역별 (누적)" labels={areaLabels} values={areaCounts} />
               </Box>
             </Grid>
 
-            {/* 오른쪽 ; 유형·구역별 일자별 추이 (Line/Bar) */}
+            {/* Line */}
             <Grid item xs={12} md={8}>
               <Card sx={{ height: 520 }}>
                 <MDBox p={2} sx={{ height: "100%" }}>
@@ -493,7 +490,7 @@ export default function Notifications() {
           </Grid>
         </MDBox>
 
-        {/* 하단 중장비 출입 추이(입차/출차) */}
+        {/* Bottom bar: Heavy equipment */}
         <MDBox pb={3}>
           <Card sx={{ height: 400 }}>
             <MDBox px={2} pt={1}>
@@ -504,8 +501,6 @@ export default function Notifications() {
             </MDBox>
           </Card>
         </MDBox>
-
-        {/* <Footer /> */}
       </DashboardLayout>
     </LocalizationProvider>
   );
