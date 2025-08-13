@@ -91,7 +91,7 @@ const MonitoringPage = () => {
   const camById = (id) => cameraList.find((c) => c.device_id === id);
   const WEBCAM_DEVICE_ID = 6;
 
-  const nextDelayRef = useRef(450); // 기본값: 450ms(2.2fps)
+  const nextDelayRef = useRef(50); // 기본값: 450ms(2.2fps)
   const loopTimerRef = useRef(null);
 
   // 버튼 클릭 시 1초 알림

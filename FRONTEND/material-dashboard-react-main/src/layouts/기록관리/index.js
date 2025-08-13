@@ -100,6 +100,7 @@ function LogManagement() {
           type: badgeByType("he"),
           originalImg: row.originalImg,
           detectImg: row.detectImg,
+          content: row.heNumber,
           location: row.location,
           date: row.regDate,
           rowId: `2-${idx}`,
