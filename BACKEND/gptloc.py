@@ -46,7 +46,7 @@ import io
 
 # 1. 환경설정
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY", "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")
 
 # 2. Flask 설정
 app = Flask(__name__)
@@ -58,6 +58,7 @@ CORS(app, resources={
     }
 })
 
+# 공통 HTML 템플릿
 BASE_HTML = """
 <!DOCTYPE html>
 <html>
@@ -66,9 +67,7 @@ BASE_HTML = """
   <title>{title}</title>
   <style>
     body {{
-      /* ✅ 한국어 폰트 스택: 서버에 설치된 순서대로 잡힙니다 */
-      font-family: 'Noto Sans CJK KR','Noto Sans KR','Nanum Gothic','NanumGothic',
-                   'Malgun Gothic','Apple SD Gothic Neo','맑은 고딕',sans-serif;
+      font-family: 'Pretendard', sans-serif;
       line-height: 1.6;
       margin: 20px;
       color: #333;
@@ -240,23 +239,49 @@ def make_total_prompt(he_summary, acc_summary, ppe_summary, period_start, period
     </html>
     """
 def make_accident_html(gpt_html, period_start, period_end, user_id):
-    content = f"""
+    return f"""
+    <html>
+    <head>
+      <meta charset='utf-8'>
+      <style>
+        body {{ font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; }}
+        h2, h3 {{ font-weight: bold; }}
+        p {{ margin-bottom: 10px; }}
+      </style>
+    </head>
+    <body>
       <h2>안전사고 상세 보고서</h2>
       <p><strong>작성자:</strong> {user_id}</p>
       <p><strong>보고 기간:</strong> {period_start} ~ {period_end}</p>
-      {gpt_html}
-    """
-    return generate_html_report("안전사고 상세 보고서", content)
 
+      {gpt_html}
+
+    </body>
+    </html>
+    """
 def make_entry_html(summary, entry_table_html, period_start, period_end, user_id):
-    content = f"""
+    return f"""
+    <html>
+    <head>
+      <meta charset='utf-8'>
+      <style>
+        body {{ font-family: 'Pretendard', sans-serif; line-height: 1.6; padding: 20px; }}
+        h2, h3 {{ font-weight: bold; }}
+        table {{ border-collapse: collapse; width: 100%; margin-top: 10px; }}
+        th, td {{ border: 1px solid #000; padding: 8px; text-align: left; }}
+        ul {{ padding-left: 20px; }}
+      </style>
+    </head>
+    <body>
       <h2>차량/중장비 입출입 관리 보고서</h2>
       <p><strong>작성자:</strong> {user_id}</p>
       <p><strong>관리 기간:</strong> {period_start} ~ {period_end}</p>
+      
 
       <h3>1. 입출입 내역 요약</h3>
       <p>{summary.replace('<br>', '<br/>')}</p>
 
+      
       {entry_table_html}
 
       <h3>2. 개선사항 및 현장 피드백</h3>
@@ -268,17 +293,13 @@ def make_entry_html(summary, entry_table_html, period_start, period_end, user_id
 
       <h3>3. 기타/특이사항</h3>
       <p>해당 없음</p>
+    </body>
+    </html>
     """
-    return generate_html_report("입출입 관리 보고서", content)
-
 def make_total_html(he_summary, acc_summary, ppe_summary, period_start, period_end, user_id, gpt_html):
-    content = f"""
-      <h2>현장 통합 종합 보고서</h2>
-      <p><strong>작성자:</strong> {user_id}</p>
-      <p><strong>보고 기간:</strong> {period_start} ~ {period_end}</p>
+    return  f""" 
       {gpt_html}
     """
-    return generate_html_report("현장 통합 종합 보고서", content)
 
 
 
