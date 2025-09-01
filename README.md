@@ -14,11 +14,13 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
 
 * **개발 목표** <br/>
 건설 현장에서 사용되고 있는 감지 및 보고 관리 시스템의 한계를 극복하기 위해, 고도화된 인공지능 기술을 적용한 AI 기반의 안전관리 솔루션을 구현하고자 합니다.
-
+<br/>
+<br/>
 
 ## 📅 프로젝트 기간
 2025.07.22 ~ 2025.08.13 (3주, 21일)
-
+<br/>
+<br/>
 
 ## ⭐ 주요 기능
 
@@ -70,7 +72,9 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
     * 건설현장 날씨 정보
     * 건설현장 식단 정보
     * 사내 공지사항·안내사항
-<br>
+<br/>
+<br/>
+
 
 ## ⛏ 기술스택
 <table>
@@ -139,87 +143,133 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
     </tr>
 </table>
 
-<br>
+<br/>
+<br/>
 
-
-## 🖥 화면 구성
+## 🖥 프로젝트 구성
 
 ### 로그인
-<img width="1919" height="1080" alt="로그인 페이지" src="https://github.com/user-attachments/assets/8261ab1f-bdc6-4360-bb46-d4cd9daac1e4" />
-<br>
-<br>
+<p align="center">
+   <img width="1919" height="1080" alt="로그인 페이지" src="https://github.com/user-attachments/assets/8261ab1f-bdc6-4360-bb46-d4cd9daac1e4" />
+</p>
+<br/>
 
 ### 회원가입
-<img width="1920" height="1080" alt="회원가입 페이지" src="https://github.com/user-attachments/assets/42563b16-ef68-4910-ab8a-8b4c2a2c8853" />
-<br>
-<br>
+<p align="center">
+   <img width="1920" height="1080" alt="회원가입 페이지" src="https://github.com/user-attachments/assets/42563b16-ef68-4910-ab8a-8b4c2a2c8853" />
+</p>
+<br/>
 
 ### 대시보드 페이지
-<img width="1892" height="1080" alt="대시보드 페이지" src="https://github.com/user-attachments/assets/43732fdd-51f7-4af3-a34a-813b169c7d7f" />
-<br>
-<br>
+<p align="center">
+   <img width="1892" height="1080" alt="대시보드 페이지" src="https://github.com/user-attachments/assets/43732fdd-51f7-4af3-a34a-813b169c7d7f" />
+</p>
+<br/>
 
 ### 모니터링
-<img width="1901" height="1071" alt="모니터링 페이지" src="https://github.com/user-attachments/assets/d3b90753-7f7b-4d1c-bbd3-30e85d4cef6e" />
-<br>
-<br>
+<p align="center">
+   <img width="1901" height="1071" alt="모니터링 페이지" src="https://github.com/user-attachments/assets/d3b90753-7f7b-4d1c-bbd3-30e85d4cef6e" />
+</p>
+<br/>
 
 ### 기록관리
 * **사고 감지**
-<img width="1888" height="954" alt="기록관리 페이지 01" src="https://github.com/user-attachments/assets/fa9ddd31-db4c-4995-969c-8f073ba6d316" />
-<img width="1895" height="1072" alt="기록관리 페이지 내용 01" src="https://github.com/user-attachments/assets/0dd34676-26da-4e28-8651-988ca2789206" />
-<br>
+<p align="center">
+   <img width="1888" height="954" alt="기록관리 페이지 01" src="https://github.com/user-attachments/assets/fa9ddd31-db4c-4995-969c-8f073ba6d316" />
+</p>
+<p align="center">
+   <img width="1895" height="1072" alt="기록관리 페이지 내용 01" src="https://github.com/user-attachments/assets/0dd34676-26da-4e28-8651-988ca2789206" />
+</p>
+<br/>
 
 * **안전장비 미착용 감지**
-<img width="1884" height="951" alt="기록관리 페이지 02" src="https://github.com/user-attachments/assets/7bd0baca-8ea6-4f35-869a-cb47def93495" />
-<img width="1895" height="1073" alt="기록관리 페이지 내용 02" src="https://github.com/user-attachments/assets/644f13c8-9bfd-42fc-9ac4-5b89612a899f" />
-<br>
+<p align="center">
+   <img width="1884" height="951" alt="기록관리 페이지 02" src="https://github.com/user-attachments/assets/7bd0baca-8ea6-4f35-869a-cb47def93495" />
+</p>
+<p align="center">
+   <img width="1895" height="1073" alt="기록관리 페이지 내용 02" src="https://github.com/user-attachments/assets/644f13c8-9bfd-42fc-9ac4-5b89612a899f" />
+</p>
+<br/>
 
 * **입출입 감지**
-<img width="1890" height="949" alt="기록관리 페이지 03" src="https://github.com/user-attachments/assets/782fb7db-2440-471a-b39b-d0b28084f84e" />
-<img width="1899" height="1069" alt="기록관리 페이지 내용 03" src="https://github.com/user-attachments/assets/78583286-258d-4129-9376-f84dc02892ee" />
-<br>
-<br>
+<p align="center">
+   <img width="1890" height="949" alt="기록관리 페이지 03" src="https://github.com/user-attachments/assets/782fb7db-2440-471a-b39b-d0b28084f84e" />
+</p>
+<p align="center">
+   <img width="1899" height="1069" alt="기록관리 페이지 내용 03" src="https://github.com/user-attachments/assets/78583286-258d-4129-9376-f84dc02892ee" />
+</p>
+<br/>
 
 ### 보고서 생성
-<img width="1885" height="1080" alt="보고서 생성 페이지 01" src="https://github.com/user-attachments/assets/81957d8b-7cb8-434b-9877-acfcf23480aa" />
-<br>
-<br>
+<p align="center">
+   <img width="1885" height="1080" alt="보고서 생성 페이지 01" src="https://github.com/user-attachments/assets/81957d8b-7cb8-434b-9877-acfcf23480aa" />
+</p>
+<br/>
 
 ### 보고서 게시판
-<img width="1883" height="1077" alt="보고서 페이지 01" src="https://github.com/user-attachments/assets/2d37f429-8c1b-4fb3-b811-66b47f2e32d5" />
-<br>
-<br>
+<p align="center">
+   <img width="1883" height="1077" alt="보고서 페이지 01" src="https://github.com/user-attachments/assets/2d37f429-8c1b-4fb3-b811-66b47f2e32d5" />
+</p>
+<br/>
 
 ### 통계
 * **탐지유형별 통계**
-<img width="1892" height="1080" alt="통계 페이지 01" src="https://github.com/user-attachments/assets/751805ea-ac62-42ca-be8e-8b3284aed25c" />
-<br>
+<p align="center">
+   <img width="1892" height="1080" alt="통계 페이지 01" src="https://github.com/user-attachments/assets/751805ea-ac62-42ca-be8e-8b3284aed25c" />
+</p>
+<br/>
 
 * **발생구역별 통계**
-<img width="1905" height="1080" alt="통계 페이지 02" src="https://github.com/user-attachments/assets/4edac1dc-c545-43a3-bb3d-349db18fc1ea" />
-<br>
-<br>
+<p align="center">
+   <img width="1905" height="1080" alt="통계 페이지 02" src="https://github.com/user-attachments/assets/4edac1dc-c545-43a3-bb3d-349db18fc1ea" />
+</p>
+<br/>
+<br/>
 
 
-## ⚙ 클라우드 아키텍처
-![클라우드 아키텍처](https://github.com/user-attachments/assets/0ffe16f8-1f47-429c-b557-628a4b4e6c3d)
-<br>
+## ⚙ 프로젝트 설계
 
+### 📌 메뉴 구성도
+<p align="center">
+   <img width="1232" height="645" alt="메뉴 구성도 20250814" src="https://github.com/user-attachments/assets/0d700f68-3fa4-444a-9b66-685f0deab1b8" />
+</p>   
+<br/>
 
-## 📌 소프트웨어 아키텍처
-![image](https://github.com/user-attachments/assets/b398c9c0-78ae-44f5-80ac-dce97c76d144)
-<br>
+### 📌 유스케이스 다이어그램
+<p align="center">
+   <img width="791" height="934" alt="유스케이스 다이어그램 20250726" src="https://github.com/user-attachments/assets/7c913c65-c2ca-4c71-b52a-720b24822bd7" />
+</p>   
+<br/>
 
-## 📌 서비스 흐름도
-![image](https://github.com/user-attachments/assets/a9cf3be7-60b0-47be-a087-83115c30e07d)
-<br>
+### 📌 ER 다이어그램
+<p align="center">
+   <img width="1762" height="1079" alt="실전 프로젝트   TFIC  ER 다이어그램 20250813" src="https://github.com/user-attachments/assets/be0b86d2-62eb-40fd-878b-716c7e8bb76f" />
+</p> 
+<br/>
 
+### 📌 클라우드 아키텍처
+<p align="center">
+   <img width="1250" height="1070" alt="아키텍처 클라우드 20250805" src="https://github.com/user-attachments/assets/844ca716-21b7-4076-8c7b-408e5729d28f" />
+</p> 
+<br/>
 
-## 📌 ER다이어그램
-![image](https://github.com/user-attachments/assets/65efb1d6-6543-48cd-9d0a-94716c1e7e35)
-<br>
+### 📌 소프트웨어 아키텍처
+<p align="center">
+   <img width="1031" height="1075" alt="아키텍처 소프트웨어 20250805" src="https://github.com/user-attachments/assets/cc55bf93-880c-49e5-87d3-86df5494ec0c" />
+</p> 
+<br/>
 
+### 📌 서비스 흐름도
+<p align="center">
+   <img width="1782" height="1078" alt="아키텍처 서비스 01 20250805" src="https://github.com/user-attachments/assets/3bc8508b-8724-417d-a8ef-6f5f819280d9" />
+</p>
+<br/>
+
+<p align="center">
+   <img width="1770" height="1077" alt="아키텍처 서비스 02 20250805" src="https://github.com/user-attachments/assets/2008f3af-aecc-4a05-b179-dbbd333552bb" />
+</p>
+<br/>
+<br/>
 
 
 ## 👨‍👩‍👦‍👦 팀원 역할
