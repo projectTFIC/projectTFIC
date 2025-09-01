@@ -1,7 +1,5 @@
-<h1><img width="30" height="28" alt="image" src="https://github.com/user-attachments/assets/ee057db1-8760-4eb0-9d3c-1261c2a1a775" /> AI-VIS <span style="font-size: smaller; color: gray;">(TFIC 팀)</span></h1>
-
+# <img width="30" height="28" alt="image" src="https://github.com/user-attachments/assets/ee057db1-8760-4eb0-9d3c-1261c2a1a775" /> AI-VIS (TFIC 팀)
 ![image](https://github.com/user-attachments/assets/bf1dce66-78f0-4ed6-83d2-9984f64b34e9)
-
 
 
 ## 👀 프로젝트 개요
@@ -33,10 +31,7 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
 
 * **객체 탐지 모델과 OCR을 활용한 중장비 탐지** <br/>
 건설현장 내 중장비 16종을 실시간으로 탐지하고, 중장비의 출입 및 번호판 정보를 수집합니다.
-    * 화물덤프형 1톤 이하
-    * 화물덤프형 5톤 미만
-    * 화물덤프형 12톤 미만
-    * 화물덤프형 12톤 이상
+    * 화물덤프형 1톤 이하 / 5톤 미만 / 12톤 미만 / 12톤 이상
     * 굴착기 (타이어식)
     * 굴착기 (무한궤도식)
     * 로더
@@ -45,10 +40,7 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
     * 불도저 (무한궤도식)
     * 천공기
     * 항타·항발기
-    * 화물카고 1톤 이하
-    * 화물카고 5톤 미만
-    * 화물카고 25톤 미만
-    * 화물카고 25톤 이상
+    * 화물카고 1톤 이하/ 5톤 미만 / 25톤 미만 / 25톤 이상
 
 * **객체 탐지 모델과 OCR을 활용한 중장비 탐지** <br/>
 작업자의 사고여부를 실시간으로 감지합니다.
@@ -90,40 +82,16 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
         <td>사용언어</td>
         <td>
             <img src="https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=java&logoColor=white"/>
-            <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=HTML5&logoColor=white"/>
-            <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=CSS3&logoColor=white"/>
-            <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white"/>
             <img src ="https://img.shields.io/badge/Python-3776AB.svg?&style=for-the-badge&logo=Python&logoColor=white"/>
+            <img src="https://img.shields.io/badge/HTML-E34F26?style=for-the-badge&logo=HTML5&logoColor=white"/>
+            <img src="https://img.shields.io/badge/CSS-1572B6?style=for-the-badge&logo=CSS3&logoColor=white"/>
+            <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white"/>
         </td>
     </tr>
     <tr>
-        <td>라이브러리</td>
+        <td>클라우드</td>
         <td>
-            <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
-        </td>
-    </tr>
-        <tr>
-        <td>AI</td>
-        <td>
-            <img src="https://img.shields.io/badge/YOLO-111F68?style=for-the-badge&logo=yolo&logoColor=white"/>
-            <img src="https://img.shields.io/badge/NAVER OCR-03C75A?style=for-the-badge&logo=Naver&logoColor=white"/>
-            <img src="https://img.shields.io/badge/ChatGPT-412991?style=for-the-badge&logo=openai&logoColor=white"/>
-        </td>
-    </tr>
-    <tr>
-        <td>개발도구</td>
-        <td>
-            <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"/>
-            <img src="https://img.shields.io/badge/VSCode-007ACC?style=for-the-badge&logo=VisualStudioCode&logoColor=white"/>
-            <img src="https://img.shields.io/badge/jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white"/>
-        </td>
-    </tr>
-    <tr>
-        <td>서버환경</td>
-        <td>
-            <img src="https://img.shields.io/badge/Apache%20Tomcat-F8DC75?style=for-the-badge&logo=apachetomcat&logoColor=black"/>
-            <img src="https://img.shields.io/badge/flask-000000?style=for-the-badge&logo=flask&logoColor=white"/>
-            <img src="https://img.shields.io/badge/NCP-03C75A?style=for-the-badge&logo=Naver&logoColor=white"/>
+            <img src="https://img.shields.io/badge/NAVER CLOUD PLATFORM-03C75A?style=for-the-badge&logo=Naver&logoColor=white"/>
         </td>
     </tr>
     <tr>
@@ -131,19 +99,108 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
         <td>
             <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
         </td>
+    </tr>     
+    <tr>
+        <td>프레임워크</td>
+        <td>
+            <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"/>
+            <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
+            <img src="https://img.shields.io/badge/MyBatis-F80000?style=for-the-badge&logo=Oracle&logoColor=white"/>
+            <img src="https://img.shields.io/badge/flask-000000?style=for-the-badge&logo=flask&logoColor=white"/>
+        </td>
     </tr>
     <tr>
-        <td>협업도구</td>
+        <td>AI</td>
+        <td>
+            <img src="https://img.shields.io/badge/YOLO-111F68?style=for-the-badge&logo=yolo&logoColor=white"/>
+            <img src="https://img.shields.io/badge/HyperCLOVA OCR-03C75A?style=for-the-badge&logo=Naver&logoColor=white"/>
+            <img src="https://img.shields.io/badge/ChatGPT-412991?style=for-the-badge&logo=openai&logoColor=white"/>
+        </td>
+    </tr>
+    <tr>
+        <td>IDE</td>
+        <td>
+            <img src="https://img.shields.io/badge/STS4-6DB33F?style=for-the-badge&logo=spring&logoColor=white"/>
+            <img src="https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white"/>
+            <img src="https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white"/>
+            <img src="https://img.shields.io/badge/Colab-F9AB00?style=for-the-badge&logo=googlecolab&color=525252"/>
+        </td>
+    </tr>
+    <tr>
+        <td>ETC</td>
         <td>
             <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=Git&logoColor=white"/>
             <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white"/>
             <img src="https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"/>
+            <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white"/>
+            <img src="https://img.shields.io/badge/jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white"/>
+            <img src="https://img.shields.io/badge/dbdiagram.io-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"/>
         </td>
     </tr>
 </table>
 
-
 <br>
+
+
+## 🖥 화면 구성
+
+### 로그인
+<img width="1919" height="1080" alt="로그인 페이지" src="https://github.com/user-attachments/assets/8261ab1f-bdc6-4360-bb46-d4cd9daac1e4" />
+<br>
+<br>
+
+### 회원가입
+<img width="1920" height="1080" alt="회원가입 페이지" src="https://github.com/user-attachments/assets/42563b16-ef68-4910-ab8a-8b4c2a2c8853" />
+<br>
+<br>
+
+### 대시보드 페이지
+<img width="1892" height="1080" alt="대시보드 페이지" src="https://github.com/user-attachments/assets/43732fdd-51f7-4af3-a34a-813b169c7d7f" />
+<br>
+<br>
+
+### 모니터링
+<img width="1901" height="1071" alt="모니터링 페이지" src="https://github.com/user-attachments/assets/d3b90753-7f7b-4d1c-bbd3-30e85d4cef6e" />
+<br>
+<br>
+
+### 기록관리
+* **사고 감지**
+<img width="1888" height="954" alt="기록관리 페이지 01" src="https://github.com/user-attachments/assets/fa9ddd31-db4c-4995-969c-8f073ba6d316" />
+<img width="1895" height="1072" alt="기록관리 페이지 내용 01" src="https://github.com/user-attachments/assets/0dd34676-26da-4e28-8651-988ca2789206" />
+<br>
+
+* **안전장비 미착용 감지**
+<img width="1884" height="951" alt="기록관리 페이지 02" src="https://github.com/user-attachments/assets/7bd0baca-8ea6-4f35-869a-cb47def93495" />
+<img width="1895" height="1073" alt="기록관리 페이지 내용 02" src="https://github.com/user-attachments/assets/644f13c8-9bfd-42fc-9ac4-5b89612a899f" />
+<br>
+
+* **입출입 감지**
+<img width="1890" height="949" alt="기록관리 페이지 03" src="https://github.com/user-attachments/assets/782fb7db-2440-471a-b39b-d0b28084f84e" />
+<img width="1899" height="1069" alt="기록관리 페이지 내용 03" src="https://github.com/user-attachments/assets/78583286-258d-4129-9376-f84dc02892ee" />
+<br>
+<br>
+
+### 보고서 생성
+<img width="1885" height="1080" alt="보고서 생성 페이지 01" src="https://github.com/user-attachments/assets/81957d8b-7cb8-434b-9877-acfcf23480aa" />
+<br>
+<br>
+
+### 보고서 게시판
+<img width="1883" height="1077" alt="보고서 페이지 01" src="https://github.com/user-attachments/assets/2d37f429-8c1b-4fb3-b811-66b47f2e32d5" />
+<br>
+<br>
+
+### 통계
+* **탐지유형별 통계**
+<img width="1892" height="1080" alt="통계 페이지 01" src="https://github.com/user-attachments/assets/751805ea-ac62-42ca-be8e-8b3284aed25c" />
+<br>
+
+* **발생구역별 통계**
+<img width="1905" height="1080" alt="통계 페이지 02" src="https://github.com/user-attachments/assets/4edac1dc-c545-43a3-bb3d-349db18fc1ea" />
+<br>
+<br>
+
 
 ## ⚙ 클라우드 아키텍처
 ![클라우드 아키텍처](https://github.com/user-attachments/assets/0ffe16f8-1f47-429c-b557-628a4b4e6c3d)
@@ -163,44 +220,6 @@ YOLO/LLM 을 이용한 스마트 현장안전 감지·관리 시스템
 ![image](https://github.com/user-attachments/assets/65efb1d6-6543-48cd-9d0a-94716c1e7e35)
 <br>
 
-
-## 🖥 화면 구성
-
-### 로그인
-![image](https://github.com/user-attachments/assets/15c633dc-26f4-4223-b418-157fcf742919)
-<br>
-
-### 회원가입
-![image](https://github.com/user-attachments/assets/8d5045ce-97ac-4a68-a9e8-aa39ce16fc10)
-<br>
-
-### 대시보드 페이지
-![image](https://github.com/user-attachments/assets/c33cfcdd-20c0-4fc6-9482-c7587093a76d)
-<br>
-
-### 모니터링
-![image](https://github.com/user-attachments/assets/fc04af27-8960-4a9c-ad33-9f1a2056e8f1)
-<br>
-
-### 기록관리
-![image](https://github.com/user-attachments/assets/570db902-5865-43eb-ab4c-6ee2218f01be)
-![image](https://github.com/user-attachments/assets/40c03bc0-5f33-4319-acd6-b1d4cc994892)
-![image](https://github.com/user-attachments/assets/fbb25229-8ba3-4f8f-b2b4-ceed4f70c687)
-![image](https://github.com/user-attachments/assets/fa07b84e-ddcc-44b6-993a-ae0b64a4c56d)
-<br>
-
-### 보고서 생성
-![image](https://github.com/user-attachments/assets/a4707ffa-d696-4b17-8969-b3b99334f05f)
-<br>
-
-### 보고서 게시판
-![image](https://github.com/user-attachments/assets/0780f577-0477-4f44-8b75-da9d1657bbab)
-![image](https://github.com/user-attachments/assets/53b6f152-f0d8-4a1c-9d11-dd25a547a61f)
-<br>
-
-### 통계
-![image](https://github.com/user-attachments/assets/6ff1c1e4-87aa-4566-8fbd-c425e6435ef4)
-<br>
 
 
 ## 👨‍👩‍👦‍👦 팀원 역할
